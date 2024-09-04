@@ -1,6 +1,6 @@
 import { SupabaseClient } from '@supabase/supabase-js'
 import { cache } from 'react'
-import { Tables } from '../../../database.types'
+import { Tables } from 'database.types'
 
 type Groups = Tables<'groups'>
 type GroupMembers = Tables<'group_members'>
