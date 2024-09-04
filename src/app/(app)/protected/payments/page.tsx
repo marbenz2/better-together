@@ -12,6 +12,7 @@ import { Tables } from 'database.types'
 
 type Trips = Tables<'trips'>
 type Groups = Tables<'groups'>
+type GroupMembers = Tables<'group_members'>
 type PaymentDetails = {
   trip_id: string
   down_payment: number | null
@@ -26,10 +27,11 @@ type SubscribedTrips = {
   trips: Trips
 }
 type UserGroups = {
-  group_id: string
-  favourite: boolean
+  group_id: GroupMembers['group_id']
+  favourite: GroupMembers['favourite'] // Änderung hier
+  role: 'admin' | 'member'
   groups: Groups
-}
+}[]
 
 export default async function PaymentPage() {
   const supabase = createClient()
@@ -44,7 +46,7 @@ export default async function PaymentPage() {
     user ? getPaymentDetails(supabase, user.id).then((details) => details as PaymentDetails[]) : [],
   ])
   const [groupTrips] = await Promise.all([
-    userGroups.length > 0 ? getGroupTrips(supabase, userGroups as UserGroups[]) : [],
+    userGroups.length > 0 ? getGroupTrips(supabase, userGroups as UserGroups) : [],
   ])
 
   return <Payments user={user} paymentDetails={paymentDetails} subscribedTrips={subscribedTrips} />
