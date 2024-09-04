@@ -7,7 +7,7 @@ import { Input } from '@/components/forms/input'
 import { FormMessage, Message } from '@/components/forms/form-message'
 import { headers } from 'next/headers'
 import { encodedRedirect } from '@/utils/utils'
-import { BackButton } from '@/components/ui/back-button'
+import { BackButtonServer } from '@/components/ui/back-button-server'
 
 export default function ForgotPassword({ searchParams }: { searchParams: Message }) {
   const forgotPassword = async (formData: FormData) => {
@@ -44,7 +44,7 @@ export default function ForgotPassword({ searchParams }: { searchParams: Message
 
   return (
     <div className="flex flex-col flex-1 p-4 w-full items-center">
-      <BackButton href="/" />
+      <BackButtonServer href="/" />
       <form className="flex-1 flex flex-col w-full justify-center gap-2 text-foreground [&>input]:mb-6 max-w-md p-4">
         <h1 className="text-2xl font-medium">Passwort zurücksetzen</h1>
         <p className="text-sm text-foreground/60">

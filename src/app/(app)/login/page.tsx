@@ -6,7 +6,7 @@ import { Label } from '@/components/forms/label'
 import { Input } from '@/components/forms/input'
 import { FormMessage, Message } from '@/components/forms/form-message'
 import { encodedRedirect } from '@/utils/utils'
-import { BackButton } from '@/components/ui/back-button'
+import { BackButtonServer } from '@/components/ui/back-button-server'
 
 export default function Login({ searchParams }: { searchParams: Message }) {
   const signIn = async (formData: FormData) => {
@@ -37,11 +37,11 @@ export default function Login({ searchParams }: { searchParams: Message }) {
     if (group_link) {
       const { error: groupError } = await supabase
         .from('group_members')
-        .insert([{ group_uuid: group_link, user_uuid: userData.user.id }])
+        .insert([{ group_id: group_link, user_id: userData.user.id, role: 'member' }])
 
       if (groupError) {
         console.error(groupError.message)
-        return { error: 'Error trying to add user to group' }
+        return { error: 'Fehler beim Hinzufügen des Benutzers zur Gruppe' }
       }
 
       const { error: userUpdateError } = await supabase.auth.updateUser({
@@ -59,7 +59,7 @@ export default function Login({ searchParams }: { searchParams: Message }) {
 
   return (
     <div className="flex flex-col flex-1 p-4 w-full items-center">
-      <BackButton href="/" />
+      <BackButtonServer href="/" />
       <form className="flex-1 flex flex-col w-full justify-center gap-2 text-foreground [&>input]:mb-6 max-w-md p-4">
         <h1 className="text-2xl font-medium">Anmelden</h1>
         <p className="text-sm text-foreground/60">
