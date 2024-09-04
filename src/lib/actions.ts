@@ -37,10 +37,15 @@ export async function addSubscription({ tripId }: { tripId: string }) {
   // Anmeldung hinzufügen
   const { data, error } = await supabase
     .from('trip_members')
-    .insert({ user_id: user.id, trip_id: tripId })
+    .insert({
+      user_id: user.id,
+      trip_id: tripId,
+      role: 'member',
+      subscribed_at: new Date().toISOString(),
+    })
 
   if (error) {
-    throw new Error(`Error adding subscription: ${error.message}`)
+    throw new Error(`Fehler beim Hinzufügen der Anmeldung: ${error.message}`)
   }
   revalidatePath('/protected')
   revalidatePath('/protected/trips')
@@ -111,13 +116,15 @@ export async function setTripStatus({
     console.error(setUserError)
     throw new Error(`Error setting user ID: ${setUserError.message}`)
   }
-
   // Aktualisieren des Trip-Status
-  const { error: errorTrips } = await supabase.from('trips').update({ status }).eq('id', tripId)
+  const { error: errorTrips } = await supabase
+    .from('trips')
+    .update({ status: status as 'upcoming' | 'current' | 'done' })
+    .eq('id', tripId)
 
   if (errorTrips) {
     console.error(errorTrips)
-    throw new Error('Failed to update trip status')
+    throw new Error('Fehler beim Aktualisieren des Trip-Status')
   }
 
   // Pfade revalidieren
@@ -127,7 +134,7 @@ export async function setTripStatus({
   return { message: 'Trip status updated successfully' }
 }
 
-export async function getTripStatus({ tripId }: { tripId: number }) {
+/* export async function getTripStatus({ tripId }: { tripId: number }) {
   const supabase = createClient()
 
   const {
@@ -155,9 +162,9 @@ export async function getTripStatus({ tripId }: { tripId: number }) {
   }
 
   return trip.status
-}
+} */
 
-export async function updatePaymentStatus(
+/* export async function updatePaymentStatus(
   user_id: string,
   trip_id: string,
   payment_type: string,
@@ -193,9 +200,9 @@ export async function updatePaymentStatus(
 
   revalidatePath('/protected/payments')
   return
-}
+} */
 
-export async function assignTripToUser(userId: string, tripId: string) {
+/* export async function assignTripToUser(userId: string, tripId: string) {
   const supabase = createClient()
 
   const {
@@ -220,4 +227,4 @@ export async function assignTripToUser(userId: string, tripId: string) {
     return null
   }
   return data
-}
+} */
