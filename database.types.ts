@@ -11,25 +11,28 @@ export type Database = {
     Tables: {
       group_members: {
         Row: {
-          group_id: string | null
+          favourite: boolean | null
+          group_id: string
           id: string
-          joined_at: string | null
-          role: string | null
-          user_id: string | null
+          joined_at: string
+          role: "admin" | "member"
+          user_id: string
         }
         Insert: {
-          group_id?: string | null
+          favourite?: boolean | null
+          group_id: string
           id?: string
-          joined_at?: string | null
-          role?: string | null
-          user_id?: string | null
+          joined_at?: string
+          role?: "admin" | "member"
+          user_id: string
         }
         Update: {
-          group_id?: string | null
+          favourite?: boolean | null
+          group_id?: string
           id?: string
-          joined_at?: string | null
-          role?: string | null
-          user_id?: string | null
+          joined_at?: string
+          role?: "admin" | "member"
+          user_id?: string
         }
         Relationships: [
           {
@@ -50,21 +53,21 @@ export type Database = {
       }
       groups: {
         Row: {
-          created_at: string | null
+          created_at: string
           created_by: string | null
           description: string | null
           id: string
           name: string
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
           created_by?: string | null
           description?: string | null
           id?: string
           name: string
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
           created_by?: string | null
           description?: string | null
           id?: string
@@ -80,148 +83,9 @@ export type Database = {
           },
         ]
       }
-      media: {
-        Row: {
-          alt: string
-          created_at: string
-          filename: string | null
-          filesize: number | null
-          focal_x: number | null
-          focal_y: number | null
-          height: number | null
-          id: number
-          mime_type: string | null
-          prefix: string | null
-          thumbnail_u_r_l: string | null
-          updated_at: string
-          url: string | null
-          width: number | null
-        }
-        Insert: {
-          alt: string
-          created_at?: string
-          filename?: string | null
-          filesize?: number | null
-          focal_x?: number | null
-          focal_y?: number | null
-          height?: number | null
-          id?: number
-          mime_type?: string | null
-          prefix?: string | null
-          thumbnail_u_r_l?: string | null
-          updated_at?: string
-          url?: string | null
-          width?: number | null
-        }
-        Update: {
-          alt?: string
-          created_at?: string
-          filename?: string | null
-          filesize?: number | null
-          focal_x?: number | null
-          focal_y?: number | null
-          height?: number | null
-          id?: number
-          mime_type?: string | null
-          prefix?: string | null
-          thumbnail_u_r_l?: string | null
-          updated_at?: string
-          url?: string | null
-          width?: number | null
-        }
-        Relationships: []
-      }
-      payload_migrations: {
-        Row: {
-          batch: number | null
-          created_at: string
-          id: number
-          name: string | null
-          updated_at: string
-        }
-        Insert: {
-          batch?: number | null
-          created_at?: string
-          id?: number
-          name?: string | null
-          updated_at?: string
-        }
-        Update: {
-          batch?: number | null
-          created_at?: string
-          id?: number
-          name?: string | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      payload_preferences: {
-        Row: {
-          created_at: string
-          id: number
-          key: string | null
-          updated_at: string
-          value: Json | null
-        }
-        Insert: {
-          created_at?: string
-          id?: number
-          key?: string | null
-          updated_at?: string
-          value?: Json | null
-        }
-        Update: {
-          created_at?: string
-          id?: number
-          key?: string | null
-          updated_at?: string
-          value?: Json | null
-        }
-        Relationships: []
-      }
-      payload_preferences_rels: {
-        Row: {
-          id: number
-          order: number | null
-          parent_id: number
-          path: string
-          users_id: number | null
-        }
-        Insert: {
-          id?: number
-          order?: number | null
-          parent_id: number
-          path: string
-          users_id?: number | null
-        }
-        Update: {
-          id?: number
-          order?: number | null
-          parent_id?: number
-          path?: string
-          users_id?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "payload_preferences_rels_parent_fk"
-            columns: ["parent_id"]
-            isOneToOne: false
-            referencedRelation: "payload_preferences"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "payload_preferences_rels_users_fk"
-            columns: ["users_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       trip_members: {
         Row: {
-          added_at: string | null
-          created_at: string | null
+          created_at: string
           down_payment: boolean | null
           down_payment_paypal_id: string | null
           final_payment: boolean | null
@@ -229,13 +93,13 @@ export type Database = {
           full_payment: boolean | null
           full_payment_paypal_id: string | null
           id: string
-          role: string
+          role: Database["public"]["Enums"]["enum_trip_members_role"]
+          subscribed_at: string
           trip_id: string | null
           user_id: string | null
         }
         Insert: {
-          added_at?: string | null
-          created_at?: string | null
+          created_at?: string
           down_payment?: boolean | null
           down_payment_paypal_id?: string | null
           final_payment?: boolean | null
@@ -243,13 +107,13 @@ export type Database = {
           full_payment?: boolean | null
           full_payment_paypal_id?: string | null
           id?: string
-          role?: string
+          role?: Database["public"]["Enums"]["enum_trip_members_role"]
+          subscribed_at?: string
           trip_id?: string | null
           user_id?: string | null
         }
         Update: {
-          added_at?: string | null
-          created_at?: string | null
+          created_at?: string
           down_payment?: boolean | null
           down_payment_paypal_id?: string | null
           final_payment?: boolean | null
@@ -257,7 +121,8 @@ export type Database = {
           full_payment?: boolean | null
           full_payment_paypal_id?: string | null
           id?: string
-          role?: string
+          role?: Database["public"]["Enums"]["enum_trip_members_role"]
+          subscribed_at?: string
           trip_id?: string | null
           user_id?: string | null
         }
@@ -280,116 +145,77 @@ export type Database = {
       }
       trips: {
         Row: {
-          anreise_link: string | null
+          anreise_link: string
           area: string | null
-          beds: number | null
+          beds: number
           date_from: string
           date_to: string
           down_payment: number | null
           final_payment: number | null
           full_payment: number | null
-          group: string
+          group_id: string
           id: string
-          image: string | null
+          image: string
           land: string
           name: string
           ort: string
-          plz: string | null
-          rooms: number | null
-          status: Database["public"]["Enums"]["trip_status"]
+          plz: string
+          rooms: number
+          status: "upcoming" | "current" | "done"
           street: string
-          street_number: number | null
+          street_number: number
         }
         Insert: {
-          anreise_link?: string | null
+          anreise_link: string
           area?: string | null
-          beds?: number | null
+          beds: number
           date_from: string
           date_to: string
           down_payment?: number | null
           final_payment?: number | null
           full_payment?: number | null
-          group: string
+          group_id: string
           id?: string
-          image?: string | null
+          image: string
           land: string
           name: string
           ort: string
-          plz?: string | null
-          rooms?: number | null
-          status?: Database["public"]["Enums"]["trip_status"]
+          plz: string
+          rooms: number
+          status?: "upcoming" | "current" | "done"
           street: string
-          street_number?: number | null
+          street_number: number
         }
         Update: {
-          anreise_link?: string | null
+          anreise_link?: string
           area?: string | null
-          beds?: number | null
+          beds?: number
           date_from?: string
           date_to?: string
           down_payment?: number | null
           final_payment?: number | null
           full_payment?: number | null
-          group?: string
+          group_id?: string
           id?: string
-          image?: string | null
+          image?: string
           land?: string
           name?: string
           ort?: string
-          plz?: string | null
-          rooms?: number | null
-          status?: Database["public"]["Enums"]["trip_status"]
+          plz?: string
+          rooms?: number
+          status?: "upcoming" | "current" | "done"
           street?: string
-          street_number?: number | null
+          street_number?: number
         }
         Relationships: [
           {
-            foreignKeyName: "trips_group_fkey"
-            columns: ["group"]
+            foreignKeyName: "trips_group_id_fkey"
+            columns: ["group_id"]
             isOneToOne: false
             referencedRelation: "groups"
             referencedColumns: ["id"]
           },
         ]
-      }
-      users: {
-        Row: {
-          created_at: string
-          email: string
-          hash: string | null
-          id: number
-          lock_until: string | null
-          login_attempts: number | null
-          reset_password_expiration: string | null
-          reset_password_token: string | null
-          salt: string | null
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          email: string
-          hash?: string | null
-          id?: number
-          lock_until?: string | null
-          login_attempts?: number | null
-          reset_password_expiration?: string | null
-          reset_password_token?: string | null
-          salt?: string | null
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          email?: string
-          hash?: string | null
-          id?: number
-          lock_until?: string | null
-          login_attempts?: number | null
-          reset_password_expiration?: string | null
-          reset_password_token?: string | null
-          salt?: string | null
-          updated_at?: string
-        }
-        Relationships: []
       }
     }
     Views: {
@@ -404,7 +230,9 @@ export type Database = {
       }
     }
     Enums: {
-      trip_status: "upcoming" | "current" | "done"
+      enum_group_members_role: "admin" | "member"
+      enum_trip_members_role: "admin" | "member"
+      enum_trips_status: "upcoming" | "current" | "done"
     }
     CompositeTypes: {
       [_ in never]: never
