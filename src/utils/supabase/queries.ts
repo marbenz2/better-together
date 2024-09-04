@@ -3,11 +3,13 @@ import { cache } from 'react'
 import { Tables } from '../../../database.types'
 
 type Groups = Tables<'groups'>
+type GroupMembers = Tables<'group_members'>
 type UserGroups = {
-  group_id: string
-  favourite: boolean
+  group_id: GroupMembers['group_id']
+  favourite: GroupMembers['favourite'] // Änderung hier
+  role: 'admin' | 'member'
   groups: Groups
-}
+}[]
 
 export const getUser = cache(async (supabase: SupabaseClient) => {
   const {
@@ -35,7 +37,7 @@ export const getTrip = cache(async (supabase: SupabaseClient, params_id: number)
   return trip
 })
 
-export const getGroupTrips = cache(async (supabase: SupabaseClient, groups: UserGroups[]) => {
+export const getGroupTrips = cache(async (supabase: SupabaseClient, groups: UserGroups) => {
   const { data: groupTrips } = await supabase
     .from('trips')
     .select('*')
