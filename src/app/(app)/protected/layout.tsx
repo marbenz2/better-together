@@ -1,21 +1,30 @@
-import Footer from "@/components/Footer";
-import Navigation from "@/components/Navigation";
-import { createClient } from "@/utils/supabase/server";
-import { redirect } from "next/navigation";
+import Footer from '@/components/Footer'
+import Navigation from '@/components/Navigation'
+import { getUser } from '@/utils/supabase/queries'
+import { createClient } from '@/utils/supabase/server'
+import { redirect } from 'next/navigation'
 
-export default async function ProtectedLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const supabase = createClient();
+async function setUserIdInDatabase(supabase: any, userId: string) {
+  try {
+    const { error } = await supabase.rpc('set_current_user_id', { user_id: userId })
+    if (error) {
+      console.error('Error setting user ID in database:', error)
+    } else {
+      console.log('User ID set in database:', userId)
+    }
+  } catch (err) {
+    console.error('Unexpected error while setting user ID:', err)
+  }
+}
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+export default async function ProtectedLayout({ children }: { children: React.ReactNode }) {
+  const supabase = createClient()
+  const user = await getUser(supabase)
 
   if (!user) {
-    return redirect("/login");
+    redirect('/login')
+  } else {
+    await setUserIdInDatabase(supabase, user.id)
   }
 
   return (
@@ -23,10 +32,8 @@ export default async function ProtectedLayout({
       <div className="w-full">
         <Navigation />
       </div>
-      <div className="flex-1 flex flex-col items-center gap-8 w-full px-1 md:px-4">
-        {children}
-      </div>
+      <div className="flex-1 flex flex-col items-center gap-8 w-full px-1 md:px-4">{children}</div>
       <Footer />
     </div>
-  );
+  )
 }
