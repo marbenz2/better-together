@@ -13,7 +13,8 @@ type SubscribedTrips = {
 }[]
 type UserGroups = {
   group_id: GroupMembers['group_id']
-  favourite: GroupMembers['favourite']
+  favourite: GroupMembers['favourite'] // Änderung hier
+  role: 'admin' | 'member'
   groups: Groups
 }[]
 
