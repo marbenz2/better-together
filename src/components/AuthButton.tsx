@@ -8,10 +8,6 @@ export default async function AuthButton() {
   const supabase = createClient()
   const [user] = await Promise.all([getUser(supabase)])
 
-  if (!user) {
-    redirect('/login')
-  }
-
   const signOut = async () => {
     'use server'
     const supabase = createClient()
