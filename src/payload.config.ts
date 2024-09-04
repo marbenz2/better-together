@@ -9,6 +9,10 @@ import sharp from 'sharp'
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { s3Storage } from '@payloadcms/storage-s3'
+import { Groups } from './collections/Groups'
+import { GroupMembers } from './collections/GroupMembers'
+import { Trips } from './collections/Trips'
+import { TripMembers } from './collections/TripMembers'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -20,7 +24,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media],
+  collections: [Users, Media, Groups, GroupMembers, Trips, TripMembers],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
@@ -30,6 +34,7 @@ export default buildConfig({
     pool: {
       connectionString: process.env.DATABASE_URI || '',
     },
+    schemaName: 'payload',
   }),
   sharp,
   plugins: [
