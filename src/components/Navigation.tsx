@@ -1,31 +1,31 @@
-import Link from "next/link";
-import AuthButton from "./AuthButton";
-import { MobileButton } from "./ui/mobile-button";
+import Link from 'next/link'
+import AuthButton from './AuthButton'
+import { MobileButton } from './ui/mobile-button'
 import {
   Sheet,
-  SheetClose,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "./ui/sheet";
+} from './ui/sheet'
 
 const navLinks = [
-  { href: "/protected/trips", label: "Reisen" },
-  { href: "/protected/payments", label: "Zahlungen" },
-  { href: "/protected", label: "Account" },
-  { href: "/protected/groups", label: "Gruppen" },
+  { href: '/protected', label: 'Dashboard' },
+  { href: '/protected/trips', label: 'Reisen' },
+  { href: '/protected/payments', label: 'Zahlungen' },
+  { href: '/protected/groups', label: 'Gruppen' },
   {
     href: `mailto:${`mailto:benzinger.maxi@gmail.com?subject=Allgemeine%20Anfrage`}`,
-    label: "Kontakt",
+    label: 'Kontakt',
   },
-];
+]
 
 export default function Navigation() {
   return (
     <nav className="w-full flex justify-center border-b p-4">
       <div className="w-full max-w-7xl flex justify-between items-center text-sm">
-        <Link href={"/protected"} className="uppercase font-bold">
+        <Link href={'/protected'} className="uppercase font-bold">
           Better.
           <br />
           together.
@@ -38,14 +38,15 @@ export default function Navigation() {
           ))}
         </div>
         <Sheet>
+          <SheetDescription hidden>Mobile Navigation</SheetDescription>
           <SheetTrigger asChild>
             <MobileButton className="block md:hidden" />
           </SheetTrigger>
-          <SheetContent side={"top"} className="flex w-full justify-center">
+          <SheetContent side={'top'} className="flex w-full justify-center">
             <SheetHeader>
               <SheetTitle></SheetTitle>
             </SheetHeader>
-            <SheetTrigger className="flex flex-col items-center gap-8">
+            <SheetTrigger className="flex flex-col items-center gap-12 py-12">
               {navLinks.map(({ href, label }) => (
                 <a key={label} href={href} className="uppercase">
                   {label}
@@ -58,5 +59,5 @@ export default function Navigation() {
         <AuthButton />
       </div>
     </nav>
-  );
+  )
 }
