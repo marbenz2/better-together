@@ -6,8 +6,8 @@ import { Input } from '@/components/forms/input'
 import { Label } from '@/components/forms/label'
 import { FormMessage, Message } from '@/components/forms/form-message'
 import { encodedRedirect } from '@/utils/utils'
-import { BackButton } from '@/components/ui/back-button'
 import { InfoIcon } from 'lucide-react'
+import { BackButtonServer } from '@/components/ui/back-button-server'
 
 export default function Signup({ searchParams }: { searchParams: Message }) {
   const queryId =
@@ -58,7 +58,7 @@ export default function Signup({ searchParams }: { searchParams: Message }) {
 
   return (
     <div className="w-full flex-1 flex items-center h-screen sm:max-w-lg justify-center gap-2 p-4">
-      <BackButton href="/" />
+      <BackButtonServer href="/" />
       <form className="flex flex-col w-full justify-center gap-2 text-foreground [&>input]:mb-6 max-w-xl">
         <h1 className="text-2xl font-medium">Registrieren</h1>
         <p className="text-sm text text-foreground/60">
