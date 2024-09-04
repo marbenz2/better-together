@@ -4,13 +4,11 @@ import Header from '@/components/Header'
 import Link from 'next/link'
 import Footer from '@/components/Footer'
 import { Button } from '@/components/ui/button'
+import { getUser } from '@/utils/supabase/queries'
 
 export default async function Index() {
   const supabase = createClient()
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const [user] = await Promise.all([getUser(supabase)])
 
   return (
     <div className="flex-1 w-full flex flex-col items-center">
