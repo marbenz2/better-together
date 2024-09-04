@@ -23,7 +23,7 @@ type PaymentDetails = {
   final_payment_paypal_id: string | null
 }
 type SubscribedTrips = {
-  created_at: string
+  subscribed_at: string
   trips: Trips
 }
 type UserGroups = {

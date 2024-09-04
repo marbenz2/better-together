@@ -12,16 +12,16 @@ import { BackButtonClient } from './ui/back-button-client'
 type Trips = Tables<'trips'>
 type TripMembers = Tables<'trip_members'>
 type SubscribedTrips = {
+  subscribed_at: string
   trips: Trips
-  subscribed_at: TripMembers['subscribed_at']
-}[]
+}
 
 // type PaymentStatus besteht aus:trip_id, down_payment, full_payment, final_payment, down_payment_paypal_id, full_payment_paypal_id, final_payment_paypal_id
 type PaymentStatus = Tables<'trip_members'>
 
 interface TripProps {
   trip: Trips
-  subscribedTrips: SubscribedTrips | null
+  subscribedTrips: SubscribedTrips[]
   paymentStatus: PaymentStatus | null
 }
 
