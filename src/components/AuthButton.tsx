@@ -1,22 +1,23 @@
-import { createClient } from "@/utils/supabase/server";
-import Link from "next/link";
-import { redirect } from "next/navigation";
-import { Button } from "./ui/button";
+import { createClient } from '@/utils/supabase/server'
+import Link from 'next/link'
+import { redirect } from 'next/navigation'
+import { Button } from './ui/button'
+import { getUser } from '@/utils/supabase/queries'
 
 export default async function AuthButton() {
-  const supabase = createClient();
+  const supabase = createClient()
+  const [user] = await Promise.all([getUser(supabase)])
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  if (!user) {
+    redirect('/login')
+  }
 
   const signOut = async () => {
-    "use server";
-
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    return redirect("/login");
-  };
+    'use server'
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    return redirect('/login')
+  }
 
   return user ? (
     <div className="flex items-center gap-4">
@@ -34,5 +35,5 @@ export default async function AuthButton() {
         <Button variant="outline">Registrieren</Button>
       </Link>
     </div>
-  );
+  )
 }
