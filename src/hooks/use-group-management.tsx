@@ -6,8 +6,11 @@ import {
   setFavouriteGroup,
   deleteExistingGroup,
   renameExistingGroup,
+  leaveExistingGroup,
+  getGroupMembers,
+  getPublicProfiles,
 } from '@/utils/supabase/queries'
-import type { UserGroupsType } from '@/types/dashboard'
+import type { GroupMembersType, PublicProfilesType, UserGroupsType } from '@/types/dashboard'
 import { NotificationMessage, useNotifications } from './use-notifications'
 import { useToast } from '@/components/ui/use-toast'
 
@@ -15,18 +18,21 @@ export function useGroupManagement(initialUserGroups: UserGroupsType | null, use
   const supabase = createClient()
   const { toast } = useToast()
   const [userGroups, setUserGroups] = useState<UserGroupsType>(() => initialUserGroups || [])
-  const [groupId, setGroupId] = useState(
-    (userGroups &&
-      userGroups.length > 0 &&
-      userGroups.find((group) => group.favourite === true)?.groups.id) ??
-      (userGroups && userGroups.length > 0 ? userGroups[0].groups.id : null),
-  )
+  const [groupId, setGroupId] = useState<string | null>(() => {
+    if (userGroups && userGroups.length > 0) {
+      const favoriteGroup = userGroups.find((group) => group.favourite === true)
+      return favoriteGroup?.groups.id || userGroups[0].groups.id || null
+    }
+    return null
+  })
   const [selectedGroupName, setSelectedGroupName] = useState<string | null>(
     userGroups?.find((group) => group.favourite)?.groups.name ||
       userGroups?.[0]?.groups.name ||
       null,
   )
   const { notificationMessage, clearNotification, showNotification } = useNotifications()
+  const [groupMembers, setGroupMembers] = useState<GroupMembersType>([])
+  const [publicProfiles, setPublicProfiles] = useState<PublicProfilesType>([])
 
   useEffect(() => {
     if (notificationMessage) {
@@ -156,6 +162,34 @@ export function useGroupManagement(initialUserGroups: UserGroupsType | null, use
     [user.id, supabase, showNotification],
   )
 
+  const leaveGroup = useCallback(
+    async (groupIdToLeave: string) => {
+      const { error } = await leaveExistingGroup(supabase, user.id, groupIdToLeave)
+      if (error) {
+        showNotification(
+          'Fehler beim Verlassen der Gruppe',
+          'Es ist ein Fehler beim Verlassen der Gruppe aufgetreten, bitte versuche es später erneut.',
+          'destructive',
+        )
+      }
+      if (!error) {
+        setUserGroups((prevUserGroups) =>
+          prevUserGroups.filter((group) => group.group_id !== groupIdToLeave),
+        )
+        setGroupId((prevGroupId) => (prevGroupId === groupIdToLeave ? null : prevGroupId))
+        setSelectedGroupName((prevSelectedGroupName) =>
+          prevSelectedGroupName === groupIdToLeave ? null : prevSelectedGroupName,
+        )
+        showNotification(
+          'Gruppe verlassen',
+          `Du hast erfolgreich die Gruppe "${groupIdToLeave}" verlassen.`,
+          'success',
+        )
+      }
+    },
+    [user.id, supabase, showNotification],
+  )
+
   const deleteGroup = useCallback(
     async (groupIdToDelete: string) => {
       const { error } = await deleteExistingGroup(supabase, user.id, groupIdToDelete)
@@ -261,7 +295,43 @@ export function useGroupManagement(initialUserGroups: UserGroupsType | null, use
     [user.id, supabase, showNotification],
   )
 
+  const getExistingGroupMembers = useCallback(
+    async (groupId: string) => {
+      const { groupMembers, error } = await getGroupMembers(supabase, groupId)
+      if (error) {
+        showNotification(
+          'Fehler beim Laden der Gruppenmitglieder',
+          'Es ist ein Fehler beim Laden der Gruppenmitglieder aufgetreten, bitte versuche es später erneut.',
+          'destructive',
+        )
+      }
+      if (!error && groupMembers) {
+        setGroupMembers(groupMembers)
+      }
+    },
+    [supabase, showNotification],
+  )
+
+  const getExistingPublicProfiles = useCallback(
+    async (user_ids: string[]) => {
+      const { publicProfiles, error } = await getPublicProfiles(supabase, user_ids)
+      if (error) {
+        showNotification(
+          'Fehler beim Laden der öffentlichen Profile',
+          'Es ist ein Fehler beim Laden der öffentlichen Profile aufgetreten, bitte versuche es später erneut.',
+          'destructive',
+        )
+      }
+      if (!error && publicProfiles) {
+        setPublicProfiles(publicProfiles)
+      }
+    },
+    [supabase, showNotification],
+  )
+
   return {
+    publicProfiles,
+    groupMembers,
     userGroups,
     groupId,
     selectedGroupName,
@@ -269,10 +339,13 @@ export function useGroupManagement(initialUserGroups: UserGroupsType | null, use
     createGroup,
     joinGroup,
     deleteGroup,
+    leaveGroup,
     renameGroup,
     setFavourite,
     setUserGroups,
     setGroupId,
     setSelectedGroupName,
+    getExistingGroupMembers,
+    getExistingPublicProfiles,
   }
 }
