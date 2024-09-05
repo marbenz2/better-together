@@ -1,8 +1,7 @@
 'use client'
 
-import { useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 import Link from 'next/link'
-import { useToast } from '@/components/ui/use-toast'
 import {
   CardBackPlate,
   CardContent,
@@ -11,20 +10,12 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { useGroupManagement } from '@/hooks/use-group-management'
-import { useNotifications } from '@/hooks/use-notifications'
-import GroupManagement from './GroupManagement'
+import GroupManagement from './Groups/GroupManagement'
 import type { SubscribedTripsType, UserGroupsType } from '@/types/dashboard'
-import { StarIcon } from 'lucide-react'
 import FilteredSubscribedTrips from './FilteredSubscribedTrips'
+import GroupPick from './GroupPick'
 
 interface DashboardProps {
   user: any | null
@@ -37,9 +28,6 @@ export default function Dashboard({
   userGroups: initialUserGroups,
   subscribedTrips,
 }: DashboardProps) {
-  const { toast } = useToast()
-  const { notificationMessage, showNotification, clearNotification } = useNotifications()
-
   const {
     userGroups,
     groupId,
@@ -51,17 +39,6 @@ export default function Dashboard({
     setFavourite,
     handleOnValueChange,
   } = useGroupManagement(initialUserGroups, user)
-
-  useEffect(() => {
-    if (notificationMessage) {
-      toast({
-        title: notificationMessage.title,
-        description: notificationMessage.message,
-        variant: notificationMessage.variant,
-      })
-      clearNotification()
-    }
-  }, [notificationMessage, toast, clearNotification])
 
   const filteredSubscribedTrips = useMemo(() => {
     return (
@@ -77,28 +54,11 @@ export default function Dashboard({
       </CardHeader>
       <CardContent>
         {userGroups && userGroups.length > 1 && (
-          <span className="flex items-center gap-4">
-            <CardTitle>Gruppe: </CardTitle>
-            <Select
-              onValueChange={handleOnValueChange}
-              defaultValue={selectedGroupName || undefined}
-              value={selectedGroupName || undefined}
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {userGroups.map((group) => (
-                  <SelectItem key={group.group_id} value={group.groups.name}>
-                    <span className="flex items-center gap-2">
-                      {group.favourite && <StarIcon fill="white" className="w-4 h-4" />}
-                      {group.groups.name}
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </span>
+          <GroupPick
+            userGroups={userGroups}
+            selectedGroupName={selectedGroupName}
+            handleOnValueChange={handleOnValueChange}
+          />
         )}
         {userGroups && userGroups.length === 1 && (
           <CardTitle>Gruppe: {userGroups[0].groups.name}</CardTitle>
