@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import {
   CardBackPlate,
@@ -29,6 +29,8 @@ export default function Dashboard({
   subscribedTrips,
 }: DashboardProps) {
   const {
+    publicProfiles,
+    groupMembers,
     userGroups,
     groupId,
     selectedGroupName,
@@ -36,9 +38,24 @@ export default function Dashboard({
     joinGroup,
     deleteGroup,
     renameGroup,
+    leaveGroup,
     setFavourite,
     handleOnValueChange,
+    getExistingGroupMembers,
+    getExistingPublicProfiles,
   } = useGroupManagement(initialUserGroups, user)
+
+  useEffect(() => {
+    if (groupId) {
+      getExistingGroupMembers(groupId)
+    }
+  }, [groupId, getExistingGroupMembers])
+
+  useEffect(() => {
+    if (groupMembers) {
+      getExistingPublicProfiles(groupMembers.map((member) => member.user_id))
+    }
+  }, [groupMembers, getExistingPublicProfiles])
 
   const filteredSubscribedTrips = useMemo(() => {
     return (
@@ -65,6 +82,9 @@ export default function Dashboard({
         )}
         {userGroups && (
           <GroupManagement
+            user={user}
+            publicProfiles={publicProfiles}
+            groupMembers={groupMembers}
             userGroups={userGroups}
             groupId={groupId}
             createGroup={createGroup}
@@ -72,6 +92,7 @@ export default function Dashboard({
             deleteGroup={deleteGroup}
             renameGroup={renameGroup}
             setFavourite={setFavourite}
+            leaveGroup={leaveGroup}
           />
         )}
       </CardContent>
