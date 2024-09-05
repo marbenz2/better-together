@@ -61,7 +61,7 @@ export function useGroupManagement(initialUserGroups: UserGroupsType | null, use
   const createGroup = useCallback(
     async (groupName: string) => {
       const { data, error } = await addNewGroup(supabase, user.id, groupName)
-      if (error instanceof Error) {
+      if (error) {
         const errorMessages: {
           [key: string]: NotificationMessage
         } = {
@@ -111,7 +111,7 @@ export function useGroupManagement(initialUserGroups: UserGroupsType | null, use
   const joinGroup = useCallback(
     async (inviteCode: string) => {
       const { groupData, error } = await joinExistingGroup(supabase, user.id, inviteCode)
-      if (error instanceof Error) {
+      if (error) {
         const errorMessages: {
           [key: string]: NotificationMessage
         } = {
@@ -159,7 +159,7 @@ export function useGroupManagement(initialUserGroups: UserGroupsType | null, use
   const deleteGroup = useCallback(
     async (groupIdToDelete: string) => {
       const { error } = await deleteExistingGroup(supabase, user.id, groupIdToDelete)
-      if (error instanceof Error) {
+      if (error) {
         showNotification(
           'Fehler beim Löschen der Gruppe',
           'Es ist ein Fehler beim Löschen der Gruppe aufgetreten, bitte versuche es später erneut.',
@@ -197,7 +197,7 @@ export function useGroupManagement(initialUserGroups: UserGroupsType | null, use
   const renameGroup = useCallback(
     async (groupIdToRename: string, newName: string) => {
       const { error } = await renameExistingGroup(supabase, user.id, groupIdToRename, newName)
-      if (error instanceof Error) {
+      if (error) {
         const errorMessages: {
           [key: string]: NotificationMessage
         } = {
@@ -239,7 +239,7 @@ export function useGroupManagement(initialUserGroups: UserGroupsType | null, use
   const setFavourite = useCallback(
     async (groupIdToFavourite: string, isFavourite: boolean) => {
       const { error } = await setFavouriteGroup(supabase, user.id, groupIdToFavourite, isFavourite)
-      if (error instanceof Error) {
+      if (error) {
         showNotification(
           'Fehler beim Setzen der Favoriten',
           'Es ist ein Fehler beim Setzen der Favoriten aufgetreten, bitte versuche es später erneut.',
