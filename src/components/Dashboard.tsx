@@ -9,6 +9,7 @@ import {
   joinExistingGroup,
   setFavouriteGroup,
   deleteExistingGroup,
+  renameExistingGroup,
 } from '@/utils/supabase/queries'
 import {
   CardBackPlate,
@@ -90,6 +91,7 @@ export default function Dashboard({
   const [notificationMessage, setNotificationMessage] = useState<NotificationMessage>(null)
   const [newGroupName, setNewGroupName] = useState('')
   const [newJoinGroupName, setNewJoinGroupName] = useState('')
+  const [changeGroupName, setChangeGroupName] = useState('')
 
   useEffect(() => {
     if (notificationMessage) {
@@ -250,6 +252,34 @@ export default function Dashboard({
     }
   }
 
+  const renameGroup = async (formData: FormData) => {
+    const groupId = formData.get('groupIdChange') as string
+    const newName = formData.get('newGroupName') as string
+    const { error } = await renameExistingGroup(supabase, user.id, groupId, newName)
+    if (!error) {
+      setUserGroups((prevUserGroups) =>
+        prevUserGroups.map((group) =>
+          group.group_id === groupId
+            ? { ...group, groups: { ...group.groups, name: newName } }
+            : group,
+        ),
+      )
+      setChangeGroupName('')
+      setSelectedGroupName(newName)
+      setNotificationMessage({
+        title: 'Gruppe umbenannt',
+        message: `Die Gruppe wurde erfolgreich in "${newName}" umbenannt.`,
+        variant: 'success',
+      })
+    } else {
+      setNotificationMessage({
+        title: 'Fehler beim Umbenennen der Gruppe',
+        message: 'Es ist ein Fehler aufgetreten, bitte versuchen Sie es später erneut.',
+        variant: 'destructive',
+      })
+    }
+  }
+
   const handleOnValueChange = (value: string) => {
     const selectedGroup = userGroups.find((group) => group.groups.name === value)
     if (selectedGroup) {
@@ -298,6 +328,10 @@ export default function Dashboard({
 
   const handleGroupJoinInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setNewJoinGroupName(event.target.value)
+  }
+
+  const handleGroupRenameInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setChangeGroupName(event.target.value)
   }
 
   const filteredSubscribedTrips = useMemo(() => {
@@ -435,6 +469,34 @@ export default function Dashboard({
                       <PlusIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" />
                     </SubmitButton>
                   </form>
+                  {userGroups && groupId && (
+                    <form className="flex flex-col gap-4 w-full">
+                      <Label htmlFor="newGroupName">Gruppe umbenennen</Label>
+                      <Input
+                        type="text"
+                        id="newGroupName"
+                        name="newGroupName"
+                        placeholder={
+                          userGroups.find((group) => group.group_id === groupId)?.groups.name || ''
+                        }
+                        autoComplete="off"
+                        required
+                        value={changeGroupName}
+                        onChange={handleGroupRenameInputChange}
+                      />
+                      <input type="hidden" name="groupIdChange" value={groupId} />
+                      <SubmitButton
+                        aria-label="Gruppe umbenennen"
+                        formAction={renameGroup}
+                        pendingText="Umbenennen der Gruppe..."
+                        className="relative"
+                        disabled={changeGroupName === ''}
+                      >
+                        Gruppe umbenennen
+                        <PlusIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" />
+                      </SubmitButton>
+                    </form>
+                  )}
                 </div>
                 {userGroups &&
                   groupId &&
