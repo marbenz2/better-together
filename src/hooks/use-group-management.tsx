@@ -9,11 +9,12 @@ import {
 } from '@/utils/supabase/queries'
 import type { UserGroupsType } from '@/types/dashboard'
 import { NotificationMessage, useNotifications } from './use-notifications'
+import { useToast } from '@/components/ui/use-toast'
 
 export function useGroupManagement(initialUserGroups: UserGroupsType | null, user: any) {
   const supabase = createClient()
-  const { showNotification } = useNotifications()
-  const [userGroups, setUserGroups] = useState<UserGroupsType>(initialUserGroups || [])
+  const { toast } = useToast()
+  const [userGroups, setUserGroups] = useState<UserGroupsType>(() => initialUserGroups || [])
   const [groupId, setGroupId] = useState(
     (userGroups &&
       userGroups.length > 0 &&
@@ -25,6 +26,18 @@ export function useGroupManagement(initialUserGroups: UserGroupsType | null, use
       userGroups?.[0]?.groups.name ||
       null,
   )
+  const { notificationMessage, clearNotification, showNotification } = useNotifications()
+
+  useEffect(() => {
+    if (notificationMessage) {
+      toast({
+        title: notificationMessage.title,
+        description: notificationMessage.message,
+        variant: notificationMessage.variant,
+      })
+      clearNotification()
+    }
+  }, [notificationMessage, toast, clearNotification])
 
   useEffect(() => {
     if (userGroups && userGroups.length > 0) {
@@ -48,7 +61,7 @@ export function useGroupManagement(initialUserGroups: UserGroupsType | null, use
   const createGroup = useCallback(
     async (groupName: string) => {
       const { data, error } = await addNewGroup(supabase, user.id, groupName)
-      if (error) {
+      if (error instanceof Error) {
         const errorMessages: {
           [key: string]: NotificationMessage
         } = {
@@ -92,13 +105,13 @@ export function useGroupManagement(initialUserGroups: UserGroupsType | null, use
         )
       }
     },
-    [user.id, supabase, showNotification],
+    [user.id, supabase, showNotification, setUserGroups],
   )
 
   const joinGroup = useCallback(
     async (inviteCode: string) => {
       const { groupData, error } = await joinExistingGroup(supabase, user.id, inviteCode)
-      if (error) {
+      if (error instanceof Error) {
         const errorMessages: {
           [key: string]: NotificationMessage
         } = {
@@ -128,7 +141,9 @@ export function useGroupManagement(initialUserGroups: UserGroupsType | null, use
         showNotification(errorMessage.title, errorMessage.message, errorMessage.variant)
       }
       if (!error && groupData) {
-        setUserGroups((prev) => (prev ? [...prev, groupData] : [groupData]))
+        setUserGroups((prevUserGroups) =>
+          prevUserGroups ? [...prevUserGroups, groupData] : [groupData],
+        )
         setGroupId(groupData.group_id)
         setSelectedGroupName(groupData.groups.name)
         showNotification(
@@ -144,7 +159,7 @@ export function useGroupManagement(initialUserGroups: UserGroupsType | null, use
   const deleteGroup = useCallback(
     async (groupIdToDelete: string) => {
       const { error } = await deleteExistingGroup(supabase, user.id, groupIdToDelete)
-      if (error) {
+      if (error instanceof Error) {
         showNotification(
           'Fehler beim Löschen der Gruppe',
           'Es ist ein Fehler beim Löschen der Gruppe aufgetreten, bitte versuche es später erneut.',
@@ -182,7 +197,7 @@ export function useGroupManagement(initialUserGroups: UserGroupsType | null, use
   const renameGroup = useCallback(
     async (groupIdToRename: string, newName: string) => {
       const { error } = await renameExistingGroup(supabase, user.id, groupIdToRename, newName)
-      if (error) {
+      if (error instanceof Error) {
         const errorMessages: {
           [key: string]: NotificationMessage
         } = {
@@ -224,7 +239,7 @@ export function useGroupManagement(initialUserGroups: UserGroupsType | null, use
   const setFavourite = useCallback(
     async (groupIdToFavourite: string, isFavourite: boolean) => {
       const { error } = await setFavouriteGroup(supabase, user.id, groupIdToFavourite, isFavourite)
-      if (error) {
+      if (error instanceof Error) {
         showNotification(
           'Fehler beim Setzen der Favoriten',
           'Es ist ein Fehler beim Setzen der Favoriten aufgetreten, bitte versuche es später erneut.',
