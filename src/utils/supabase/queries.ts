@@ -32,6 +32,22 @@ export const getUserGroups = cache(
   },
 )
 
+export const getGroupMembers = cache(async (supabase: SupabaseClient, group_id: string) => {
+  const { data: groupMembers, error } = await supabase
+    .from('group_members')
+    .select('user_id, role')
+    .eq('group_id', group_id)
+  return { groupMembers, error }
+})
+
+export const getPublicProfiles = cache(async (supabase: SupabaseClient, user_ids: string[]) => {
+  const { data: publicProfiles, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .in('id', user_ids)
+  return { publicProfiles, error }
+})
+
 export const getTrip = cache(async (supabase: SupabaseClient, params_id: number) => {
   const { data: trip } = await supabase.from('trips').select('*').eq('id', params_id).single()
   return trip
@@ -106,6 +122,19 @@ export const deleteExistingGroup = async (
     .delete()
     .eq('id', group_id)
     .eq('created_by', user_id)
+  return { error }
+}
+
+export const leaveExistingGroup = async (
+  supabase: SupabaseClient,
+  user_id: string,
+  group_id: string,
+) => {
+  const { error } = await supabase
+    .from('group_members')
+    .delete()
+    .eq('user_id', user_id)
+    .eq('group_id', group_id)
   return { error }
 }
 
