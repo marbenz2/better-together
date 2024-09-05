@@ -42,7 +42,7 @@ export const getGroupTrips = cache(async (supabase: SupabaseClient, groups: User
     .from('trips')
     .select('*')
     .in(
-      'group',
+      'group_id',
       groups.map((g: any) => g.group_id),
     )
   return groupTrips
@@ -104,6 +104,20 @@ export const deleteExistingGroup = async (
   const { error } = await supabase
     .from('groups')
     .delete()
+    .eq('id', group_id)
+    .eq('created_by', user_id)
+  return { error }
+}
+
+export const renameExistingGroup = async (
+  supabase: SupabaseClient,
+  user_id: string,
+  group_id: string,
+  new_name: string,
+) => {
+  const { error } = await supabase
+    .from('groups')
+    .update({ name: new_name })
     .eq('id', group_id)
     .eq('created_by', user_id)
   return { error }
