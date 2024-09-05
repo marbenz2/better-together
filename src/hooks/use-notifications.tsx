@@ -26,6 +26,5 @@ export function useNotifications() {
     notificationMessage,
     showNotification,
     clearNotification,
-    setNotificationMessage,
   }
 }
