@@ -35,14 +35,12 @@ export async function addSubscription({ tripId }: { tripId: string }) {
   }
 
   // Anmeldung hinzufügen
-  const { data, error } = await supabase
-    .from('trip_members')
-    .insert({
-      user_id: user.id,
-      trip_id: tripId,
-      role: 'member',
-      subscribed_at: new Date().toISOString(),
-    })
+  const { data, error } = await supabase.from('trip_members').insert({
+    user_id: user.id,
+    trip_id: tripId,
+    role: 'member',
+    subscribed_at: new Date().toISOString(),
+  })
 
   if (error) {
     throw new Error(`Fehler beim Hinzufügen der Anmeldung: ${error.message}`)
@@ -164,7 +162,7 @@ export async function setTripStatus({
   return trip.status
 } */
 
-/* export async function updatePaymentStatus(
+export async function updatePaymentStatus(
   user_id: string,
   trip_id: string,
   payment_type: string,
@@ -200,7 +198,7 @@ export async function setTripStatus({
 
   revalidatePath('/protected/payments')
   return
-} */
+}
 
 /* export async function assignTripToUser(userId: string, tripId: string) {
   const supabase = createClient()
