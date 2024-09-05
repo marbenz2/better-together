@@ -4,8 +4,7 @@ import { Input } from '@/components/forms/input'
 import { Label } from '@/components/forms/label'
 import { SubmitButton } from '@/components/forms/submit-button'
 import { CardTitle } from '@/components/ui/card'
-import { UserGroupsType } from '@/types/dashboard'
-import { DoorOpenIcon } from 'lucide-react'
+import { LogInIcon } from 'lucide-react'
 
 interface JoinGroupProps {
   joinGroup: (groupId: string) => Promise<void>
@@ -49,7 +48,7 @@ export default function JoinGroup({ joinGroup }: JoinGroupProps) {
         disabled={newJoinGroupName === ''}
       >
         Gruppe beitreten
-        <DoorOpenIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" />
+        <LogInIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" />
       </SubmitButton>
     </form>
   )
