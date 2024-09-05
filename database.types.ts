@@ -83,6 +83,38 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          first_name: string | null
+          id: string
+          last_name: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          first_name?: string | null
+          id: string
+          last_name?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trip_members: {
         Row: {
           created_at: string
@@ -95,8 +127,8 @@ export type Database = {
           id: string
           role: Database["public"]["Enums"]["enum_trip_members_role"]
           subscribed_at: string
-          trip_id: string | null
-          user_id: string | null
+          trip_id: string
+          user_id: string
         }
         Insert: {
           created_at?: string
@@ -109,8 +141,8 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["enum_trip_members_role"]
           subscribed_at?: string
-          trip_id?: string | null
-          user_id?: string | null
+          trip_id: string
+          user_id: string
         }
         Update: {
           created_at?: string
@@ -123,8 +155,8 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["enum_trip_members_role"]
           subscribed_at?: string
-          trip_id?: string | null
-          user_id?: string | null
+          trip_id?: string
+          user_id?: string
         }
         Relationships: [
           {
