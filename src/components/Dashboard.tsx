@@ -124,35 +124,31 @@ export default function Dashboard({
         },
       ])
       setNewGroupName('')
-      return toast({
+      setNotificationMessage({
         title: 'Gruppe erstellt',
-        description: `Die Gruppe "${groupIdInput}" wurde erfolgreich erstellt.`,
+        message: `Die Gruppe "${groupIdInput}" wurde erfolgreich erstellt.`,
         variant: 'success',
       })
     }
-    const errorMessages: {
-      [key: string]: {
-        title: string
-        description: (groupIdInput: any) => string
-      }
-    } = {
-      '23505': {
-        title: 'Fehler beim Erstellen der Gruppe',
-        description: (groupIdInput) => `Der Gruppenname "${groupIdInput}" ist bereits vergeben.`,
-      },
-    }
     if (error) {
-      const errorMessage = errorMessages[error.code] || {
-        title: 'Fehler beim Erstellen der Gruppe',
-        description: () =>
-          'Es ist ein Fehler beim Erstellen der Gruppe aufgetreten, bitte versuche es später erneut.',
+      const errorMessages: {
+        [key: string]: NotificationMessage
+      } = {
+        '23505': {
+          title: 'Fehler beim Erstellen der Gruppe',
+          message: `Der Gruppenname "${groupIdInput}" ist bereits vergeben.`,
+          variant: 'destructive',
+        },
       }
 
-      return toast({
-        title: errorMessage.title,
-        description: errorMessage.description(groupIdInput),
+      const errorMessage = errorMessages[error.code] || {
+        title: 'Fehler beim Erstellen der Gruppe',
+        message:
+          'Es ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
         variant: 'destructive',
-      })
+      }
+
+      setNotificationMessage(errorMessage)
     }
   }
 
@@ -182,37 +178,36 @@ export default function Dashboard({
         variant: 'success',
       })
     }
-    const errorMessages: {
-      [key: string]: {
-        title: string
-        description: (groupData: any) => string
-      }
-    } = {
-      '23505': {
-        title: 'Fehler beim Beitreten der Gruppe',
-        description: (groupData) => `Du bist bereits Teil der Gruppe "${groupData?.name}".`,
-      },
-      '22P02': {
-        title: 'Fehler beim Beitreten der Gruppe',
-        description: () => 'Das war kein korrektes Format eines Einladungslinks.',
-      },
-      '23503': {
-        title: 'Fehler beim Beitreten der Gruppe',
-        description: () => 'Falscher Einladungslink.',
-      },
-    }
     if (error) {
-      const errorMessage = errorMessages[typeof error === 'string' ? error : error.code] || {
-        title: 'Fehler beim Beitreten der Gruppe',
-        description: () =>
-          'Es ist ein Fehler beim Beitreten der Gruppe aufgetreten, bitte versuche es später erneut.',
+      const errorMessages: {
+        [key: string]: NotificationMessage
+      } = {
+        '23505': {
+          title: 'Fehler beim Beitreten der Gruppe',
+          message: `Du bist bereits Teil der Gruppe "${groupData?.name}".`,
+          variant: 'destructive',
+        },
+        '22P02': {
+          title: 'Fehler beim Beitreten der Gruppe',
+          message: 'Das war kein korrektes Format eines Einladungslinks.',
+          variant: 'destructive',
+        },
+        '23503': {
+          title: 'Fehler beim Beitreten der Gruppe',
+          message: 'Falscher Einladungslink.',
+          variant: 'destructive',
+        },
       }
 
-      return toast({
-        title: errorMessage.title,
-        description: errorMessage.description(groupData),
+      const errorCode = typeof error === 'string' ? error : error.code
+      const errorMessage = errorMessages[errorCode] || {
+        title: 'Fehler beim Beitreten der Gruppe',
+        message:
+          'Es ist ein Fehler beim Beitreten der Gruppe aufgetreten, bitte versuche es später erneut.',
         variant: 'destructive',
-      })
+      }
+
+      setNotificationMessage(errorMessage)
     }
   }
 
@@ -243,12 +238,15 @@ export default function Dashboard({
 
         return updatedGroups
       })
-    } else {
-      setNotificationMessage({
-        title: 'Fehler beim Löschen der Gruppe',
-        message: 'Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
-        variant: 'destructive',
-      })
+    }
+    if (error) {
+      {
+        setNotificationMessage({
+          title: 'Fehler beim Löschen der Gruppe',
+          message: 'Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
+          variant: 'destructive',
+        })
+      }
     }
   }
 
@@ -271,12 +269,26 @@ export default function Dashboard({
         message: `Die Gruppe wurde erfolgreich in "${newName}" umbenannt.`,
         variant: 'success',
       })
-    } else {
-      setNotificationMessage({
-        title: 'Fehler beim Umbenennen der Gruppe',
-        message: 'Es ist ein Fehler aufgetreten, bitte versuchen Sie es später erneut.',
+    }
+    if (error) {
+      const errorMessages: {
+        [key: string]: NotificationMessage
+      } = {
+        '23505': {
+          title: 'Fehler beim Umbennen der Gruppe',
+          message: `Der Gruppenname "${newName}" ist bereits vergeben.`,
+          variant: 'destructive',
+        },
+      }
+
+      const errorMessage = errorMessages[error.code] || {
+        title: 'Fehler beim Umbennen der Gruppe',
+        message:
+          'Es ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
         variant: 'destructive',
-      })
+      }
+
+      setNotificationMessage(errorMessage)
     }
   }
 
@@ -383,8 +395,8 @@ export default function Dashboard({
             <AccordionContent>
               <div className="flex flex-col gap-8">
                 {userGroups && userGroups.length > 0 && (
-                  <div className="flex flex-col gap-4 w-full p-2 justify-center">
-                    <p className="text-sm font-medium">Favoriten</p>
+                  <div className="flex flex-col gap-4 w-full justify-center">
+                    <CardTitle className="text-xl">Favoriten</CardTitle>
                     <div className="flex flex-wrap gap-4">
                       {userGroups.map((group) => (
                         <Badge
@@ -408,12 +420,11 @@ export default function Dashboard({
                   </div>
                 )}
                 {userGroups && userGroups.length > 0 && (
-                  <div className="flex flex-col gap-4 w-full p-2 justify-center">
-                    {/* Einladungscode für die gruppe, welche im moment ausgewählt ist (einladungscode = group.id) */}
-                    <p className="text-sm font-medium">
+                  <div className="flex flex-col gap-4 w-full justify-center">
+                    <CardTitle className="text-xl">
                       Einladungscode für Gruppe &quot;
                       {userGroups.find((group) => group.group_id === groupId)?.groups.name}&quot;
-                    </p>
+                    </CardTitle>
                     <Button
                       onClick={() => handleOnCopyClick(groupId ? groupId : '')}
                       className="flex gap-4 text-xs relative px-10"
@@ -425,9 +436,11 @@ export default function Dashboard({
                     </Button>
                   </div>
                 )}
-                <div className="flex flex-col gap-12 w-full md:flex-row p-2">
+                <div className="flex flex-col gap-12 w-full max-w-lg lg:max-w-full lg:flex-row">
                   <form className="flex flex-col gap-4 w-full">
-                    <Label htmlFor="groupIdJoin">Einer Gruppe beitereten</Label>
+                    <Label htmlFor="groupIdJoin">
+                      <CardTitle className="text-xl">Einer Gruppe beitereten</CardTitle>
+                    </Label>
                     <Input
                       name="groupIdJoin"
                       placeholder="Einladungscode eingeben"
@@ -448,7 +461,9 @@ export default function Dashboard({
                     </SubmitButton>
                   </form>
                   <form className="flex flex-col gap-4 w-full">
-                    <Label htmlFor="groupIdCreate">Eine neue Gruppe erstellen</Label>
+                    <Label htmlFor="groupIdCreate">
+                      <CardTitle className="text-xl">Eine neue Gruppe erstellen</CardTitle>
+                    </Label>
                     <Input
                       type="text"
                       name="groupIdCreate"
@@ -469,44 +484,53 @@ export default function Dashboard({
                       <PlusIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" />
                     </SubmitButton>
                   </form>
-                  {userGroups && groupId && (
-                    <form className="flex flex-col gap-4 w-full">
-                      <Label htmlFor="newGroupName">Gruppe umbenennen</Label>
-                      <Input
-                        type="text"
-                        id="newGroupName"
-                        name="newGroupName"
-                        placeholder={
-                          userGroups.find((group) => group.group_id === groupId)?.groups.name || ''
-                        }
-                        autoComplete="off"
-                        required
-                        value={changeGroupName}
-                        onChange={handleGroupRenameInputChange}
-                      />
-                      <input type="hidden" name="groupIdChange" value={groupId} />
-                      <SubmitButton
-                        aria-label="Gruppe umbenennen"
-                        formAction={renameGroup}
-                        pendingText="Umbenennen der Gruppe..."
-                        className="relative"
-                        disabled={changeGroupName === ''}
-                      >
-                        Gruppe umbenennen
-                        <PlusIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" />
-                      </SubmitButton>
-                    </form>
-                  )}
+                  {userGroups &&
+                    groupId &&
+                    userGroups.find(
+                      (group) => group.group_id === groupId && group.role === 'admin',
+                    ) && (
+                      <form className="flex flex-col gap-4 w-full">
+                        <Label htmlFor="newGroupName">
+                          <CardTitle className="text-xl">Gruppe umbenennen</CardTitle>
+                        </Label>
+                        <Input
+                          type="text"
+                          id="newGroupName"
+                          name="newGroupName"
+                          placeholder={
+                            userGroups.find((group) => group.group_id === groupId)?.groups.name ||
+                            ''
+                          }
+                          autoComplete="off"
+                          required
+                          value={changeGroupName}
+                          onChange={handleGroupRenameInputChange}
+                        />
+                        <input type="hidden" name="groupIdChange" value={groupId} />
+                        <SubmitButton
+                          aria-label="Gruppe umbenennen"
+                          formAction={renameGroup}
+                          pendingText="Umbenennen der Gruppe..."
+                          className="relative"
+                          disabled={changeGroupName === ''}
+                        >
+                          Gruppe umbenennen
+                          <PlusIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" />
+                        </SubmitButton>
+                      </form>
+                    )}
                 </div>
                 {userGroups &&
                   groupId &&
                   userGroups.find(
                     (group) => group.group_id === groupId && group.role === 'admin',
                   ) && (
-                    <div className="flex flex-col gap-4 w-full p-2 justify-center">
+                    <div className="flex flex-col gap-4 w-full justify-center">
                       <Accordion type="single" collapsible>
                         <AccordionItem className="border-b-0" value="deleteGroup">
-                          <AccordionTrigger>Gruppe löschen</AccordionTrigger>
+                          <AccordionTrigger>
+                            <CardTitle className="text-xl">Gruppe löschen</CardTitle>
+                          </AccordionTrigger>
                           <AccordionContent>
                             <ResponsiveDialog onDelete={() => deleteGroup(groupId)}>
                               <div className="flex flex-col gap-4 w-full">
