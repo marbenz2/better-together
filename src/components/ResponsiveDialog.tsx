@@ -23,20 +23,37 @@ import {
   DrawerTrigger,
 } from '@/components/ui/drawer'
 
-// ... vorhandene Importe ...
+interface ResponsiveDialogProps {
+  disabled?: boolean
+  type: 'delete' | 'leave'
+  groupName?: string
+  onDelete?: () => void
+  onLeave?: () => void
+  children: React.ReactNode
+}
 
 export function ResponsiveDialog({
-  children,
+  disabled,
+  type,
+  groupName,
   onDelete,
-}: {
-  children: React.ReactNode
-  onDelete: () => void
-}) {
+  onLeave,
+  children,
+}: ResponsiveDialogProps) {
   const [open, setOpen] = React.useState(false)
   const isDesktop = useMediaQuery('(min-width: 768px)')
 
   const handleDelete = () => {
-    onDelete()
+    if (onDelete) {
+      onDelete()
+    }
+    setOpen(false)
+  }
+
+  const handleLeave = () => {
+    if (onLeave) {
+      onLeave()
+    }
     setOpen(false)
   }
 
@@ -46,15 +63,29 @@ export function ResponsiveDialog({
         <DialogTrigger asChild>{children}</DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Gruppe löschen</DialogTitle>
+            <DialogTitle>{type === 'delete' ? 'Gruppe löschen' : 'Gruppe verlassen'}</DialogTitle>
             <DialogDescription>
-              Sind Sie sicher, dass Sie diese Gruppe löschen möchten?
+              Sind Sie sicher, dass Sie diese Gruppe {type === 'delete' ? 'löschen' : 'verlassen'}
+              möchten?
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-4 w-full p-4 py-24 items-center justify-center">
-            <Button variant="destructive" onClick={handleDelete}>
-              Ja ich bin sicher, Gruppe löschen
+            <Button
+              disabled={disabled}
+              variant="destructive"
+              onClick={type === 'delete' ? handleDelete : handleLeave}
+            >
+              {type === 'delete'
+                ? `Ja, Gruppe "${groupName}" löschen`
+                : `Ja, Gruppe "${groupName}" verlassen`}
             </Button>
+            {disabled && (
+              <DialogDescription className="text-sm">
+                Du bist der einzige Admin der Gruppe.
+                <br />
+                Du kannst die Gruppe nur löschen oder einem anderen Nutzer Adminrechte übertragen.
+              </DialogDescription>
+            )}
           </div>
           <DialogFooter className="pt-2">
             <DialogClose asChild>
@@ -71,15 +102,29 @@ export function ResponsiveDialog({
       <DrawerTrigger asChild>{children}</DrawerTrigger>
       <DrawerContent>
         <DrawerHeader className="text-left">
-          <DrawerTitle>Gruppe löschen</DrawerTitle>
+          <DrawerTitle>{type === 'delete' ? 'Gruppe löschen' : 'Gruppe verlassen'}</DrawerTitle>
           <DrawerDescription>
-            Sind Sie sicher, dass Sie diese Gruppe löschen möchten?
+            Sind Sie sicher, dass Sie diese Gruppe {type === 'delete' ? 'löschen' : 'verlassen'}
+            möchten?
           </DrawerDescription>
         </DrawerHeader>
         <div className="flex flex-col gap-4 w-full p-4 py-24 items-center justify-center">
-          <Button variant="destructive" onClick={handleDelete}>
-            Ja ich bin sicher, Gruppe löschen
+          <Button
+            disabled={disabled}
+            variant="destructive"
+            onClick={type === 'delete' ? handleDelete : handleLeave}
+          >
+            {type === 'delete'
+              ? `Ja, Gruppe "${groupName}" löschen`
+              : `Ja, Gruppe "${groupName}" verlassen`}
           </Button>
+          {disabled && (
+            <DialogDescription className="text-sm">
+              Du bist der letzte Admin der Gruppe.
+              <br />
+              Du kannst die Gruppe nur löschen oder einem anderen Nutzer Adminrechte übertragen.
+            </DialogDescription>
+          )}
         </div>
         <DrawerFooter className="pt-2">
           <DrawerClose asChild>
