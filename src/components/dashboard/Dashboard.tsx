@@ -41,7 +41,7 @@ import { SubmitButton } from '@/components/forms/submit-button'
 import { Label } from '@/components/forms/label'
 import { CopyIcon, DoorOpenIcon, PlusIcon, StarIcon, TrashIcon } from 'lucide-react'
 import type { Tables } from 'database.types'
-import { ResponsiveDialog } from './ResponsiveDialog'
+import { ResponsiveDialog } from '../ResponsiveDialog'
 
 type Trips = Tables<'trips'>
 type TripMembers = Tables<'trip_members'>

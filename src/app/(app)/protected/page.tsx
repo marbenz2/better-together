@@ -1,4 +1,4 @@
-import Dashboard from '@/components/Dashboard'
+import Dashboard from '@/components/dashboard/Dashboard'
 import { getSubscribedTrips, getUser, getUserGroups } from '@/utils/supabase/queries'
 import { createClient } from '@/utils/supabase/server'
 import { Tables } from 'database.types'
