@@ -20,6 +20,7 @@ import { CheckCircleIcon } from 'lucide-react'
 import { Separator } from '../ui/separator'
 import Link from 'next/link'
 import { Tables } from 'database.types'
+import { useState } from 'react'
 
 type Trips = Tables<'trips'>
 type PaymentDetails = {
@@ -42,7 +43,21 @@ interface PaymentsProps {
   subscribedTrips: SubscribedTrips[]
 }
 
-export default function Payments({ user, paymentDetails, subscribedTrips }: PaymentsProps) {
+export default function Payments({
+  user,
+  paymentDetails: initialPaymentDetails,
+  subscribedTrips,
+}: PaymentsProps) {
+  const [paymentDetails, setPaymentDetails] = useState(initialPaymentDetails)
+
+  const handlePaymentSuccess = (tripId: string, paymentType: string) => {
+    setPaymentDetails((prevDetails) =>
+      prevDetails.map((detail) =>
+        detail.trip_id === tripId ? { ...detail, [paymentType]: true } : detail,
+      ),
+    )
+  }
+
   function renderPaymentSection(
     title: string,
     paymentType: string,
@@ -64,6 +79,7 @@ export default function Payments({ user, paymentDetails, subscribedTrips }: Paym
             user_id={userId}
             trip_id={tripId}
             payment_type={paymentType}
+            onPaymentSuccess={() => handlePaymentSuccess(tripId, paymentType)}
           />
         </div>
       )
