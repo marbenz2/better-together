@@ -5,7 +5,7 @@ import { Label } from '@/components/forms/label'
 import { SubmitButton } from '@/components/forms/submit-button'
 import { CardTitle } from '@/components/ui/card'
 import { UserGroupsType } from '@/types/dashboard'
-import { PlusIcon } from 'lucide-react'
+import { FolderPenIcon } from 'lucide-react'
 
 interface RenameGroupProps {
   userGroups: UserGroupsType
@@ -55,7 +55,7 @@ export default function RenameGroup({ userGroups, groupId, renameGroup }: Rename
         disabled={changeGroupName === ''}
       >
         Gruppe umbenennen
-        <PlusIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" />
+        <FolderPenIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" />
       </SubmitButton>
     </form>
   )
