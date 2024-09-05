@@ -10,7 +10,6 @@ import {
   ReactPayPalScriptOptions,
 } from '@paypal/react-paypal-js'
 import { useToast } from '../ui/use-toast'
-import { revalidatePath } from 'next/cache'
 
 interface OrderData {
   data: {
@@ -29,9 +28,16 @@ interface PaypalProps {
   payment_type: string
   price: number
   trip_id: string
+  onPaymentSuccess: () => void
 }
 
-export default function Paypal({ user_id, payment_type, price, trip_id }: PaypalProps) {
+export default function Paypal({
+  user_id,
+  payment_type,
+  price,
+  trip_id,
+  onPaymentSuccess,
+}: PaypalProps) {
   const { toast } = useToast()
   const [approvalDetails, setApprovalDetails] = useState<any>(null)
 
@@ -69,16 +75,27 @@ export default function Paypal({ user_id, payment_type, price, trip_id }: Paypal
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           order_id: data.orderID,
-          payment_type: payment_type,
-          user_id: user_id,
-          trip_id: trip_id,
+          payment_type,
+          user_id,
+          trip_id,
         }),
       })
+
+      if (!response.ok) {
+        throw new Error(`HTTP-Fehler! Status: ${response.status}`)
+      }
 
       const {
         data: { capture: details },
       } = await response.json()
+
+      if (!details || details.status !== 'COMPLETED') {
+        throw new Error('Zahlung nicht erfolgreich abgeschlossen')
+      }
+
       setApprovalDetails(details)
+      onPaymentSuccess() // Diese Funktion sollte alle notwendigen UI-Updates vornehmen
+
       toast({
         variant: 'success',
         title: 'Zahlung erfolgreich',
@@ -93,10 +110,14 @@ export default function Paypal({ user_id, payment_type, price, trip_id }: Paypal
           </>
         ),
       })
-      revalidatePath('/protected/payments')
     } catch (error) {
-      console.error(error)
-      throw error
+      console.error('Fehler bei der Zahlungsverarbeitung:', error)
+      toast({
+        variant: 'destructive',
+        title: 'Zahlungsfehler',
+        description:
+          'Bei der Verarbeitung Ihrer Zahlung ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
+      })
     }
   }
 
