@@ -33,18 +33,18 @@ export default function DeleteGroup({ deleteGroup, userGroups, groupId }: Delete
             <CardTitle className="text-xl">Gruppe löschen</CardTitle>
           </AccordionTrigger>
           <AccordionContent>
-            <ResponsiveDialog onDelete={() => handleDeleteGroup(groupId)}>
-              <div className="flex flex-col gap-4 w-full">
+            <ResponsiveDialog
+              type="delete"
+              groupName={userGroups.find((group) => group.group_id === groupId)?.groups.name}
+              onDelete={() => handleDeleteGroup(groupId)}
+            >
+              <div className="flex flex-col gap-4 w-full items-center">
                 <Button
-                  className="relative flex text-xs px-10"
+                  className="relative flex text-xs px-10 w-full max-w-lg"
                   aria-label="Gruppe löschen"
                   variant="destructive"
                 >
-                  Gruppe &nbsp;&quot;
-                  <span className="xs:inline truncate">
-                    {userGroups.find((group) => group.group_id === groupId)?.groups.name}
-                  </span>
-                  &quot;&nbsp; löschen
+                  Gruppe löschen
                   <TrashIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" />
                 </Button>
               </div>
