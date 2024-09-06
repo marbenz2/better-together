@@ -1,22 +1,7 @@
 import Dashboard from '@/components/dashboard/Dashboard'
+import { SubscribedTripsType, UserGroupsType } from '@/types/dashboard'
 import { getSubscribedTrips, getUser, getUserGroups } from '@/utils/supabase/queries'
 import { createClient } from '@/utils/supabase/server'
-import { Tables } from 'database.types'
-
-type Trips = Tables<'trips'>
-type TripMembers = Tables<'trip_members'>
-type Groups = Tables<'groups'>
-type GroupMembers = Tables<'group_members'>
-type SubscribedTrips = {
-  trips: Trips
-  subscribed_at: TripMembers['subscribed_at']
-}[]
-type UserGroups = {
-  group_id: GroupMembers['group_id']
-  favourite: GroupMembers['favourite'] // Änderung hier
-  role: 'admin' | 'member'
-  groups: Groups
-}[]
 
 export default async function Home() {
   const supabase = createClient()
@@ -26,10 +11,12 @@ export default async function Home() {
   // Fetch user groups and subscribed trips if the user is authenticated
   const [userGroups, subscribedTrips] = await Promise.all([
     user
-      ? getUserGroups(supabase, user.id).then((groups) => groups as unknown as UserGroups)
+      ? getUserGroups(supabase, user.id).then((groups) => groups as unknown as UserGroupsType)
       : null,
     user
-      ? getSubscribedTrips(supabase, user.id).then((trips) => trips as unknown as SubscribedTrips)
+      ? getSubscribedTrips(supabase, user.id).then(
+          (trips) => trips as unknown as SubscribedTripsType,
+        )
       : null,
   ])
 
