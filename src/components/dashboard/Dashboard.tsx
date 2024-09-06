@@ -15,7 +15,7 @@ import { useGroupManagement } from '@/hooks/use-group-management'
 import GroupManagement from './Groups/GroupManagement'
 import type { SubscribedTripsType, UserGroupsType } from '@/types/dashboard'
 import FilteredSubscribedTrips from './FilteredSubscribedTrips'
-import GroupPick from './GroupPick'
+import ShowGroup from './Groups/ShowGroup'
 
 interface DashboardProps {
   user: any | null
@@ -70,31 +70,24 @@ export default function Dashboard({
         <CardDescription>Hier findest du alle Informationen zu deinen Reisen.</CardDescription>
       </CardHeader>
       <CardContent>
-        {userGroups && userGroups.length > 1 && (
-          <GroupPick
-            userGroups={userGroups}
-            selectedGroupName={selectedGroupName}
-            handleOnValueChange={handleOnValueChange}
-          />
-        )}
-        {userGroups && userGroups.length === 1 && (
-          <CardTitle>Gruppe: {userGroups[0].groups.name}</CardTitle>
-        )}
-        {userGroups && (
-          <GroupManagement
-            user={user}
-            publicProfiles={publicProfiles}
-            groupMembers={groupMembers}
-            userGroups={userGroups}
-            groupId={groupId}
-            createGroup={createGroup}
-            joinGroup={joinGroup}
-            deleteGroup={deleteGroup}
-            renameGroup={renameGroup}
-            setFavourite={setFavourite}
-            leaveGroup={leaveGroup}
-          />
-        )}
+        <ShowGroup
+          userGroups={userGroups}
+          selectedGroupName={selectedGroupName}
+          handleOnValueChange={handleOnValueChange}
+        />
+        <GroupManagement
+          user={user}
+          publicProfiles={publicProfiles}
+          groupMembers={groupMembers}
+          userGroups={userGroups}
+          groupId={groupId}
+          createGroup={createGroup}
+          joinGroup={joinGroup}
+          deleteGroup={deleteGroup}
+          renameGroup={renameGroup}
+          setFavourite={setFavourite}
+          leaveGroup={leaveGroup}
+        />
       </CardContent>
       <CardContent className="flex flex-col gap-4">
         <CardTitle>Angemeldete Reisen:</CardTitle>
