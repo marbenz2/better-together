@@ -13,10 +13,7 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
-    groups: Group;
-    group_members: GroupMember;
     trips: Trip;
-    trip_members: TripMember;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
@@ -55,9 +52,6 @@ export interface User {
   id: number;
   updatedAt: string;
   createdAt: string;
-  enableAPIKey?: boolean | null;
-  apiKey?: string | null;
-  apiKeyIndex?: string | null;
   email: string;
   resetPasswordToken?: string | null;
   resetPasswordExpiration?: string | null;
@@ -89,75 +83,11 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "groups".
- */
-export interface Group {
-  id: number;
-  created_at?: string | null;
-  created_by?: (number | null) | User;
-  description?: string | null;
-  name: string;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "group_members".
- */
-export interface GroupMember {
-  id: number;
-  favourite: boolean;
-  group: number | Group;
-  user: number | User;
-  joined_at: string;
-  role: 'admin' | 'member';
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "trips".
  */
 export interface Trip {
   id: number;
-  anreise_link: string;
-  area?: string | null;
-  beds: number;
-  date_from: string;
-  date_to: string;
-  down_payment?: number | null;
-  final_payment?: number | null;
-  full_payment?: number | null;
-  group_id: number | Group;
-  image: string;
-  land: string;
-  name: string;
-  ort: string;
-  plz: number;
-  rooms: number;
-  status?: ('upcoming' | 'current' | 'done') | null;
-  street: string;
-  street_number: number;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "trip_members".
- */
-export interface TripMember {
-  id: number;
-  created_at?: string | null;
-  down_payment?: boolean | null;
-  down_payment_paypal_id?: string | null;
-  final_payment?: boolean | null;
-  final_payment_paypal_id?: string | null;
-  full_payment?: boolean | null;
-  full_payment_paypal_id?: string | null;
-  role: string;
-  subscribed_at: string;
-  trip_id?: (number | null) | Trip;
-  user_id?: (number | null) | User;
+  name?: string | null;
   updatedAt: string;
   createdAt: string;
 }
