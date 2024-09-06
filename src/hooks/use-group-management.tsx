@@ -25,6 +25,7 @@ export function useGroupManagement(initialUserGroups: UserGroupsType | null, use
     }
     return null
   })
+
   const [selectedGroupName, setSelectedGroupName] = useState<string | null>(
     userGroups?.find((group) => group.favourite)?.groups.name ||
       userGroups?.[0]?.groups.name ||
@@ -147,14 +148,26 @@ export function useGroupManagement(initialUserGroups: UserGroupsType | null, use
         showNotification(errorMessage.title, errorMessage.message, errorMessage.variant)
       }
       if (!error && groupData) {
-        setUserGroups((prevUserGroups) =>
-          prevUserGroups ? [...prevUserGroups, groupData] : [groupData],
-        )
+        setUserGroups((prevUserGroups) => [
+          ...prevUserGroups,
+          {
+            group_id: groupData.id,
+            favourite: false,
+            role: 'member',
+            groups: {
+              id: groupData.id,
+              name: groupData.name,
+              created_at: groupData.created_at,
+              created_by: groupData.created_by,
+              description: groupData.description,
+            },
+          },
+        ])
         setGroupId(groupData.group_id)
-        setSelectedGroupName(groupData.groups.name)
+        setSelectedGroupName(groupData.name)
         showNotification(
           'Gruppe beigetreten',
-          `Du hast erfolgreich der Gruppe "${groupData.groups.name}" beigetreten.`,
+          `Du hast erfolgreich der Gruppe "${groupData.name}" beigetreten.`,
           'success',
         )
       }
