@@ -1,183 +1,299 @@
 import { SupabaseClient } from '@supabase/supabase-js'
 import { cache } from 'react'
-import { Tables } from 'database.types'
-
-type Groups = Tables<'groups'>
-type GroupMembers = Tables<'group_members'>
-type UserGroups = {
-  group_id: GroupMembers['group_id']
-  favourite: GroupMembers['favourite'] // Änderung hier
-  role: 'admin' | 'member'
-  groups: Groups
-}[]
+import { createClient } from './client'
+import { GroupMembers, Groups, TripMembers, Trips } from '@/types/supabase'
+import { PublicProfilesType } from '@/types/dashboard'
+import { PublicProfileType } from '@/types/user'
 
 export const getUser = cache(async (supabase: SupabaseClient) => {
   const {
     data: { user },
+    error,
   } = await supabase.auth.getUser()
-  return user
+  return { data: user, error }
 })
 
-export const getUserGroups = cache(
-  async (supabase: SupabaseClient, user_id: string | undefined) => {
-    const { data: userGroups, error } = await supabase
-      .from('group_members')
-      .select('group_id, favourite, role, groups(*)')
-      .eq('user_id', user_id)
-    if (error) {
-      console.error('error: ', error)
-      return
-    }
-    return userGroups
-  },
-)
+export const getUserGroups = cache(async (supabase: SupabaseClient, userId: string) => {
+  const { data, error } = await supabase
+    .from('group_members')
+    .select('group_id, favourite, role, groups(*)')
+    .eq('user_id', userId)
+    .returns<
+      ({ group_id: GroupMembers['group_id'] } & { favourite: GroupMembers['favourite'] } & {
+        role: GroupMembers['role']
+      } & { groups: Groups })[]
+    >()
+  return { data, error }
+})
 
-export const getGroupMembers = cache(async (supabase: SupabaseClient, group_id: string) => {
-  const { data: groupMembers, error } = await supabase
+export const getGroupMembers = cache(async (supabase: SupabaseClient, groupId: string) => {
+  const { data, error } = await supabase
     .from('group_members')
     .select('user_id, role')
-    .eq('group_id', group_id)
-  return { groupMembers, error }
+    .eq('group_id', groupId)
+    .returns<({ user_id: GroupMembers['user_id'] } & { role: GroupMembers['role'] })[]>()
+  return { data, error }
 })
 
-export const getPublicProfiles = cache(async (supabase: SupabaseClient, user_ids: string[]) => {
-  const { data: publicProfiles, error } = await supabase
+export const getPublicProfiles = cache(async (supabase: SupabaseClient, userIds: string[]) => {
+  const { data, error } = await supabase
     .from('profiles')
     .select('*')
-    .in('id', user_ids)
-  return { publicProfiles, error }
+    .in('id', userIds)
+    .returns<PublicProfilesType[]>()
+  return { data, error }
 })
 
-export const getTrip = cache(async (supabase: SupabaseClient, params_id: number) => {
-  const { data: trip } = await supabase.from('trips').select('*').eq('id', params_id).single()
-  return trip
+export const getPublicProfile = cache(async (supabase: SupabaseClient, userId: string) => {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', userId)
+    .returns<PublicProfileType[]>()
+    .single()
+  return { data, error }
 })
 
-export const getGroupTrips = cache(async (supabase: SupabaseClient, groups: UserGroups) => {
-  const { data: groupTrips } = await supabase
+export const getTrip = cache(async (supabase: SupabaseClient, tripId: string) => {
+  const { data, error } = await supabase
     .from('trips')
     .select('*')
-    .in(
-      'group_id',
-      groups.map((g: any) => g.group_id),
-    )
-  return groupTrips
+    .eq('id', tripId)
+    .returns<Trips[]>()
+    .single()
+  return { data, error }
 })
 
-export const getSubscribedTrips = cache(async (supabase: SupabaseClient, user_id: string) => {
-  const { data: subscribedTrips } = await supabase
+export const getGroupTrips = cache(async (supabase: SupabaseClient, groupId: string) => {
+  const { data, error } = await supabase
+    .from('trips')
+    .select('*')
+    .eq('group_id', groupId)
+    .returns<Trips[]>()
+  return { data, error }
+})
+
+export const getSubscribedTrips = cache(async (supabase: SupabaseClient, userId: string) => {
+  const { data, error } = await supabase
     .from('trip_members')
     .select('trips(*), subscribed_at')
-    .eq('user_id', user_id)
-  return subscribedTrips
+    .eq('user_id', userId)
+    .returns<({ trips: Trips } & { subscribed_at: TripMembers['subscribed_at'] })[]>()
+  return { data, error }
 })
 
 export const getPaymentStatus = cache(
-  async (supabase: SupabaseClient, user_id: string, trip_id: string) => {
-    const { data: subscription } = await supabase
+  async (supabase: SupabaseClient, userId: string, tripId: string) => {
+    const { data, error } = await supabase
       .from('trip_members')
       .select('id, down_payment, full_payment, final_payment, created_at')
-      .eq('user_id', user_id)
-      .eq('trip_id', trip_id)
-      .single()
-    return subscription
+      .eq('user_id', userId)
+      .eq('trip_id', tripId)
+      .returns<
+        ({ id: TripMembers['id'] } & { down_payment: TripMembers['down_payment'] } & {
+          full_payment: TripMembers['full_payment']
+        } & { final_payment: TripMembers['final_payment'] } & {
+          created_at: TripMembers['created_at']
+        })[]
+      >()
+      .maybeSingle()
+    return { data, error }
   },
 )
 
-export const getPaymentDetails = cache(async (supabase: SupabaseClient, user_id: string) => {
-  const { data: paymentDetails } = await supabase
+export const getPaymentDetails = cache(async (supabase: SupabaseClient, userId: string) => {
+  const { data, error } = await supabase
     .from('trip_members')
     .select(
       'trip_id, down_payment, full_payment, final_payment, down_payment_paypal_id, full_payment_paypal_id, final_payment_paypal_id',
     )
-    .eq('user_id', user_id)
-  return paymentDetails
+    .eq('user_id', userId)
+    .returns<
+      ({ trip_id: TripMembers['trip_id'] } & { down_payment: TripMembers['down_payment'] } & {
+        full_payment: TripMembers['full_payment']
+      } & { final_payment: TripMembers['final_payment'] } & {
+        down_payment_paypal_id: TripMembers['down_payment_paypal_id']
+      } & { full_payment_paypal_id: TripMembers['full_payment_paypal_id'] } & {
+        final_payment_paypal_id: TripMembers['final_payment_paypal_id']
+      })[]
+    >()
+  return { data, error }
 })
 
-export const addNewGroup = async (
-  supabase: SupabaseClient,
-  user_id: string,
-  group_name: string,
-) => {
+export const addNewGroup = cache(
+  async (supabase: SupabaseClient, userId: string, groupName: string) => {
+    const { data, error } = await supabase
+      .from('groups')
+      .insert([{ name: groupName, created_by: userId }])
+      .select()
+      .returns<Groups[]>()
+      .single()
+
+    if (data) {
+      await supabase
+        .from('group_members')
+        .insert([{ user_id: userId, group_id: data.id, favourite: true, role: 'admin' }])
+    }
+    return { data, error }
+  },
+)
+
+export const deleteExistingGroup = cache(
+  async (supabase: SupabaseClient, userId: string, groupId: string) => {
+    const { data, error } = await supabase
+      .from('groups')
+      .delete()
+      .eq('id', groupId)
+      .eq('created_by', userId)
+      .returns<Groups[]>()
+    return { data, error }
+  },
+)
+
+export const leaveExistingGroup = cache(
+  async (supabase: SupabaseClient, userId: string, groupId: string) => {
+    const { data, error } = await supabase
+      .from('group_members')
+      .delete()
+      .eq('user_id', userId)
+      .eq('group_id', groupId)
+      .returns<GroupMembers[]>()
+    return { data, error }
+  },
+)
+
+export const renameExistingGroup = cache(
+  async (supabase: SupabaseClient, userId: string, groupId: string, newName: string) => {
+    const { data, error } = await supabase
+      .from('groups')
+      .update({ name: newName })
+      .eq('id', groupId)
+      .eq('created_by', userId)
+      .select()
+      .returns<Groups[]>()
+    return { data, error }
+  },
+)
+
+export const joinExistingGroup = cache(
+  async (supabase: SupabaseClient, userId: string, groupId: string) => {
+    const { error: insertError } = await supabase
+      .from('group_members')
+      .insert([{ user_id: userId, group_id: groupId, favourite: false, role: 'member' }])
+    if (insertError) return { data: null, error: insertError }
+
+    const { data, error } = await supabase
+      .from('groups')
+      .select('*')
+      .eq('id', groupId)
+      .returns<Groups[]>()
+      .maybeSingle()
+
+    return { data, error }
+  },
+)
+
+export const setFavouriteGroup = cache(
+  async (supabase: SupabaseClient, userId: string, groupId: string, newFavourite: boolean) => {
+    const { data, error } = await supabase
+      .from('group_members')
+      .update({ favourite: newFavourite })
+      .eq('user_id', userId)
+      .eq('group_id', groupId)
+      .select()
+      .returns<GroupMembers[]>()
+    return { data, error }
+  },
+)
+
+export const addSubscription = cache(async (tripId: string, userId: string) => {
+  const supabase = createClient()
+  const { data: existingSubscription, error: fetchError } = await supabase
+    .from('trip_members')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('trip_id', tripId)
+    .maybeSingle()
+
+  if (fetchError) return { data: null, error: fetchError }
+  if (existingSubscription)
+    return { data: null, error: new Error('User is already subscribed to this trip') }
+
   const { data, error } = await supabase
-    .from('groups')
-    .insert([{ name: group_name, created_by: user_id }])
+    .from('trip_members')
+    .insert({
+      user_id: userId,
+      trip_id: tripId,
+      role: 'member',
+      subscribed_at: new Date().toISOString(),
+    })
     .select()
     .single()
-  if (data) {
-    await supabase
-      .from('group_members')
-      .insert([{ user_id, group_id: data.id, favourite: true, role: 'admin' }])
-  }
+
   return { data, error }
-}
+})
 
-export const deleteExistingGroup = async (
-  supabase: SupabaseClient,
-  user_id: string,
-  group_id: string,
-) => {
-  const { error } = await supabase
-    .from('groups')
-    .delete()
-    .eq('id', group_id)
-    .eq('created_by', user_id)
-  return { error }
-}
+export const removeSubscription = cache(async (tripId: string, userId: string) => {
+  const supabase = createClient()
+  const { data: subscription, error: fetchError } = await supabase
+    .from('trip_members')
+    .select('down_payment, full_payment, final_payment')
+    .eq('user_id', userId)
+    .eq('trip_id', tripId)
+    .returns<TripMembers[]>()
+    .single()
 
-export const leaveExistingGroup = async (
-  supabase: SupabaseClient,
-  user_id: string,
-  group_id: string,
-) => {
-  const { error } = await supabase
-    .from('group_members')
-    .delete()
-    .eq('user_id', user_id)
-    .eq('group_id', group_id)
-  return { error }
-}
-
-export const renameExistingGroup = async (
-  supabase: SupabaseClient,
-  user_id: string,
-  group_id: string,
-  new_name: string,
-) => {
-  const { error } = await supabase
-    .from('groups')
-    .update({ name: new_name })
-    .eq('id', group_id)
-    .eq('created_by', user_id)
-  return { error }
-}
-
-export const joinExistingGroup = async (
-  supabase: SupabaseClient,
-  user_id: string,
-  group_id: string,
-) => {
-  const { error } = await supabase
-    .from('group_members')
-    .insert([{ user_id, group_id, favourite: false, role: 'member' }])
-
-  const { data: groupData } = await supabase.from('groups').select('*').eq('id', group_id).single()
-  return { groupData, error }
-}
-
-export const setFavouriteGroup = async (
-  supabase: SupabaseClient,
-  user_id: string,
-  group_id: string,
-  newFavourite: boolean,
-) => {
-  const { error } = await supabase
-    .from('group_members')
-    .update({ favourite: newFavourite })
-    .eq('user_id', user_id)
-    .eq('group_id', group_id)
-  if (error) {
-    console.error(error)
+  if (fetchError) return { data: null, error: fetchError }
+  if (subscription.down_payment || subscription.full_payment || subscription.final_payment) {
+    return { data: null, error: new Error('Cannot unsubscribe after payment has been made') }
   }
-  return { error }
-}
+
+  const { data, error } = await supabase
+    .from('trip_members')
+    .delete()
+    .eq('user_id', userId)
+    .eq('trip_id', tripId)
+    .select()
+    .returns<TripMembers[]>()
+
+  return { data, error }
+})
+
+export const setTripStatus = cache(
+  async (tripId: string, userId: string, status: 'upcoming' | 'current' | 'done') => {
+    const supabase = createClient()
+    const { data, error } = await supabase
+      .from('trips')
+      .update({ status })
+      .eq('id', tripId)
+      .eq('created_by', userId)
+      .select()
+      .returns<Trips[]>()
+      .single()
+
+    return { data, error }
+  },
+)
+
+export const updatePaymentStatus = cache(
+  async (
+    userId: string,
+    tripId: string,
+    paymentType: 'down_payment' | 'full_payment' | 'final_payment',
+    transactionId: string,
+  ) => {
+    const supabase = createClient()
+    const { data, error } = await supabase
+      .from('trip_members')
+      .update({
+        [paymentType]: true,
+        [`${paymentType}_paypal_id`]: transactionId,
+      })
+      .eq('user_id', userId)
+      .eq('trip_id', tripId)
+      .select()
+      .single()
+
+    return { data, error }
+  },
+)
