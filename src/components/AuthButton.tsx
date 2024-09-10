@@ -33,7 +33,7 @@ export default function AuthButton() {
     try {
       await supabase.auth.signOut()
       setUser(null)
-      window.location.href = '/login'
+      window.location.href = '/'
     } catch (error) {
       console.error('Fehler beim Abmelden:', error)
       setIsLoading(false)
