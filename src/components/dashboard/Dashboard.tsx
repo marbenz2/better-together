@@ -1,6 +1,5 @@
 'use client'
 
-import { useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import {
   CardBackPlate,
@@ -11,99 +10,39 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { useGroupManagement } from '@/hooks/use-group-management'
-import GroupManagement from './Groups/GroupManagement'
-import type { SubscribedTripsType, UserGroupsType } from '@/types/dashboard'
 import FilteredSubscribedTrips from './FilteredSubscribedTrips'
-import ShowGroup from './Groups/ShowGroup'
+import { useUserStore } from '@/stores/userStore'
+import Spinner from '@/components/ui/Spinner'
 
-interface DashboardProps {
-  user: any | null
-  userGroups: UserGroupsType | null
-  subscribedTrips: SubscribedTripsType | null
-}
-
-export default function Dashboard({
-  user,
-  userGroups: initialUserGroups,
-  subscribedTrips,
-}: DashboardProps) {
-  const {
-    publicProfiles,
-    groupMembers,
-    userGroups,
-    groupId,
-    selectedGroupName,
-    createGroup,
-    joinGroup,
-    deleteGroup,
-    renameGroup,
-    leaveGroup,
-    setFavourite,
-    handleOnValueChange,
-    getExistingGroupMembers,
-    getExistingPublicProfiles,
-  } = useGroupManagement(initialUserGroups, user)
-
-  useEffect(() => {
-    if (groupId) {
-      getExistingGroupMembers(groupId)
-    }
-  }, [groupId, getExistingGroupMembers])
-
-  useEffect(() => {
-    if (groupMembers) {
-      getExistingPublicProfiles(groupMembers.map((member) => member.user_id))
-    }
-  }, [groupMembers, getExistingPublicProfiles])
-
-  const filteredSubscribedTrips = useMemo(() => {
-    return (
-      subscribedTrips?.filter((subscribedTrip) => subscribedTrip.trips.group_id === groupId) ?? []
-    )
-  }, [subscribedTrips, groupId])
+export default function Dashboard() {
+  const { publicProfile } = useUserStore()
 
   return (
     <CardBackPlate className="flex flex-col max-w-7xl w-full gap-8">
       <CardHeader>
-        <CardTitle className="text-2xl">Hallo {user?.user_metadata.first_name}!</CardTitle>
+        <CardTitle className="text-2xl">
+          Hallo {publicProfile ? publicProfile?.first_name : <Spinner />}!
+        </CardTitle>
         <CardDescription>Hier findest du alle Informationen zu deinen Reisen.</CardDescription>
       </CardHeader>
-      <CardContent>
-        <ShowGroup
-          userGroups={userGroups}
-          selectedGroupName={selectedGroupName}
-          handleOnValueChange={handleOnValueChange}
-        />
-        <GroupManagement
-          user={user}
-          publicProfiles={publicProfiles}
-          groupMembers={groupMembers}
-          userGroups={userGroups}
-          groupId={groupId}
-          createGroup={createGroup}
-          joinGroup={joinGroup}
-          deleteGroup={deleteGroup}
-          renameGroup={renameGroup}
-          setFavourite={setFavourite}
-          leaveGroup={leaveGroup}
-        />
-      </CardContent>
       <CardContent className="flex flex-col gap-4">
         <CardTitle>Angemeldete Reisen:</CardTitle>
-        <FilteredSubscribedTrips filteredSubscribedTrips={filteredSubscribedTrips} />
+        {/* Anzeige der angemeldeten Reisen zur ausgewählten Gruppe */}
+        <FilteredSubscribedTrips />
       </CardContent>
-      <CardFooter className="flex flex-col xs:flex-row gap-4 w-full pt-12">
-        <Link href={'protected/trips'} className="w-full xs:w-fit">
-          <Button aria-label="Neue Reisen ansehen" className="w-full">
-            Neue Reisen ansehen
-          </Button>
-        </Link>
-        <Link href={'/protected/payments'} className="w-full xs:w-fit">
-          <Button aria-label="Zahlungen ansehen" className="w-full ">
-            Zahlungen ansehen
-          </Button>
-        </Link>
+      <CardFooter className="flex w-full pt-12 justify-center">
+        <div className="flex flex-col xs:flex-row gap-4 w-full max-w-lg">
+          <Link href={'protected/trips'} className="w-full">
+            <Button aria-label="Neue Reisen ansehen" className="w-full">
+              <span className="xs:inline truncate">Neue Reisen ansehen</span>
+            </Button>
+          </Link>
+          <Link href={'/protected/payments'} className="w-full">
+            <Button aria-label="Zahlungen ansehen" className="w-full">
+              <span className="xs:inline truncate">Zahlungen ansehen</span>
+            </Button>
+          </Link>
+        </div>
       </CardFooter>
     </CardBackPlate>
   )
