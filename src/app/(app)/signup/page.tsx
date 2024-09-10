@@ -17,14 +17,21 @@ export default function Signup({ searchParams }: { searchParams: Message }) {
     'use server'
     const email = formData.get('email')?.toString()
     const password = formData.get('password')?.toString()
+    const confirmPassword = formData.get('confirmPassword')?.toString()
     const first_name = formData.get('first_name')?.toString()
     const last_name = formData.get('last_name')?.toString()
     const group_link = formData.get('group_link')?.toString()
     const supabase = createClient()
     const origin = headers().get('origin')
 
-    if (!email || !password || !first_name || !last_name) {
-      return { error: 'Email, name and password are required' }
+    if (!email || !password || !confirmPassword || !first_name || !last_name) {
+      encodedRedirect('error', '/signup', 'Alle Felder sind erforderlich')
+      return
+    }
+
+    if (password !== confirmPassword) {
+      encodedRedirect('error', '/signup', 'Die Passwörter stimmen nicht überein')
+      return
     }
 
     const { error } = await supabase.auth.signUp({
@@ -38,12 +45,12 @@ export default function Signup({ searchParams }: { searchParams: Message }) {
 
     if (error) {
       console.error(error.code + ' ' + error.message)
-      return encodedRedirect('error', '/signup', 'Error trying to sign up')
+      return encodedRedirect('error', '/signup', 'Fehler bei der Registrierung')
     } else {
       return encodedRedirect(
         'success',
         '/signup',
-        'Thanks for signing up! Please check your email for a verification link.',
+        'Danke für die Registrierung! Bitte überprüfen Sie Ihre E-Mail für einen Bestätigungslink.',
       )
     }
   }
@@ -85,8 +92,18 @@ export default function Signup({ searchParams }: { searchParams: Message }) {
             type="password"
             name="password"
             placeholder="••••••••"
-            autoComplete="current-password"
+            autoComplete="new-password"
             required
+            showPasswordToggle={true}
+          />
+          <Label htmlFor="confirmPassword">Passwort bestätigen</Label>
+          <Input
+            type="password"
+            name="confirmPassword"
+            placeholder="••••••••"
+            autoComplete="new-password"
+            required
+            showPasswordToggle={true}
           />
           <div className="flex flex-col gap-2">
             <Label htmlFor="group_link" className="flex items-center gap-2">
@@ -108,7 +125,7 @@ export default function Signup({ searchParams }: { searchParams: Message }) {
             />
             {queryId && <input type="hidden" name="group_link" value={queryId} />}
           </div>
-          <SubmitButton formAction={signUp} pendingText="Signing up...">
+          <SubmitButton formAction={signUp} pendingText="Registriere...">
             Registrieren
           </SubmitButton>
         </div>
