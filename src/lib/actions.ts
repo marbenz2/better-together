@@ -3,7 +3,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 
-export async function addSubscription({ tripId }: { tripId: string }) {
+/* export async function addSubscription({ tripId }: { tripId: string }) {
   const supabase = createClient()
 
   const {
@@ -48,9 +48,9 @@ export async function addSubscription({ tripId }: { tripId: string }) {
   revalidatePath('/protected')
   revalidatePath('/protected/trips')
   return data
-}
+} */
 
-export async function removeSubscription({ tripId }: { tripId: string }) {
+/* export async function removeSubscription({ tripId }: { tripId: string }) {
   const supabase = createClient()
 
   const {
@@ -94,9 +94,9 @@ export async function removeSubscription({ tripId }: { tripId: string }) {
   revalidatePath('/protected')
   revalidatePath('/protected/trips')
   return data
-}
+} */
 
-export async function setTripStatus({
+/* export async function setTripStatus({
   tripId,
   userId,
   status,
@@ -130,7 +130,7 @@ export async function setTripStatus({
   revalidatePath('/protected/trips')
 
   return { message: 'Trip status updated successfully' }
-}
+} */
 
 /* export async function getTripStatus({ tripId }: { tripId: number }) {
   const supabase = createClient()
