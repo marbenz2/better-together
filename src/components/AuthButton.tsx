@@ -1,26 +1,53 @@
-import { createClient } from '@/utils/supabase/server'
+'use client'
+
+import { createClient } from '@/utils/supabase/client'
 import Link from 'next/link'
-import { redirect } from 'next/navigation'
 import { Button } from './ui/button'
-import { getUser } from '@/utils/supabase/queries'
+import { useEffect, useState } from 'react'
+import { User } from '@supabase/supabase-js'
+import Spinner from '@/components/ui/Spinner'
 
-export default async function AuthButton() {
+export default function AuthButton() {
+  const [user, setUser] = useState<User | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
   const supabase = createClient()
-  const [user] = await Promise.all([getUser(supabase)])
 
-  const signOut = async () => {
-    'use server'
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    return redirect('/login')
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser()
+        setUser(user)
+      } catch (error) {
+        console.error('Fehler beim Abrufen des Benutzers:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchUser()
+  }, [supabase.auth])
+
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut()
+      setUser(null)
+      window.location.href = '/login'
+    } catch (error) {
+      console.error('Fehler beim Abmelden:', error)
+    }
+  }
+
+  if (isLoading) {
+    return <Spinner />
   }
 
   return user ? (
     <div className="flex items-center gap-4">
       <p className="hidden sm:block">Hey, {user.user_metadata.first_name}!</p>
-      <form action={signOut}>
-        <Button variant="outline">Logout</Button>
-      </form>
+      <Button variant="outline" type="submit" onClick={handleSignOut}>
+        Logout
+      </Button>
     </div>
   ) : (
     <div className="flex gap-2">
