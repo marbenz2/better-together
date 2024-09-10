@@ -1,16 +1,22 @@
-import React from 'react'
+'use client'
+
+import React, { useMemo } from 'react'
 import Link from 'next/link'
 import { CardDescription } from '@/components/ui/card'
-import type { SubscribedTripsType } from '@/types/dashboard'
 import TripCard from '@/components/TripCard'
+import { useGroupStore } from '@/stores/groupStores'
+import { useUserStore } from '@/stores/userStore'
 
-interface FilteredSubscribedTripsProps {
-  filteredSubscribedTrips: SubscribedTripsType
-}
+export default function FilteredSubscribedTrips() {
+  const { groupId } = useGroupStore()
+  const { subscribedTrips } = useUserStore()
 
-export default function FilteredSubscribedTrips({
-  filteredSubscribedTrips,
-}: FilteredSubscribedTripsProps) {
+  const filteredSubscribedTrips = useMemo(() => {
+    return (
+      subscribedTrips?.filter((subscribedTrip) => subscribedTrip.trips.group_id === groupId) ?? []
+    )
+  }, [subscribedTrips, groupId])
+
   return (
     <div className="block xs:flex gap-4">
       {filteredSubscribedTrips && filteredSubscribedTrips.length > 0 ? (
