@@ -1,5 +1,6 @@
+'use client'
+
 import TripCard from '@/components/TripCard'
-import { setTripStatus } from '@/lib/actions'
 import {
   Accordion,
   AccordionContent,
@@ -13,31 +14,18 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Tables } from 'database.types'
+
+import { useUserStore } from '@/stores/userStore'
+import { useTripStore } from '@/stores/tripStores'
+import type { Trips } from '@/types/supabase'
+import { ExtendedTrip } from '@/types/trips'
 import CheckSubscribeIcon from './CheckSubscribeIcon'
+import { setTripStatus } from '@/utils/supabase/queries'
 
-type Trips = Tables<'trips'>
-type TripMembers = Tables<'trip_members'>
-type Groups = Tables<'groups'>
-type GroupMembers = Tables<'group_members'>
-type SubscribedTrips = {
-  trips: Trips
-  subscribed_at: TripMembers['subscribed_at']
-}[]
-type UserGroups = {
-  group_id: GroupMembers['group_id']
-  groups: Groups
-}[]
-type ExtenededTrips = Trips & { subscribed_at: TripMembers['subscribed_at'] | undefined }
+export default function Trips() {
+  const { user, subscribedTrips } = useUserStore()
+  const { groupTrips } = useTripStore()
 
-interface TripsProps {
-  user: any | null
-  userGroups: UserGroups | null
-  groupTrips: Trips[] | null
-  subscribedTrips: SubscribedTrips | null
-}
-
-export default function Trips({ user, userGroups, groupTrips, subscribedTrips }: TripsProps) {
   const extendedGroupTrips = groupTrips?.map((groupTrip) => {
     const subscribedTrip = subscribedTrips?.find(
       (subscribedTrip) => subscribedTrip.trips.id === groupTrip.id,
@@ -54,10 +42,14 @@ export default function Trips({ user, userGroups, groupTrips, subscribedTrips }:
 
   const today = new Date()
 
-  const checkAndSetStatus = async (trip: Trips, status: string, userId: string) => {
+  const checkAndSetStatus = async (
+    trip: Trips,
+    status: 'upcoming' | 'current' | 'done',
+    userId: string,
+  ) => {
     if (trip.status !== status) {
       try {
-        await setTripStatus({ tripId: trip.id, status, userId })
+        await setTripStatus(trip.id, userId, status)
       } catch (err) {
         console.error((err as any).message)
       }
@@ -88,17 +80,17 @@ export default function Trips({ user, userGroups, groupTrips, subscribedTrips }:
     return isPast
   })
 
-  const renderTrips = (trips: ExtenededTrips[]) =>
+  const renderTrips = (trips: ExtendedTrip[]) =>
     trips.map((trip) => {
       return (
         <TripCard trip={trip} key={trip.id} subscribed_at={trip.subscribed_at}>
-          {/* <CheckSubscribeIcon subscribed={subscribedTripIds.includes(trip.id)} /> */}
+          <CheckSubscribeIcon subscribed={trip.subscribed_at ? true : false} />
         </TripCard>
       )
     })
 
   return (
-    <div className="flex flex-col gap-12">
+    <div className="flex flex-col gap-12 max-w-7xl w-full">
       <div className="flex flex-col md:flex-row gap-12">
         <CardBackPlate>
           <CardHeader>
