@@ -1,26 +1,45 @@
-import * as React from "react";
+import { ButtonHTMLAttributes, forwardRef } from 'react'
+import { cn } from '@/lib/utils'
 
-import { cn } from "@/lib/utils";
+export interface MobileButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {}
 
-const MobileButton = React.forwardRef<
-  HTMLButtonElement,
-  React.HTMLAttributes<HTMLButtonElement>
->(({ className }, ref) => (
-  <button ref={ref} className={cn("relative group", className)}>
-    <div className="relative flex overflow-hidden items-center justify-center rounded-full w-10 h-10 transform transition-all ring-0 ring-gray-300 hover:ring-4 group-focus:ring-4 ring-opacity-30 duration-200">
-      <div className="flex flex-col justify-between w-6 h-5 transform transition-all duration-300 origin-center overflow-hidden">
-        <div className="bg-foreground h-[2px] w-6 transform transition-all duration-300 origin-left group-focus:translate-x-10"></div>
-        <div className="bg-foreground h-[2px] w-6 transform transition-all duration-300 origin-left group-focus:translate-x-10 delay-150"></div>
-        <div className="bg-foreground h-[2px] w-6 rounded transform transition-all duration-300 group-focus:translate-x-10 delay-75"></div>
+const MobileButton = forwardRef<HTMLButtonElement, MobileButtonProps>(
+  ({ className, ...props }, ref) => {
+    return (
+      <button ref={ref} className={cn('p-2', className)} {...props}>
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M3 12H21"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M3 6H21"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M3 18H21"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
+    )
+  },
+)
+MobileButton.displayName = 'MobileButton'
 
-        <div className="absolute items-center justify-between transform transition-all duration-500 top-2.5 -translate-x-10 group-focus:translate-x-0 flex w-0 group-focus:w-12">
-          <div className="absolute bg-foreground h-[2px] w-6 transform transition-all duration-500 rotate-0 delay-300 group-focus:rotate-45"></div>
-          <div className="absolute bg-foreground h-[2px] w-6 transform transition-all duration-500 -rotate-0 delay-300 group-focus:-rotate-45"></div>
-        </div>
-      </div>
-    </div>
-  </button>
-));
-MobileButton.displayName = "MobileButton";
-
-export { MobileButton };
+export { MobileButton }
