@@ -1,14 +1,8 @@
+'use client'
+
 import Link from 'next/link'
 import AuthButton from './AuthButton'
-import { MobileButton } from './ui/mobile-button'
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from './ui/sheet'
+import MobileNavigation from '@/components/MobileMenu'
 
 const navLinks = [
   { href: '/protected', label: 'Dashboard' },
@@ -37,25 +31,7 @@ export default function Navigation() {
             </Link>
           ))}
         </div>
-        <Sheet>
-          <SheetDescription hidden>Mobile Navigation</SheetDescription>
-          <SheetTrigger asChild>
-            <MobileButton className="block md:hidden" />
-          </SheetTrigger>
-          <SheetContent side={'top'} className="flex w-full justify-center">
-            <SheetHeader>
-              <SheetTitle></SheetTitle>
-            </SheetHeader>
-            <SheetTrigger className="flex flex-col items-center gap-12 py-12">
-              {navLinks.map(({ href, label }) => (
-                <a key={label} href={href} className="uppercase">
-                  {label}
-                </a>
-              ))}
-            </SheetTrigger>
-          </SheetContent>
-        </Sheet>
-
+        <MobileNavigation />
         <AuthButton />
       </div>
     </nav>
