@@ -9,53 +9,27 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion'
 import Paypal from './Paypal'
 import { CheckCircleIcon } from 'lucide-react'
 import { Separator } from '../ui/separator'
 import Link from 'next/link'
-import { Tables } from 'database.types'
-import { useState } from 'react'
+import { usePaymentStore } from '@/stores/paymentStore'
+import { Trips } from '@/types/supabase'
+import { useUserStore } from '@/stores/userStore'
+import { useGroupStore } from '@/stores/groupStores'
+import Spinner from '../ui/Spinner'
 
-type Trips = Tables<'trips'>
-type PaymentDetails = {
-  trip_id: string
-  down_payment: number | null
-  full_payment: number | null
-  final_payment: number | null
-  down_payment_paypal_id: string | null
-  full_payment_paypal_id: string | null
-  final_payment_paypal_id: string | null
-}
-type SubscribedTrips = {
-  subscribed_at: string
-  trips: Trips
-}
+export default function Payments() {
+  const { groupId } = useGroupStore()
+  const { paymentDetails, getPaymentDetails } = usePaymentStore()
+  const { user, subscribedTrips } = useUserStore()
 
-interface PaymentsProps {
-  user: any | null
-  paymentDetails: PaymentDetails[]
-  subscribedTrips: SubscribedTrips[]
-}
+  const filteredTrips = subscribedTrips?.filter((trip) => trip.trips.group_id === groupId)
 
-export default function Payments({
-  user,
-  paymentDetails: initialPaymentDetails,
-  subscribedTrips,
-}: PaymentsProps) {
-  const [paymentDetails, setPaymentDetails] = useState(initialPaymentDetails)
+  if (!paymentDetails) return <Spinner />
 
-  const handlePaymentSuccess = (tripId: string, paymentType: string) => {
-    setPaymentDetails((prevDetails) =>
-      prevDetails.map((detail) =>
-        detail.trip_id === tripId ? { ...detail, [paymentType]: true } : detail,
-      ),
-    )
+  const handlePaymentSuccess = () => {
+    getPaymentDetails()
   }
 
   function renderPaymentSection(
@@ -79,7 +53,7 @@ export default function Payments({
             user_id={userId}
             trip_id={tripId}
             payment_type={paymentType}
-            onPaymentSuccess={() => handlePaymentSuccess(tripId, paymentType)}
+            onPaymentSuccess={() => handlePaymentSuccess()}
           />
         </div>
       )
@@ -120,66 +94,57 @@ export default function Payments({
   }) {
     return (
       <Card key={trip.id}>
-        <Accordion type="single" collapsible>
-          <AccordionItem value="Payments">
-            <CardHeader className="text-center lg:text-start w-full">
-              <CardTitle>{trip.name}</CardTitle>
-              <CardDescription className="text-balance">
-                {new Date(trip.date_from).toLocaleDateString('de-DE', {
-                  weekday: 'short',
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}{' '}
-                -{' '}
-                {new Date(trip.date_to).toLocaleDateString('de-DE', {
-                  weekday: 'short',
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}
-              </CardDescription>
-              <AccordionTrigger className="items-center justify-center text-sm font-medium">
-                Zeige alle Zahlungen
-              </AccordionTrigger>
-            </CardHeader>
-            <AccordionContent>
-              <CardContent className="flex flex-col md:flex-row gap-8 md:gap-4 xl:gap-8 w-full">
-                {renderPaymentSection(
-                  'Anzahlung',
-                  'down_payment',
-                  trip.down_payment,
-                  paymentStatus.down_payment,
-                  userId,
-                  trip.id,
-                  transactionsId,
-                )}
-                <Separator className="md:hidden block" />
-                <Separator orientation="vertical" className="hidden md:block" />
-                {renderPaymentSection(
-                  'Hauptzahlung',
-                  'full_payment',
-                  trip.full_payment,
-                  paymentStatus.full_payment,
-                  userId,
-                  trip.id,
-                  transactionsId,
-                )}
-                <Separator className="md:hidden block" />
-                <Separator orientation="vertical" className="hidden md:block" />
-                {renderPaymentSection(
-                  'Schlusszahlung',
-                  'final_payment',
-                  trip.final_payment,
-                  paymentStatus.final_payment,
-                  userId,
-                  trip.id,
-                  transactionsId,
-                )}
-              </CardContent>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
+        <CardHeader className="text-center lg:text-start w-full">
+          <CardTitle>{trip.name}</CardTitle>
+          <CardDescription className="text-balance">
+            {new Date(trip.date_from).toLocaleDateString('de-DE', {
+              weekday: 'short',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })}{' '}
+            -{' '}
+            {new Date(trip.date_to).toLocaleDateString('de-DE', {
+              weekday: 'short',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col md:flex-row gap-8 md:gap-4 xl:gap-8 w-full">
+          {renderPaymentSection(
+            'Anzahlung',
+            'down_payment',
+            trip.down_payment,
+            paymentStatus.down_payment,
+            userId,
+            trip.id,
+            transactionsId,
+          )}
+          <Separator className="md:hidden block" />
+          <Separator orientation="vertical" className="hidden md:block" />
+          {renderPaymentSection(
+            'Hauptzahlung',
+            'full_payment',
+            trip.full_payment,
+            paymentStatus.full_payment,
+            userId,
+            trip.id,
+            transactionsId,
+          )}
+          <Separator className="md:hidden block" />
+          <Separator orientation="vertical" className="hidden md:block" />
+          {renderPaymentSection(
+            'Schlusszahlung',
+            'final_payment',
+            trip.final_payment,
+            paymentStatus.final_payment,
+            userId,
+            trip.id,
+            transactionsId,
+          )}
+        </CardContent>
         <CardFooter className="justify-center">
           <CardDescription>
             Falls es Fragen zu einer oder mehrer Zahlungen gibt,{' '}
@@ -219,38 +184,44 @@ export default function Payments({
         <CardDescription>Hier werden alle ausstehenden Zahlungen angezeigt</CardDescription>
       </CardHeader>
       <CardContent>
-        {subscribedTrips.map((trip) => {
-          const paymentStatus = paymentDetails.find((sub) => sub.trip_id === trip.trips.id)
-          const transactionsId = paymentDetails.reduce(
-            (acc, sub) => {
-              if (sub.trip_id === trip.trips.id) {
-                acc['down_payment_paypal_id'] = sub.down_payment_paypal_id ?? ''
-                acc['full_payment_paypal_id'] = sub.full_payment_paypal_id ?? ''
-                acc['final_payment_paypal_id'] = sub.final_payment_paypal_id ?? ''
-              }
-              return acc
-            },
-            {} as { [key: string]: string },
-          )
-
-          if (paymentStatus) {
-            return (
-              <CardBackPlate key={trip.trips.id}>
-                <PaymentCard
-                  trip={trip.trips}
-                  paymentStatus={{
-                    down_payment: !!paymentStatus.down_payment,
-                    full_payment: !!paymentStatus.full_payment,
-                    final_payment: !!paymentStatus.final_payment,
-                  }}
-                  userId={user.id}
-                  transactionsId={transactionsId}
-                />
-              </CardBackPlate>
+        {paymentDetails && filteredTrips && filteredTrips.length > 0 ? (
+          filteredTrips?.map((trip) => {
+            const paymentStatus = paymentDetails?.find((sub) => sub.trip_id === trip.trips.id)
+            const transactionsId = paymentDetails?.reduce(
+              (acc, sub) => {
+                if (sub.trip_id === trip.trips.id) {
+                  acc['down_payment_paypal_id'] = sub.down_payment_paypal_id ?? ''
+                  acc['full_payment_paypal_id'] = sub.full_payment_paypal_id ?? ''
+                  acc['final_payment_paypal_id'] = sub.final_payment_paypal_id ?? ''
+                }
+                return acc
+              },
+              {} as { [key: string]: string },
             )
-          }
-          return null
-        })}
+
+            if (paymentStatus) {
+              return (
+                <CardBackPlate key={trip.trips.id}>
+                  <PaymentCard
+                    trip={trip.trips}
+                    paymentStatus={{
+                      down_payment: !!paymentStatus.down_payment,
+                      full_payment: !!paymentStatus.full_payment,
+                      final_payment: !!paymentStatus.final_payment,
+                    }}
+                    userId={user.id}
+                    transactionsId={transactionsId}
+                  />
+                </CardBackPlate>
+              )
+            }
+            return null
+          })
+        ) : (
+          <div className="flex flex-col gap-4 items-center w-full md:max-w-md">
+            <CardTitle>Keine Zahlungen vorhanden.</CardTitle>
+          </div>
+        )}
       </CardContent>
     </CardBackPlate>
   )
