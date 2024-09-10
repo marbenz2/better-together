@@ -1,17 +1,17 @@
+'use client'
+
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card'
 import { Table, TableBody, TableCell, TableHead, TableRow } from './ui/table'
 import Image from 'next/image'
-import { Tables } from '../../database.types'
-
-type Trip = Tables<'trips'>
+import { Trips } from '@/types/supabase'
 
 const TripCard = ({
   trip,
   subscribed_at,
   children,
 }: {
-  trip: Trip
+  trip: Trips
   subscribed_at?: string | null
   children?: React.ReactNode
 }) => {
