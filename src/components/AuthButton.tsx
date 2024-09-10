@@ -29,12 +29,14 @@ export default function AuthButton() {
   }, [supabase.auth])
 
   const handleSignOut = async () => {
+    setIsLoading(true)
     try {
       await supabase.auth.signOut()
       setUser(null)
       window.location.href = '/login'
     } catch (error) {
       console.error('Fehler beim Abmelden:', error)
+      setIsLoading(false)
     }
   }
 
