@@ -18,7 +18,7 @@ export function Input({ className, showPasswordToggle = false, ...props }: Input
   }, [])
 
   return (
-    <div className="relative">
+    <div className="relative flex items-center justify-center w-full">
       <input
         {...props}
         type={isPasswordInput && showPassword ? 'text' : props.type}
