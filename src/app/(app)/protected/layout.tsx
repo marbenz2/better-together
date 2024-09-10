@@ -3,6 +3,8 @@ import Navigation from '@/components/Navigation'
 import { getUser } from '@/utils/supabase/queries'
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
+import ClientStoreInitializer from '@/components/ClientStoreInitializer'
+import ConditionalShowGroup from '@/components/groups/ShowGroup'
 
 async function setUserIdInDatabase(supabase: any, userId: string) {
   try {
@@ -19,7 +21,7 @@ async function setUserIdInDatabase(supabase: any, userId: string) {
 
 export default async function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const supabase = createClient()
-  const user = await getUser(supabase)
+  const { data: user } = await getUser(supabase)
 
   if (!user) {
     redirect('/login')
@@ -32,7 +34,13 @@ export default async function ProtectedLayout({ children }: { children: React.Re
       <div className="w-full">
         <Navigation />
       </div>
-      <div className="flex-1 flex flex-col items-center gap-8 w-full px-1 md:px-4">{children}</div>
+      <div className="flex-1 flex flex-col items-center gap-8 w-full px-1 md:px-4">
+        <ClientStoreInitializer userId={user.id}>
+          <ConditionalShowGroup />
+          {children}
+        </ClientStoreInitializer>
+      </div>
+
       <Footer />
     </div>
   )
