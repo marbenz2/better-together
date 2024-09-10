@@ -9,7 +9,7 @@ import {
   PayPalScriptProvider,
   ReactPayPalScriptOptions,
 } from '@paypal/react-paypal-js'
-import { useToast } from '../ui/use-toast'
+import { showNotification } from '@/lib/utils'
 
 interface OrderData {
   data: {
@@ -38,7 +38,6 @@ export default function Paypal({
   trip_id,
   onPaymentSuccess,
 }: PaypalProps) {
-  const { toast } = useToast()
   const [approvalDetails, setApprovalDetails] = useState<any>(null)
 
   const initialOptions: ReactPayPalScriptOptions = {
@@ -94,40 +93,39 @@ export default function Paypal({
       }
 
       setApprovalDetails(details)
-      onPaymentSuccess() // Diese Funktion sollte alle notwendigen UI-Updates vornehmen
-
-      toast({
-        variant: 'success',
-        title: 'Zahlung erfolgreich',
-        description: (
-          <>
-            <p>Zahlungs ID: {details.id}</p>
-            <p>Status: {details.status}</p>
-            <p>
-              Betrag: {details.purchase_units[0].payments.captures[0].amount.value}{' '}
-              {details.purchase_units[0].payments.captures[0].amount.currency_code}
-            </p>
-          </>
-        ),
-      })
+      onPaymentSuccess()
+      showNotification(
+        'Zahlung erfolgreich',
+        `Zahlungs ID: ${details.id}\n
+        Status: ${details.status}\n
+        Betrag: ${details.purchase_units[0].payments.captures[0].amount.value} ${details.purchase_units[0].payments.captures[0].amount.currency_code}`,
+        'success',
+      )
     } catch (error) {
       console.error('Fehler bei der Zahlungsverarbeitung:', error)
-      toast({
-        variant: 'destructive',
-        title: 'Zahlungsfehler',
-        description:
-          'Bei der Verarbeitung Ihrer Zahlung ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
-      })
+      showNotification(
+        'Zahlungsfehler',
+        'Bei der Verarbeitung Ihrer Zahlung ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
+        'destructive',
+      )
     }
   }
 
   const onCancel: PayPalButtonsComponentProps['onCancel'] = (data) => {
-    alert('Payment cancelled: ' + JSON.stringify(data))
+    showNotification(
+      'Zahlung abgebrochen',
+      'Zahlung wurde durch den Benutzer abgebrochen',
+      'destructive',
+    )
     redirect('/payments/ErrorPage')
   }
 
   const onError: PayPalButtonsComponentProps['onError'] = (err) => {
-    alert('An error occurred: ' + JSON.stringify(err))
+    showNotification(
+      'Zahlungsfehler',
+      'Bei der Verarbeitung Ihrer Zahlung ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
+      'destructive',
+    )
     redirect('/payments/ErrorPage')
   }
 
