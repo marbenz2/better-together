@@ -18,7 +18,7 @@ export default function GroupManagement() {
       {/* Favoriten */}
       {userGroups && userGroups.length > 0 && <FavouriteGroups />}
       {/* Gruppenmitglieder */}
-      {/* {groupMembers && <GroupMembers />} */}
+      {groupMembers && <GroupMembers />}
       {/* Gruppencode */}
       {userGroups && userGroups.length > 0 && (
         <GroupCode userGroups={userGroups} groupId={groupId} />
