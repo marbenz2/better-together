@@ -70,7 +70,13 @@ export default function Login({ searchParams }: { searchParams: Message }) {
         </p>
         <div className="flex flex-col gap-2 [&>input]:mb-3 mt-8">
           <Label htmlFor="email">Email</Label>
-          <Input name="email" placeholder="you@example.com" autoComplete="email" required />
+          <Input
+            type="email"
+            name="email"
+            placeholder="you@example.com"
+            autoComplete="email"
+            required
+          />
           <div className="flex justify-between items-center">
             <Label htmlFor="password">Passwort</Label>
             <Link className="text-sm text-blue-600 underline" href="/forgot-password">
@@ -83,6 +89,7 @@ export default function Login({ searchParams }: { searchParams: Message }) {
             placeholder="••••••••"
             autoComplete="current-password"
             required
+            showPasswordToggle={true}
           />
           <SubmitButton formAction={signIn} pendingText="Signing In...">
             Anmelden
