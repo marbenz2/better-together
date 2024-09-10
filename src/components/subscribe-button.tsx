@@ -1,122 +1,128 @@
-"use client";
+'use client'
 
-import { type ComponentProps, useState, useTransition } from "react";
-import { addSubscription, removeSubscription } from "@/lib/actions";
-import { Button } from "./ui/button";
+import { useState, useTransition } from 'react'
+import { Button } from './ui/button'
+import { useTripStore } from '@/stores/tripStores'
+import { useUserStore } from '@/stores/userStore'
+import { usePaymentStore } from '@/stores/paymentStore'
+import { addSubscription, removeSubscription } from '@/utils/supabase/queries'
+import { showNotification } from '@/lib/utils'
+import Spinner from './ui/Spinner'
 
-type Props = ComponentProps<"button"> & {
-  tripId: string;
-  subscribed?: boolean;
-  allowSubscription?: boolean;
-};
+export function TripSubscription() {
+  const { user } = useUserStore()
+  const { trip } = useTripStore()
+  const { isSubscribed, setIsSubscribed, setSubscribedTrips } = useUserStore()
+  const { paymentStatus } = usePaymentStore()
 
-export function Subscription({
-  tripId,
-  subscribed: initialSubscribed,
-  allowSubscription,
-}: Props) {
-  const [subscribed, setSubscribed] = useState(initialSubscribed);
+  if (!trip) return null
+
+  const hasPaid =
+    paymentStatus?.down_payment || paymentStatus?.full_payment || paymentStatus?.final_payment
+  const currentDate = new Date().toISOString()
+  const allowSubscription = trip?.date_from > currentDate
 
   const handleSubscribe = async () => {
     try {
-      await addSubscription({ tripId });
-      setSubscribed(true);
-    } catch (err) {
-      console.error((err as any).message);
+      const { data, error } = await addSubscription(trip.id, user.id)
+      if (error) {
+        console.error('Fehler beim Anmelden:', error)
+        return
+      }
+      setIsSubscribed(true)
+      setSubscribedTrips((prevTrips) => [
+        ...(prevTrips || []),
+        { trips: trip, subscribed_at: new Date().toISOString() },
+      ])
+      showNotification(
+        'Anmeldung erfolgt',
+        `Du hast dich erfolgreich für die Reise angemeldet.`,
+        'success',
+      )
+    } catch (error) {
+      console.error('Fehler beim Anmelden:', error)
     }
-  };
+  }
 
   const handleUnsubscribe = async () => {
     try {
-      await removeSubscription({ tripId });
-      setSubscribed(false);
-    } catch (err) {
-      console.error((err as any).message);
+      const { error } = await removeSubscription(trip.id, user.id)
+      if (error) {
+        console.error('Fehler beim Abmelden:', error)
+        return
+      }
+      setIsSubscribed(false)
+      setSubscribedTrips((prevTrips) =>
+        prevTrips ? prevTrips.filter((t) => t.trips.id !== trip.id) : [],
+      )
+      showNotification(
+        'Abmeldung erfolgt',
+        'Du hast dich erfolgreich von der Reise abgemeldet',
+        'success',
+      )
+    } catch (error) {
+      console.error('Fehler beim Abmelden:', error)
     }
-  };
-
-  return subscribed ? (
-    <>
-      <UnsubscribeButton
-        disabled={allowSubscription}
-        tripId={tripId}
-        onUnsubscribe={handleUnsubscribe}
-        allowSubscription={allowSubscription}
-      >
-        Abmelden
-      </UnsubscribeButton>
-    </>
-  ) : allowSubscription ? (
-    <>
-      <SubscribeButton tripId={tripId} onSubscribe={handleSubscribe}>
-        Anmelden
-      </SubscribeButton>
-    </>
-  ) : (
-    <p className="font-bold text-center">
-      Die Anmeldung für diese Reise ist bereits geschlossen.
-    </p>
-  );
-}
-
-type ButtonProps = Props & {
-  onSubscribe?: () => Promise<void>;
-  onUnsubscribe?: () => Promise<void>;
-};
-
-function SubscribeButton({ children, onSubscribe }: ButtonProps) {
-  const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState(null);
-
-  const handleClick = async () => {
-    startTransition(async () => {
-      try {
-        await onSubscribe?.();
-      } catch (err) {
-        setError((err as any).message);
-      }
-    });
-  };
+  }
 
   return (
     <>
-      <Button onClick={handleClick} disabled={isPending}>
-        {isPending ? "Wird angemeldet..." : children}
-      </Button>
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {allowSubscription ? (
+        <SubscriptionButton
+          isSubscribed={isSubscribed}
+          onSubscribe={handleSubscribe}
+          onUnsubscribe={handleUnsubscribe}
+          disabled={hasPaid ?? false}
+        >
+          {hasPaid ? 'Bereits bezahlt' : isSubscribed ? 'Abmelden' : 'Anmelden'}
+        </SubscriptionButton>
+      ) : (
+        <p className="font-bold text-center">
+          Die Anmeldung für diese Reise ist bereits geschlossen.
+        </p>
+      )}
     </>
-  );
+  )
 }
 
-function UnsubscribeButton({
-  allowSubscription,
-  children,
+type SubscriptionButtonProps = {
+  isSubscribed: boolean
+  onSubscribe: () => Promise<void>
+  onUnsubscribe: () => Promise<void>
+  disabled?: boolean
+  children: React.ReactNode
+}
+
+function SubscriptionButton({
+  isSubscribed,
+  onSubscribe,
   onUnsubscribe,
-}: ButtonProps) {
-  const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState(null);
+  disabled,
+  children,
+}: SubscriptionButtonProps) {
+  const [isPending, startTransition] = useTransition()
+  const [error, setError] = useState<string | null>(null)
 
   const handleClick = async () => {
     startTransition(async () => {
       try {
-        await onUnsubscribe?.();
+        if (isSubscribed) {
+          await onUnsubscribe()
+        } else {
+          await onSubscribe()
+        }
       } catch (err) {
-        setError((err as any).message);
+        setError((err as Error).message)
       }
-    });
-  };
+    })
+  }
 
   return (
     <>
-      <Button
-        onClick={handleClick}
-        disabled={(isPending || !allowSubscription) ?? false}
-      >
-        {isPending && "Wird abgemeldet..."}
-        {!allowSubscription && "Bereits gezahlt"}
-        {!isPending && allowSubscription && children}
+      <Button onClick={handleClick} disabled={disabled || isPending}>
+        {isPending ? <Spinner /> : children}
       </Button>
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {error && <p className="text-red-500">{error}</p>}
     </>
-  );
+  )
 }
