@@ -1,28 +1,34 @@
-import { createClient } from '@/utils/supabase/server'
-import { getPaymentStatus, getSubscribedTrips, getTrip, getUser } from '@/utils/supabase/queries'
+'use client'
+
+import { useEffect } from 'react'
 import Trip from '@/components/Trip'
-import { Tables } from 'database.types'
+import { useTripStore } from '@/stores/tripStores'
+import { usePaymentStore } from '@/stores/paymentStore'
+import { useToast } from '@/components/ui/use-toast'
+import { useToastStore } from '@/stores/toastStore'
 
-type PaymentStatus = Tables<'trip_members'>
-type Trips = Tables<'trips'>
-type SubscribedTrips = {
-  subscribed_at: string
-  trips: Trips
-}
+export default function TripPage({ params }: { params: { id: string } }) {
+  const { getTrip } = useTripStore()
+  const { getPaymentStatus } = usePaymentStore()
+  const { toast } = useToast()
+  const { title, message, variant } = useToastStore()
 
-export default async function TripPage({ params }: { params: { id: number } }) {
-  const supabase = createClient()
-  const [user] = await Promise.all([getUser(supabase)])
-  const [trip] = await Promise.all([getTrip(supabase, params.id)])
-  const [subscribedTrips] = await Promise.all([
-    user
-      ? getSubscribedTrips(supabase, user.id).then((trips) => trips as unknown as SubscribedTrips[])
-      : [],
-  ])
-  const [paymentStatus] = await Promise.all([
-    user
-      ? getPaymentStatus(supabase, user.id, trip.id).then((status) => status as PaymentStatus)
-      : null,
-  ])
-  return <Trip trip={trip} subscribedTrips={subscribedTrips} paymentStatus={paymentStatus} />
+  useEffect(() => {
+    if (title && message && variant) {
+      toast({
+        title,
+        description: message,
+        variant,
+      })
+    }
+  }, [title, message, variant, toast])
+
+  useEffect(() => {
+    if (params.id) {
+      getTrip(params.id)
+      getPaymentStatus(params.id)
+    }
+  }, [params.id, getTrip, getPaymentStatus])
+
+  return <Trip />
 }
