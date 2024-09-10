@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react'
 import GroupPick from './GroupPick'
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardHeader, CardTitle } from '@/components/ui/card'
 import { useGroupStore } from '@/stores/groupStores'
 import { usePathname } from 'next/navigation'
 
@@ -30,7 +30,6 @@ export default function ConditionalShowGroup() {
         <Card className="w-full max-w-7xl">
           <CardHeader>
             <CardTitle>Gruppe: {userGroups[0].groups.name}</CardTitle>
-            <CardDescription>Sieh dir an was in deiner Gruppe los ist.</CardDescription>
           </CardHeader>
         </Card>
       )}
@@ -39,9 +38,6 @@ export default function ConditionalShowGroup() {
           <Card className="w-full max-w-7xl">
             <CardHeader>
               <CardTitle>Du bist in keiner Gruppe</CardTitle>
-              <CardDescription>
-                Erstelle eine neue Gruppe oder trete einer bestehenden bei.
-              </CardDescription>
             </CardHeader>
           </Card>
         ))}

@@ -1,6 +1,6 @@
 'use client'
 
-import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Select,
   SelectContent,
