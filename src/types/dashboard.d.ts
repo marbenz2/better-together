@@ -1,10 +1,4 @@
-import { Tables } from 'database.types'
-
-type Trips = Tables<'trips'>
-type TripMembers = Tables<'trip_members'>
-type Groups = Tables<'groups'>
-type GroupMembers = Tables<'group_members'>
-type Profiles = Tables<'profiles'>
+import { Trips, TripMembers, GroupMembers, Groups, Profiles } from './supabase'
 
 export type GroupMembersType = {
   user_id: GroupMembers['user_id']
@@ -23,4 +17,4 @@ export type SubscribedTripsType = {
   subscribed_at: TripMembers['subscribed_at']
 }[]
 
-export type PublicProfilesType = Profiles[]
+export type PublicProfilesType = Profiles
