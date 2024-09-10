@@ -27,7 +27,7 @@ export default function ConditionalShowGroup() {
     <>
       {userGroups && userGroups.length > 1 && <GroupPick />}
       {userGroups && userGroups.length === 1 && (
-        <Card>
+        <Card className="w-full max-w-7xl">
           <CardHeader>
             <CardTitle>Gruppe: {userGroups[0].groups.name}</CardTitle>
             <CardDescription>Sieh dir an was in deiner Gruppe los ist.</CardDescription>
@@ -36,7 +36,7 @@ export default function ConditionalShowGroup() {
       )}
       {!userGroups ||
         (userGroups.length === 0 && (
-          <Card>
+          <Card className="w-full max-w-7xl">
             <CardHeader>
               <CardTitle>Du bist in keiner Gruppe</CardTitle>
               <CardDescription>

@@ -15,7 +15,7 @@ export default function GroupPick() {
   const { userGroups, selectedGroupName, handleOnValueChange } = useGroupStore()
 
   return (
-    <Card>
+    <Card className="w-full max-w-7xl">
       <CardHeader>
         <CardTitle>Gruppe: </CardTitle>
         <Select
@@ -38,11 +38,6 @@ export default function GroupPick() {
           </SelectContent>
         </Select>
       </CardHeader>
-      <CardFooter>
-        <CardDescription>
-          Wähle deine Gruppe und sieh dir an was in deiner Gruppe los ist.
-        </CardDescription>
-      </CardFooter>
     </Card>
   )
 }
