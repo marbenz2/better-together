@@ -49,8 +49,8 @@ export const getPublicProfile = cache(async (supabase: SupabaseClient, userId: s
     .from('profiles')
     .select('*')
     .eq('id', userId)
-    .returns<PublicProfileType[]>()
-    .single()
+    .returns<PublicProfileType>()
+    .maybeSingle()
   return { data, error }
 })
 
