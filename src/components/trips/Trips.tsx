@@ -55,9 +55,6 @@ export default function Trips() {
         await setTripStatus(trip.id, userId, status)
       } catch (err) {
         console.error('Fehler beim Aktualisieren des Trip-Status:', err)
-        console.error('Trip ID:', trip.id)
-        console.error('User ID:', userId)
-        console.error('Neuer Status:', status)
       }
     }
   }
@@ -96,13 +93,15 @@ export default function Trips() {
     })
 
   return (
-    <div className="flex flex-col gap-12 max-w-7xl w-full">
-      <Link className="text-primary" href={`/protected/create-trip`}>
-        <Button className="relative flex text-xs pl-10 w-full max-w-lg">
-          <PlusIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" />
-          Reise erstellen
-        </Button>
-      </Link>
+    <div className="flex flex-col gap-12 max-w-7xl w-full mx-auto">
+      <div className="flex justify-center">
+        <Link className="text-primary w-full max-w-lg" href={`/protected/create-trip`}>
+          <Button className="relative flex text-xs pl-10 w-full max-w-lg">
+            <PlusIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" />
+            Reise erstellen
+          </Button>
+        </Link>
+      </div>
       <div className="flex flex-col md:flex-row gap-12">
         <CardBackPlate>
           <CardHeader>
