@@ -4,6 +4,7 @@ import { createClient } from './client'
 import { GroupMembers, Groups, TripMembers, Trips } from '@/types/supabase'
 import { PublicProfilesType } from '@/types/dashboard'
 import { PublicProfileType } from '@/types/user'
+import { GroupTripType } from '@/types/trips'
 
 export const getUser = cache(async (supabase: SupabaseClient) => {
   const {
@@ -34,6 +35,42 @@ export const getGroupMembers = cache(async (supabase: SupabaseClient, groupId: s
     .returns<({ user_id: GroupMembers['user_id'] } & { role: GroupMembers['role'] })[]>()
   return { data, error }
 })
+
+export const removeUserFromGroup = cache(
+  async (supabase: SupabaseClient, userId: string, groupId: string) => {
+    const { data, error } = await supabase
+      .from('group_members')
+      .delete()
+      .eq('user_id', userId)
+      .eq('group_id', groupId)
+      .returns<GroupMembers[]>()
+    return { data, error }
+  },
+)
+
+export const makeUserAdmin = cache(
+  async (supabase: SupabaseClient, userId: string, groupId: string) => {
+    const { data, error } = await supabase
+      .from('group_members')
+      .update({ role: 'admin' })
+      .eq('user_id', userId)
+      .eq('group_id', groupId)
+      .returns<GroupMembers[]>()
+    return { data, error }
+  },
+)
+
+export const removeUserAdmin = cache(
+  async (supabase: SupabaseClient, userId: string, groupId: string) => {
+    const { data, error } = await supabase
+      .from('group_members')
+      .update({ role: 'member' })
+      .eq('user_id', userId)
+      .eq('group_id', groupId)
+      .returns<GroupMembers[]>()
+    return { data, error }
+  },
+)
 
 export const getPublicProfiles = cache(async (supabase: SupabaseClient, userIds: string[]) => {
   const { data, error } = await supabase
@@ -270,7 +307,6 @@ export const setTripStatus = cache(
       .select()
       .returns<Trips[]>()
       .single()
-
     return { data, error }
   },
 )
@@ -297,3 +333,35 @@ export const updatePaymentStatus = cache(
     return { data, error }
   },
 )
+
+export const createTrip = cache(async (supabase: SupabaseClient, trip: GroupTripType) => {
+  const { data, error } = await supabase
+    .from('trips')
+    .insert(trip)
+    .select()
+    .returns<Trips>()
+    .single()
+  return { data, error }
+})
+
+export const updateTrip = cache(async (supabase: SupabaseClient, trip: GroupTripType) => {
+  const { data, error } = await supabase
+    .from('trips')
+    .update(trip)
+    .eq('id', trip.id)
+    .select()
+    .returns<Trips>()
+    .single()
+  return { data, error }
+})
+
+export const deleteTrip = cache(async (supabase: SupabaseClient, tripId: string) => {
+  const { data, error } = await supabase
+    .from('trips')
+    .delete()
+    .eq('id', tripId)
+    .select()
+    .returns<Trips>()
+    .single()
+  return { data, error }
+})
