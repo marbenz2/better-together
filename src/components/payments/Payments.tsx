@@ -1,5 +1,6 @@
 'use client'
 
+import { useMemo } from 'react'
 import {
   Card,
   CardBackPlate,
@@ -24,7 +25,10 @@ export default function Payments() {
   const { paymentDetails, getPaymentDetails } = usePaymentStore()
   const { user, subscribedTrips } = useUserStore()
 
-  const filteredTrips = subscribedTrips?.filter((trip) => trip.trips.group_id === groupId)
+  const filteredTrips = useMemo(
+    () => subscribedTrips?.filter((trip) => trip.trips.group_id === groupId),
+    [subscribedTrips, groupId],
+  )
 
   if (!paymentDetails) return <Spinner />
 
@@ -183,7 +187,7 @@ export default function Payments() {
         <CardTitle>Bezahlung</CardTitle>
         <CardDescription>Hier werden alle ausstehenden Zahlungen angezeigt</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex flex-col gap-4">
         {paymentDetails && filteredTrips && filteredTrips.length > 0 ? (
           filteredTrips?.map((trip) => {
             const paymentStatus = paymentDetails?.find((sub) => sub.trip_id === trip.trips.id)
