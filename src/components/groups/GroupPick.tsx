@@ -23,14 +23,14 @@ export default function GroupPick() {
           defaultValue={selectedGroupName || undefined}
           value={selectedGroupName || undefined}
         >
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-full max-w-[250px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             {userGroups.map((group) => (
               <SelectItem key={group.group_id} value={group.groups.name}>
                 <span className="flex items-center gap-2">
-                  {group.favourite && <StarIcon fill="white" className="w-4 h-4" />}
+                  {group.favourite && <StarIcon fill="white" className="w-4 h-4 flex-shrink-0" />}
                   {group.groups.name}
                 </span>
               </SelectItem>
