@@ -2,9 +2,10 @@
 
 import React, { useEffect } from 'react'
 import GroupPick from './GroupPick'
-import { Card, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useGroupStore } from '@/stores/groupStores'
 import { usePathname } from 'next/navigation'
+import Link from 'next/link'
 
 export default function ConditionalShowGroup() {
   const pathname = usePathname()
@@ -38,6 +39,16 @@ export default function ConditionalShowGroup() {
           <Card className="w-full max-w-7xl">
             <CardHeader>
               <CardTitle>Du bist in keiner Gruppe</CardTitle>
+              {pathname !== '/protected/groups' && (
+                <CardDescription>
+                  <Link
+                    href="/protected/groups"
+                    className="underline decoration-dashed underline-offset-1"
+                  >
+                    Erstelle eine neue Gruppe oder trete einer vorhandenen Gruppe bei
+                  </Link>
+                </CardDescription>
+              )}
             </CardHeader>
           </Card>
         ))}
