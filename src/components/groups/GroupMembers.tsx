@@ -4,11 +4,13 @@ import { Badge } from '@/components/ui/badge'
 import { CardTitle } from '@/components/ui/card'
 import { useGroupStore } from '@/stores/groupStores'
 import { useEffect, useMemo } from 'react'
+import DropdownBadge from '@/components/DropdownBadge'
+import { useUserStore } from '@/stores/userStore'
 
 const getBadgeColor = (role: string): string => {
   switch (role) {
     case 'admin':
-      return 'bg-primary text-yellow-400'
+      return 'bg-primary text-info'
     case 'member':
     default:
       return 'bg-primary text-white'
@@ -16,6 +18,7 @@ const getBadgeColor = (role: string): string => {
 }
 
 export default function GroupMembers() {
+  const { user } = useUserStore()
   const { groupId, groupMembers, publicProfiles, getAllGroupMembers, getAllPublicProfiles } =
     useGroupStore()
 
@@ -40,6 +43,8 @@ export default function GroupMembers() {
     }
   }, [memberIds, getAllPublicProfiles])
 
+  const isAdmin = groupMembers?.find((gm) => gm.user_id === user?.id)?.role === 'admin'
+
   return (
     <div className="flex flex-col gap-4 w-full justify-center">
       <CardTitle className="text-xl">Gruppenmitglieder</CardTitle>
@@ -49,20 +54,36 @@ export default function GroupMembers() {
           publicProfiles.map((member) => {
             const groupMember = groupMembers.find((gm) => gm.user_id === member.id)
             const badgeColor = getBadgeColor(groupMember?.role || 'member')
+            const isCurrentUser = member.id === user?.id
+            const borderStyle = isCurrentUser ? 'ring-2 ring-info-foreground' : ''
 
-            return (
-              <Badge
-                key={member.id}
-                className={`flex items-center justify-between gap-4 cursor-pointer ${badgeColor}`}
-              >
-                {member.first_name} {member.last_name}
-              </Badge>
-            )
+            if (isAdmin && member.id !== user?.id) {
+              return (
+                <DropdownBadge
+                  key={member.id}
+                  className={`${badgeColor} ${borderStyle}`}
+                  isAdmin={isAdmin}
+                  userId={member.id}
+                  groupId={groupId || ''}
+                >
+                  {member.first_name} {member.last_name}
+                </DropdownBadge>
+              )
+            } else {
+              return (
+                <Badge
+                  key={member.id}
+                  className={`bg-primary text-white ${badgeColor} ${borderStyle}`}
+                >
+                  {member.first_name} {member.last_name}
+                </Badge>
+              )
+            }
           })}
         {publicProfiles && publicProfiles.length === 1 && (
           <Badge
             key={publicProfiles[0].id}
-            className={`flex items-center justify-between gap-4 cursor-pointer ${getBadgeColor(groupMembers[0]?.role)}`}
+            className={`bg-primary text-white ${getBadgeColor(groupMembers[0]?.role)} ring-2 ring-info-foreground`}
           >
             {publicProfiles[0].first_name} {publicProfiles[0].last_name}
           </Badge>
