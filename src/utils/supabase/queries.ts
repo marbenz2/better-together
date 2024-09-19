@@ -119,6 +119,15 @@ export const getSubscribedTrips = cache(async (supabase: SupabaseClient, userId:
   return { data, error }
 })
 
+export const getPayments = cache(async (supabase: SupabaseClient, groupId: string) => {
+  const { data, error } = await supabase
+    .from('trips')
+    .select('id, down_payment, full_payment, final_payment')
+    .eq('group_id', groupId)
+    .returns<Pick<Trips, 'id' | 'down_payment' | 'full_payment' | 'final_payment'>[]>()
+  return { data, error }
+})
+
 export const getPaymentStatus = cache(
   async (supabase: SupabaseClient, userId: string, tripId: string) => {
     const { data, error } = await supabase
