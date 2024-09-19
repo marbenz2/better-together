@@ -6,7 +6,6 @@ import { useGroupStore } from '@/stores/groupStores'
 import { useTripStore } from '@/stores/tripStores'
 import { useUserStore } from '@/stores/userStore'
 import { useInitializationStore } from '@/stores/initializationStore'
-import { Card, CardDescription, CardHeader } from '@/components/ui/card'
 import InfoCard from '@/components/ui/info-card'
 
 export default function TripsPage() {
