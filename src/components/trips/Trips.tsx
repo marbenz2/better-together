@@ -1,6 +1,6 @@
 'use client'
 
-import TripCard from '@/components/TripCard'
+import TripCard from '@/components/trip/TripCard'
 import {
   Accordion,
   AccordionContent,
@@ -19,8 +19,11 @@ import { useUserStore } from '@/stores/userStore'
 import { useTripStore } from '@/stores/tripStores'
 import type { Trips } from '@/types/supabase'
 import { ExtendedTrip } from '@/types/trips'
-import CheckSubscribeIcon from './CheckSubscribeIcon'
+import CheckSubscribeIcon from '../CheckSubscribeIcon'
 import { setTripStatus } from '@/utils/supabase/queries'
+import { Button } from '@/components/ui/button'
+import Link from 'next/link'
+import { PlusIcon } from 'lucide-react'
 
 export default function Trips() {
   const { user, subscribedTrips } = useUserStore()
@@ -51,7 +54,10 @@ export default function Trips() {
       try {
         await setTripStatus(trip.id, userId, status)
       } catch (err) {
-        console.error((err as any).message)
+        console.error('Fehler beim Aktualisieren des Trip-Status:', err)
+        console.error('Trip ID:', trip.id)
+        console.error('User ID:', userId)
+        console.error('Neuer Status:', status)
       }
     }
   }
@@ -91,6 +97,12 @@ export default function Trips() {
 
   return (
     <div className="flex flex-col gap-12 max-w-7xl w-full">
+      <Link className="text-primary" href={`/protected/create-trip`}>
+        <Button className="relative flex text-xs pl-10 w-full max-w-lg">
+          <PlusIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" />
+          Reise erstellen
+        </Button>
+      </Link>
       <div className="flex flex-col md:flex-row gap-12">
         <CardBackPlate>
           <CardHeader>

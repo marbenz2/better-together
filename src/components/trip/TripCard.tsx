@@ -1,8 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card'
-import { Table, TableBody, TableCell, TableHead, TableRow } from './ui/table'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/card'
+import { Table, TableBody, TableCell, TableHead, TableRow } from '../ui/table'
 import Image from 'next/image'
 import { Trips } from '@/types/supabase'
 
@@ -39,7 +39,7 @@ const TripCard = ({
           </CardDescription>
           <div className="flex w-full h-full overflow-clip">
             <Image
-              priority
+              loading="lazy"
               src={trip.image}
               alt={trip.name}
               width={600}

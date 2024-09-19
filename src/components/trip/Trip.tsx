@@ -2,19 +2,26 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import Image from 'next/image'
-import { SquareArrowOutUpRight } from 'lucide-react'
+import { SquareArrowOutUpRight, Trash2Icon, TrashIcon } from 'lucide-react'
 import { Table, TableBody, TableCell, TableHead, TableRow } from '@/components/ui/table'
 import { TripSubscription } from '@/components/subscribe-button'
 import Link from 'next/link'
-import { BackButtonClient } from './ui/back-button-client'
+import { BackButtonClient } from '@/components/ui/back-button-client'
 import { useUserStore } from '@/stores/userStore'
 import { useTripStore } from '@/stores/tripStores'
 import { useEffect } from 'react'
-import Spinner from './ui/Spinner'
+import Spinner from '@/components/ui/Spinner'
+import { EditButton } from '@/components/ui/edit-button'
+import { ResponsiveDialog } from '@/components/ResponsiveDialog'
+import { useRouter } from 'next/navigation'
 
 export default function Trip() {
+  const router = useRouter()
   const { subscribedTrips, isSubscribed, setIsSubscribed } = useUserStore()
-  const { trip } = useTripStore()
+  const { trip, deleteTrip } = useTripStore()
+  const { user } = useUserStore()
+
+  const isCreator = trip?.created_by === user?.id
 
   useEffect(() => {
     if (trip && subscribedTrips) {
@@ -26,6 +33,15 @@ export default function Trip() {
 
   if (!trip) return <Spinner />
 
+  const handleDeleteTrip = async () => {
+    try {
+      await deleteTrip(trip.id)
+      router.push('/protected/trips')
+    } catch (error) {
+      console.error('Fehler beim Löschen der Reise:', error)
+    }
+  }
+
   const subscription = subscribedTrips?.find(
     (subscribedTrip) => subscribedTrip.trips.id === trip.id,
   )
@@ -36,15 +52,36 @@ export default function Trip() {
     <>
       <Card className="flex flex-col md:flex-row max-w-7xl w-full">
         <CardHeader className="flex-1">
-          <BackButtonClient className="static w-fit mb-2" />
-          <Image
-            src={trip.image}
-            alt={trip.name}
-            width={600}
-            height={400}
-            className="w-fit object-contain"
-            priority={true}
-          />
+          <div className="flex justify-between mb-4">
+            <BackButtonClient className="static" />
+            {isCreator && (
+              <div className="flex gap-12">
+                <EditButton tripId={trip.id} className="static" />
+                <ResponsiveDialog
+                  title="Reise löschen"
+                  message="Wollen Sie diese Reise wirklich löschen?"
+                  confirmText="Reise löschen"
+                  info="Diese Aktion kann nicht rückgängig gemacht werden."
+                  infoType="warning"
+                  buttonVariant="destructive"
+                  onConfirm={handleDeleteTrip}
+                >
+                  <div className="flex items-center justify-center w-full h-full cursor-pointer">
+                    <Trash2Icon className="text-destructive" size={24} />
+                  </div>
+                </ResponsiveDialog>
+              </div>
+            )}
+          </div>
+          <div className="relative flex w-full h-64 md:h-full">
+            <Image
+              loading="lazy"
+              src={trip.image}
+              alt={trip.name}
+              fill
+              className="object-contain object-top"
+            />
+          </div>
         </CardHeader>
         <CardContent className="flex flex-col md:pt-6 md:pl-0 gap-12 justify-between flex-1">
           <div className="flex flex-col gap-4">
