@@ -180,6 +180,7 @@ export type Database = {
           anreise_link: string
           area: string | null
           beds: number
+          created_by: string
           date_from: string
           date_to: string
           down_payment: number | null
@@ -201,6 +202,7 @@ export type Database = {
           anreise_link: string
           area?: string | null
           beds: number
+          created_by: string
           date_from: string
           date_to: string
           down_payment?: number | null
@@ -222,6 +224,7 @@ export type Database = {
           anreise_link?: string
           area?: string | null
           beds?: number
+          created_by?: string
           date_from?: string
           date_to?: string
           down_payment?: number | null
@@ -240,6 +243,13 @@ export type Database = {
           street_number?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "trips_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "trips_group_id_fkey"
             columns: ["group_id"]
