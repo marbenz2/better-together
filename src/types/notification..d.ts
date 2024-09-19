@@ -1,4 +1,4 @@
-export type NotificationVariant = 'default' | 'destructive' | 'success'
+export type NotificationVariant = 'default' | 'destructive' | 'success' | 'info'
 
 export interface NotificationMessage {
   title: string
