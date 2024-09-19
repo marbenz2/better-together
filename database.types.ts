@@ -179,6 +179,7 @@ export type Database = {
         Row: {
           anreise_link: string
           area: string | null
+          available_spots: number
           beds: number
           created_by: string
           date_from: string
@@ -190,6 +191,7 @@ export type Database = {
           id: string
           image: string
           land: string
+          max_spots: number
           name: string
           ort: string
           plz: string
@@ -201,6 +203,7 @@ export type Database = {
         Insert: {
           anreise_link: string
           area?: string | null
+          available_spots: number
           beds: number
           created_by: string
           date_from: string
@@ -212,6 +215,7 @@ export type Database = {
           id?: string
           image: string
           land: string
+          max_spots: number
           name: string
           ort: string
           plz: string
@@ -223,6 +227,7 @@ export type Database = {
         Update: {
           anreise_link?: string
           area?: string | null
+          available_spots?: number
           beds?: number
           created_by?: string
           date_from?: string
@@ -234,6 +239,7 @@ export type Database = {
           id?: string
           image?: string
           land?: string
+          max_spots?: number
           name?: string
           ort?: string
           plz?: string
