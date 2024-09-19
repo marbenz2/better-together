@@ -3,7 +3,7 @@
 import React, { useMemo } from 'react'
 import Link from 'next/link'
 import { CardDescription } from '@/components/ui/card'
-import TripCard from '@/components/TripCard'
+import TripCard from '@/components/trip/TripCard'
 import { useGroupStore } from '@/stores/groupStores'
 import { useUserStore } from '@/stores/userStore'
 
