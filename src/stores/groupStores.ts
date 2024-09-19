@@ -12,6 +12,9 @@ import {
   getPublicProfiles,
   getUser,
   getUserGroups,
+  removeUserFromGroup,
+  makeUserAdmin,
+  removeUserAdmin,
 } from '@/utils/supabase/queries'
 import { NotificationMessage } from '@/types/notification.'
 import { showNotification } from '@/lib/utils'
@@ -35,6 +38,9 @@ interface GroupState {
   getAllGroupMembers: (groupId: string) => Promise<void>
   getAllPublicProfiles: (user_ids: string[]) => Promise<void>
   getAllUserGroups: (userId: string) => Promise<void>
+  removeUserFromGroup: (userId: string, groupId: string) => Promise<void>
+  makeUserAdmin: (userId: string, groupId: string) => Promise<void>
+  removeUserAdmin: (userId: string, groupId: string) => Promise<void>
 }
 
 const handleError = (error: any, defaultTitle: string, defaultMessage: string) => {
@@ -119,6 +125,7 @@ export const useGroupStore = create<GroupState>((set, get) => ({
           ],
           groupId: group.id,
           selectedGroupName: group.name,
+          groupMembers: [],
         }))
         showNotification(
           'Gruppe erstellt',
@@ -164,6 +171,7 @@ export const useGroupStore = create<GroupState>((set, get) => ({
           ],
           groupId: group.id,
           selectedGroupName: group.name,
+          groupMembers: [],
         }))
         showNotification(
           'Gruppe beigetreten',
@@ -196,6 +204,7 @@ export const useGroupStore = create<GroupState>((set, get) => ({
         groupId: state.groupId === groupIdToLeave ? null : state.groupId,
         selectedGroupName:
           state.selectedGroupName === groupIdToLeave ? null : state.selectedGroupName,
+        groupMembers: undefined,
       }))
 
       showNotification(
@@ -251,6 +260,7 @@ export const useGroupStore = create<GroupState>((set, get) => ({
           userGroups: updatedGroups,
           groupId: newGroupId,
           selectedGroupName: newSelectedGroupName,
+          groupMembers: undefined,
         }
       })
     } catch (error) {
@@ -368,6 +378,72 @@ export const useGroupStore = create<GroupState>((set, get) => ({
         error,
         'Fehler beim Laden der Gruppen',
         'Es ist ein Fehler beim Laden der Gruppen aufgetreten, bitte versuche es später erneut.',
+      )
+    }
+  },
+
+  removeUserFromGroup: async (userId, groupId) => {
+    try {
+      const supabase = createClient()
+      const { error } = await removeUserFromGroup(supabase, userId, groupId)
+      if (error) throw error
+      set((state) => ({
+        groupMembers: state.groupMembers.filter((member) => member.user_id !== userId),
+      }))
+      showNotification('Benutzer entfernt', 'Der Benutzer wurde erfolgreich entfernt.', 'success')
+    } catch (error) {
+      handleError(
+        error,
+        'Fehler beim Entfernen des Benutzers',
+        'Es ist ein Fehler beim Entfernen des Benutzers aufgetreten, bitte versuche es später erneut.',
+      )
+    }
+  },
+
+  makeUserAdmin: async (userId, groupId) => {
+    try {
+      const supabase = createClient()
+      const { error } = await makeUserAdmin(supabase, userId, groupId)
+      if (error) throw error
+      set((state) => ({
+        groupMembers: state.groupMembers.map((member) =>
+          member.user_id === userId ? { ...member, role: 'admin' } : member,
+        ),
+      }))
+      showNotification(
+        'Admin gesetzt',
+        'Der Benutzer wurde erfolgreich zum Admin ernannt.',
+        'success',
+      )
+    } catch (error) {
+      handleError(
+        error,
+        'Fehler beim Setzen des Admins',
+        'Es ist ein Fehler beim Setzen des Admins aufgetreten, bitte versuche es später erneut.',
+      )
+    }
+  },
+
+  removeUserAdmin: async (userId, groupId) => {
+    try {
+      const supabase = createClient()
+      const { error } = await removeUserAdmin(supabase, userId, groupId)
+      if (error) throw error
+      set((state) => ({
+        groupMembers: state.groupMembers.map((member) =>
+          member.user_id === userId ? { ...member, role: 'member' } : member,
+        ),
+      }))
+      showNotification(
+        'Admin entfernt',
+        'Der Benutzer wurde erfolgreich als Admin entzogen.',
+        'success',
+      )
+    } catch (error) {
+      handleError(
+        error,
+        'Fehler beim Entfernen des Admins',
+        'Es ist ein Fehler beim Entfernen des Admins aufgetreten, bitte versuche es später erneut.',
       )
     }
   },
