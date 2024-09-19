@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import Image from 'next/image'
-import { SquareArrowOutUpRight, Trash2Icon, TrashIcon } from 'lucide-react'
+import { SquareArrowOutUpRight, Trash2Icon } from 'lucide-react'
 import { Table, TableBody, TableCell, TableHead, TableRow } from '@/components/ui/table'
 import { TripSubscription } from '@/components/subscribe-button'
 import Link from 'next/link'
