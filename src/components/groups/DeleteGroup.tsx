@@ -15,6 +15,8 @@ import { TrashIcon } from 'lucide-react'
 export default function DeleteGroup() {
   const { deleteGroup, userGroups, groupId } = useGroupStore()
 
+  const groupName = userGroups.find((group) => group.group_id === groupId)?.groups.name
+
   const handleDeleteGroup = async (groupId: string | null) => {
     if (!groupId) return
     try {
@@ -33,9 +35,13 @@ export default function DeleteGroup() {
           </AccordionTrigger>
           <AccordionContent>
             <ResponsiveDialog
-              type="delete"
-              groupName={userGroups.find((group) => group.group_id === groupId)?.groups.name}
-              onDelete={() => handleDeleteGroup(groupId)}
+              title="Gruppe löschen"
+              message={`Bist du sicher, dass du die Gruppe "${groupName}" löschen möchtest?`}
+              confirmText={`Gruppe löschen`}
+              onConfirm={() => handleDeleteGroup(groupId)}
+              buttonVariant="destructive"
+              info="Achtung: Diese Aktion kann nicht rückgängig gemacht werden. Durch das Löschen der Gruppe werden alle Gruppenmitglieder entfernt und alle Daten und Reisen dieser Gruppe gelöscht."
+              infoType="warning"
             >
               <div className="flex flex-col gap-4 w-full items-center">
                 <Button
