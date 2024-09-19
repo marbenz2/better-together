@@ -21,8 +21,8 @@ export default async function Index() {
         <Header />
         {!user && (
           <div className="flex flex-col gap-8 items-center justify-center">
-            <h2 className="text-lg lg:text-xl font-thin !leading-tight text-center">
-              Leg los und plane deinen nächsten Urlaub.
+            <h2 className="text-lg lg:text-xl !leading-tight text-center">
+              Legt los und plant euren nächsten Urlaub.
             </h2>
             <AuthButton />
           </div>

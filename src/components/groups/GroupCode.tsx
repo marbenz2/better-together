@@ -16,7 +16,7 @@ export default function GroupCode({ userGroups, groupId }: GroupCodeProps) {
     if (!groupId || groupId === '') {
       showNotification(
         'Fehler beim Kopieren des Einladungscodes',
-        'Der Einladungscode ist leer. Bitte geben Sie einen gültigen Einladungscode ein.',
+        'Der Einladungscode ist leer. Bitte gib einen gültigen Einladungscode ein.',
         'destructive',
       )
     }
