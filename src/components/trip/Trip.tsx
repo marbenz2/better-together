@@ -14,14 +14,17 @@ import Spinner from '@/components/ui/Spinner'
 import { EditButton } from '@/components/ui/edit-button'
 import { ResponsiveDialog } from '@/components/ResponsiveDialog'
 import { useRouter } from 'next/navigation'
+import { useGroupStore } from '@/stores/groupStores'
+import InfoCard from '../ui/info-card'
 
 export default function Trip() {
   const router = useRouter()
-  const { subscribedTrips, isSubscribed, setIsSubscribed } = useUserStore()
+  const { user, subscribedTrips, isSubscribed, setIsSubscribed } = useUserStore()
   const { trip, deleteTrip } = useTripStore()
-  const { user } = useUserStore()
+  const { userGroups } = useGroupStore()
 
   const isCreator = trip?.created_by === user?.id
+  const isCurrentUserInGroup = userGroups.some((group) => group.groups.id === trip?.group_id)
 
   useEffect(() => {
     if (trip && subscribedTrips) {
@@ -30,6 +33,18 @@ export default function Trip() {
       )
     }
   }, [trip, subscribedTrips, setIsSubscribed])
+
+  if (!isCurrentUserInGroup) {
+    return (
+      <>
+        <InfoCard
+          description="Du hast keinen Zugriff auf diese Reise, da du nicht in dieser Gruppe bist."
+          variant="info"
+        />
+        <BackButtonClient className="static" />
+      </>
+    )
+  }
 
   if (!trip) return <Spinner />
 
@@ -157,12 +172,18 @@ export default function Trip() {
                 </TableCell>
               </TableRow>
               <TableRow>
-                <TableHead>Plätze</TableHead>
+                <TableHead>Zimmer</TableHead>
+                <TableCell>{trip.rooms}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableHead>Betten</TableHead>
                 <TableCell>{trip.beds}</TableCell>
               </TableRow>
               <TableRow>
-                <TableHead>Zimmer</TableHead>
-                <TableCell>{trip.rooms}</TableCell>
+                <TableHead>Verfügbare Plätze</TableHead>
+                <TableCell>
+                  {trip.available_spots} / {trip.max_spots}
+                </TableCell>
               </TableRow>
             </TableBody>
           </Table>{' '}
@@ -177,7 +198,14 @@ export default function Trip() {
               })}
             </CardDescription>
           )}
-          {!tripDone && <TripSubscription />}
+          {!tripDone && isSubscribed && trip.available_spots > 0 && <TripSubscription />}
+          {!tripDone && !isSubscribed && trip.available_spots > 0 && <TripSubscription />}
+          {!tripDone && isSubscribed && trip.available_spots === 0 && <TripSubscription />}
+          {!tripDone && !isSubscribed && trip.available_spots === 0 && (
+            <CardDescription className="text-muted-foreground">
+              Diese Reise ist bereits ausgebucht.
+            </CardDescription>
+          )}
           {tripDone && (
             <CardDescription className="text-muted-foreground">
               Diese Reise ist bereits vorbei. Wir hoffen, ihr hattet eine tolle Zeit!
