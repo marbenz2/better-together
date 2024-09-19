@@ -8,15 +8,15 @@ import { SubmitButton } from '@/components/forms/submit-button'
 import { CardTitle } from '@/components/ui/card'
 import { LogInIcon } from 'lucide-react'
 import { useGroupStore } from '@/stores/groupStores'
+import { ResponsiveDialog } from '@/components/ResponsiveDialog'
 
 export default function JoinGroup() {
   const { joinGroup } = useGroupStore()
   const [newJoinGroupName, setNewJoinGroupName] = useState('')
 
-  const handleJoinGroup = async (formData: FormData) => {
-    const groupIdInput = formData.get('groupIdJoin') as string
+  const handleJoinGroup = async () => {
     try {
-      await joinGroup(groupIdInput)
+      await joinGroup(newJoinGroupName)
       setNewJoinGroupName('')
     } catch (error) {
       console.error('Fehler beim Beitreten der Gruppe:', error)
@@ -27,10 +27,14 @@ export default function JoinGroup() {
     setNewJoinGroupName(event.target.value)
   }
 
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+  }
+
   return (
-    <form className="flex flex-col gap-4 w-full">
+    <form className="flex flex-col gap-4 w-full" onSubmit={handleSubmit}>
       <Label htmlFor="groupIdJoin">
-        <CardTitle className="text-xl">Einer Gruppe beitereten</CardTitle>
+        <CardTitle className="text-xl">Einer Gruppe beitreten</CardTitle>
       </Label>
       <div className="flex flex-col gap-4 w-full items-center">
         <Input
@@ -44,16 +48,23 @@ export default function JoinGroup() {
           onChange={handleGroupJoinInputChange}
           className="w-full max-w-lg"
         />
-        <SubmitButton
-          aria-label="Gruppe beitreten"
-          formAction={handleJoinGroup}
-          pendingText="Signing In..."
-          className="relative flex text-xs pl-10 w-full max-w-lg"
+        <ResponsiveDialog
+          title="Gruppe beitreten"
+          message={`Bist du sicher, dass du der Gruppe mit dem Einladungscode "${newJoinGroupName}" beitreten möchtest?`}
+          confirmText="Gruppe beitreten"
+          onConfirm={handleJoinGroup}
           disabled={newJoinGroupName === ''}
         >
-          <span className="xs:inline truncate">Gruppe beitreten</span>
-          <LogInIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" />
-        </SubmitButton>
+          <SubmitButton
+            aria-label="Gruppe beitreten"
+            pendingText="Gruppe beitreten..."
+            className="relative flex text-xs pl-10 w-full max-w-lg"
+            disabled={newJoinGroupName === ''}
+          >
+            <span className="xs:inline truncate">Gruppe beitreten</span>
+            <LogInIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" />
+          </SubmitButton>
+        </ResponsiveDialog>
       </div>
     </form>
   )
