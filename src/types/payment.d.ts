@@ -1,6 +1,14 @@
 import { Tables } from 'database.types'
 
 type TripMembers = Tables<'trip_members'>
+type Trips = Tables<'trips'>
+
+export type PaymentsType = {
+  id: Trips['id']
+  down_payment: Trips['down_payment']
+  full_payment: Trips['full_payment']
+  final_payment: Trips['final_payment']
+}
 
 export type PaymentStatusType = {
   id: TripMembers['id']
