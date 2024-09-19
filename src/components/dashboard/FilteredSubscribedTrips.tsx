@@ -18,7 +18,7 @@ export default function FilteredSubscribedTrips() {
   }, [subscribedTrips, groupId])
 
   return (
-    <div className="block xs:flex gap-4">
+    <div className="flex flex-col sm:flex-row gap-4">
       {filteredSubscribedTrips && filteredSubscribedTrips.length > 0 ? (
         filteredSubscribedTrips.map((filteredSubscribedTrip) =>
           filteredSubscribedTrip ? (
