@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import Trip from '@/components/Trip'
+import Trip from '@/components/trip/Trip'
 import { useTripStore } from '@/stores/tripStores'
 import { usePaymentStore } from '@/stores/paymentStore'
 import { useToast } from '@/components/ui/use-toast'
