@@ -29,6 +29,7 @@ export default function LeaveGroup() {
   }
 
   // Prüfen ob aktueller User der letzte groupMember der Gruppe ist und mit role admin
+  const groupName = userGroups.find((group) => group.group_id === groupId)?.groups.name
   const isLastAdmin =
     Array.isArray(groupMembers) &&
     user &&
@@ -44,10 +45,13 @@ export default function LeaveGroup() {
           </AccordionTrigger>
           <AccordionContent>
             <ResponsiveDialog
+              title="Gruppe verlassen"
+              message={`Bist du sicher, dass du die Gruppe "${groupName}" verlassen möchtest?`}
+              confirmText={`Gruppe verlassen`}
+              onConfirm={() => handleLeaveGroup(groupId)}
               disabled={isLastAdmin ?? false}
-              type="leave"
-              groupName={userGroups.find((group) => group.group_id === groupId)?.groups.name}
-              onLeave={() => handleLeaveGroup(groupId)}
+              disabledDescription="Du bist der einzige Admin der Gruppe. Du kannst die Gruppe nur verlassen, wenn du einem anderen Nutzer Adminrechte überträgst oder die Gruppe löschst."
+              buttonVariant="destructive"
             >
               <div className="flex flex-col gap-4 w-full items-center">
                 <Button
