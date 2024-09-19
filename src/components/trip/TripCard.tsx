@@ -61,7 +61,9 @@ const TripCard = ({
               </TableRow>
               <TableRow>
                 <TableHead>Plätze</TableHead>
-                <TableCell>{trip.beds}</TableCell>
+                <TableCell>
+                  {trip.available_spots} / {trip.max_spots}
+                </TableCell>
               </TableRow>
             </TableBody>
           </Table>
