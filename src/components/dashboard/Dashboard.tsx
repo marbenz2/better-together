@@ -13,9 +13,11 @@ import { Button } from '@/components/ui/button'
 import FilteredSubscribedTrips from './FilteredSubscribedTrips'
 import { useUserStore } from '@/stores/userStore'
 import Spinner from '@/components/ui/Spinner'
+import { useGroupStore } from '@/stores/groupStores'
 
 export default function Dashboard() {
   const { publicProfile } = useUserStore()
+  const { userGroups } = useGroupStore()
 
   return (
     <CardBackPlate className="flex flex-col max-w-7xl w-full gap-8">
@@ -25,11 +27,12 @@ export default function Dashboard() {
         </CardTitle>
         <CardDescription>Hier findest du alle Informationen zu deinen Reisen.</CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-col gap-4">
-        <CardTitle>Angemeldete Reisen:</CardTitle>
-        {/* Anzeige der angemeldeten Reisen zur ausgewählten Gruppe */}
-        <FilteredSubscribedTrips />
-      </CardContent>
+      {userGroups && userGroups.length > 0 && (
+        <CardContent className="flex flex-col gap-4">
+          <CardTitle>Angemeldete Reisen:</CardTitle>
+          <FilteredSubscribedTrips />
+        </CardContent>
+      )}
       <CardFooter className="flex w-full pt-12 justify-center">
         <div className="flex flex-col xs:flex-row gap-4 w-full max-w-lg">
           <Link href={'protected/trips'} className="w-full">
