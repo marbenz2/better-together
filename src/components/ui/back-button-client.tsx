@@ -17,7 +17,7 @@ const BackButtonClient = React.forwardRef<HTMLAnchorElement, BackButtonProps>(
       <a
         ref={ref}
         className={cn(
-          'absolute left-8 top-8 py-2 px-4 no-underline text-foreground flex items-center group text-sm',
+          'absolute left-8 top-8 py-2 px-2 no-underline text-foreground flex items-center group text-sm',
           className,
         )}
         href="#"
