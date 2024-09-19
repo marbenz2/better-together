@@ -3,11 +3,11 @@ import { create } from 'zustand'
 interface ToastState {
   title: string | null
   message: string | null
-  variant: 'default' | 'destructive' | 'success'
+  variant: 'default' | 'destructive' | 'success' | 'info'
   showToast: (
     title: string,
     message: string,
-    variant: 'default' | 'destructive' | 'success',
+    variant: 'default' | 'destructive' | 'success' | 'info',
   ) => void
   clearToast: () => void
 }
