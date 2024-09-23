@@ -126,24 +126,17 @@ export default function CreateTrip() {
 
     const formData = new FormData()
     formData.append('file', file)
+    formData.append('id', groupId ?? '')
 
     try {
       const response = await fetch('/api/image-upload', {
         method: 'POST',
         body: formData,
       })
-
-      console.log('Antwort:', response)
-
       if (!response.ok) {
         throw new Error('Fehler beim Hochladen des Bildes')
       }
-
       const data = await response.json()
-      console.log('Daten:', data)
-
-      console.log('Bild-URL:', data.imageUrl)
-
       setTripData((prevData) => ({
         ...prevData,
         image: data.imageUrl,
