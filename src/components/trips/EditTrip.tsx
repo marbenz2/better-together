@@ -48,13 +48,29 @@ const INITIAL_TRIP_DATA: TripDataState = {
 }
 
 const EditTrip = () => {
-  const { trip, updateTrip } = useTripStore()
+  const { trip, updateTrip, getTrip } = useTripStore()
   const router = useRouter()
   const { groupId } = useGroupStore()
   const { user } = useUserStore()
 
   const [tripData, setTripData] = useState<TripDataState>(trip || INITIAL_TRIP_DATA)
   const [isFormValid, setIsFormValid] = useState(false)
+
+  const handleInputChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target
+    setTripData((prevData) => ({
+      ...prevData,
+      [name]: ['beds', 'rooms', 'street_number'].includes(name)
+        ? value === ''
+          ? ('' as unknown as number)
+          : parseInt(value, 10)
+        : ['down_payment', 'full_payment', 'final_payment'].includes(name)
+          ? value === ''
+            ? null
+            : parseFloat(value)
+          : value,
+    }))
+  }, [])
 
   const validateForm = useCallback(() => {
     const requiredFields: (keyof TripDataState)[] = [
@@ -82,21 +98,30 @@ const EditTrip = () => {
     return isValid
   }, [tripData])
 
-  const handleInputChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = event.target
-    setTripData((prevData) => ({
-      ...prevData,
-      [name]: ['beds', 'rooms', 'street_number'].includes(name)
-        ? value === ''
-          ? ('' as unknown as number)
-          : parseInt(value, 10)
-        : ['down_payment', 'full_payment', 'final_payment'].includes(name)
-          ? value === ''
-            ? null
-            : parseFloat(value)
-          : value,
-    }))
-  }, [])
+  useEffect(() => {
+    validateForm()
+  }, [tripData, validateForm])
+
+  useEffect(() => {
+    if (groupId) {
+      setTripData((prevData) => ({
+        ...prevData,
+        group_id: groupId,
+        created_by: user.id,
+      }))
+    }
+  }, [groupId, user.id])
+
+  useEffect(() => {
+    if (trip) {
+      setTripData((prevData) => ({
+        ...prevData,
+        ...trip,
+        date_from: formatDate(trip.date_from),
+        date_to: formatDate(trip.date_to),
+      }))
+    }
+  }, [trip])
 
   const handleUpdateTrip = async () => {
     const anreiseLink = googleMapsUrl(
@@ -107,9 +132,9 @@ const EditTrip = () => {
       tripData.plz,
       tripData.ort,
     )
-    console.log(anreiseLink)
     try {
       await updateTrip({ ...tripData, anreise_link: anreiseLink } as GroupTripType)
+      await getTrip(trip?.id || '')
       router.push('/protected/trips')
     } catch (error) {
       console.error('Fehler beim Aktualisieren der Reise:', error)
@@ -126,6 +151,7 @@ const EditTrip = () => {
 
     const formData = new FormData()
     formData.append('file', file)
+    formData.append('id', groupId ?? '')
 
     try {
       const response = await fetch('/api/image-upload', {
@@ -152,31 +178,6 @@ const EditTrip = () => {
     const date = new Date(dateString)
     return date.toISOString().split('T')[0]
   }
-
-  useEffect(() => {
-    validateForm()
-  }, [tripData, validateForm])
-
-  useEffect(() => {
-    if (groupId) {
-      setTripData((prevData) => ({
-        ...prevData,
-        group_id: groupId,
-        created_by: user.id,
-      }))
-    }
-  }, [groupId, user.id])
-
-  useEffect(() => {
-    if (trip) {
-      setTripData((prevData) => ({
-        ...prevData,
-        ...trip,
-        date_from: formatDate(trip.date_from),
-        date_to: formatDate(trip.date_to),
-      }))
-    }
-  }, [trip])
 
   if (!groupId) {
     return <div>Keine Gruppe gefunden</div>
