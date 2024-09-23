@@ -1,19 +1,20 @@
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { PencilIcon } from 'lucide-react'
 
 interface BackButtonProps extends React.HTMLAttributes<HTMLAnchorElement> {
-  tripId: string
+  id: string
+  type: string
+  children: React.ReactNode
 }
 
 const EditButton = React.forwardRef<HTMLAnchorElement, BackButtonProps>(
-  ({ className, tripId, ...props }, ref) => {
+  ({ className, id, type, children, ...props }, ref) => {
     const router = useRouter()
 
     const handleEdit = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
       e.preventDefault()
-      router.push(`/protected/edit-trip/${tripId}`)
+      router.push(`/protected/edit-${type}/${id}`)
     }
 
     return (
@@ -24,7 +25,7 @@ const EditButton = React.forwardRef<HTMLAnchorElement, BackButtonProps>(
         onClick={handleEdit}
         {...props}
       >
-        <PencilIcon size={24} />
+        {children}
       </a>
     )
   },
