@@ -1,4 +1,4 @@
-import { Trips, TripMembers, GroupMembers, Groups, Profiles } from './supabase'
+import { Trips, TripMembers, GroupMembers, Groups, Profiles } from '@/types/supabase'
 
 export type GroupMembersType = {
   user_id: GroupMembers['user_id']
