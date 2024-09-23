@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import Image from 'next/image'
-import { SquareArrowOutUpRight, Trash2Icon } from 'lucide-react'
+import { PencilIcon, SquareArrowOutUpRight, Trash2Icon } from 'lucide-react'
 import { Table, TableBody, TableCell, TableHead, TableRow } from '@/components/ui/table'
 import { TripSubscription } from '@/components/subscribe-button'
 import Link from 'next/link'
@@ -24,8 +24,6 @@ export default function Trip() {
   const { tripPublicProfiles, userGroups, getAllTripPublicProfiles } = useGroupStore()
 
   const [isLoading, setIsLoading] = useState(false)
-
-  console.log(process.env.NEXT_PUBLIC_GOOGLE_MAPS_SEARCH)
 
   const isCreator = trip?.created_by === user?.id
   const isCurrentUserInGroup = userGroups.some((group) => group.groups.id === trip?.group_id)
@@ -101,7 +99,9 @@ export default function Trip() {
             <BackButtonClient className="static" />
             {isCreator && (
               <div className="flex gap-12">
-                <EditButton tripId={trip.id} className="static" />
+                <EditButton id={trip.id} className="static" type="trip">
+                  <PencilIcon size={24} />
+                </EditButton>
                 <ResponsiveDialog
                   title="Reise löschen"
                   message="Wollen Sie diese Reise wirklich löschen?"
