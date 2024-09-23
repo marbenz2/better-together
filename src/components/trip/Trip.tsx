@@ -9,7 +9,7 @@ import Link from 'next/link'
 import { BackButtonClient } from '@/components/ui/back-button-client'
 import { useUserStore } from '@/stores/userStore'
 import { useTripStore } from '@/stores/tripStores'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Spinner from '@/components/ui/Spinner'
 import { EditButton } from '@/components/ui/edit-button'
 import { ResponsiveDialog } from '@/components/ResponsiveDialog'
@@ -23,23 +23,36 @@ export default function Trip() {
   const { tripMembers, trip, deleteTrip, getTripMembers } = useTripStore()
   const { tripPublicProfiles, userGroups, getAllTripPublicProfiles } = useGroupStore()
 
+  const [isLoading, setIsLoading] = useState(false)
+
+  console.log(process.env.NEXT_PUBLIC_GOOGLE_MAPS_SEARCH)
+
   const isCreator = trip?.created_by === user?.id
   const isCurrentUserInGroup = userGroups.some((group) => group.groups.id === trip?.group_id)
 
   useEffect(() => {
     if (trip) {
+      setIsLoading(true)
       getTripMembers(trip.id)
+      setIsLoading(false)
     }
+  }, [trip, getTripMembers])
+
+  useEffect(() => {
     if (tripMembers) {
+      setIsLoading(true)
       getAllTripPublicProfiles(tripMembers.map((member) => member.user_id))
+      setIsLoading(false)
     }
-  }, [trip, getTripMembers, getAllTripPublicProfiles, tripMembers])
+  }, [tripMembers, getAllTripPublicProfiles])
 
   useEffect(() => {
     if (trip && subscribedTrips) {
+      setIsLoading(true)
       setIsSubscribed(
         !!subscribedTrips.find((subscribedTrip) => subscribedTrip.trips.id === trip.id),
       )
+      setIsLoading(false)
     }
   }, [trip, subscribedTrips, setIsSubscribed])
 
@@ -55,7 +68,13 @@ export default function Trip() {
     )
   }
 
-  if (!trip) return <Spinner />
+  if (!trip)
+    return (
+      <>
+        <InfoCard description="Reise konnte nicht geladen werden." variant="info" />
+        <BackButtonClient className="static" />
+      </>
+    )
 
   const handleDeleteTrip = async () => {
     try {
@@ -71,6 +90,8 @@ export default function Trip() {
   )
   const timeOfSubscription = subscription?.subscribed_at
   const tripDone = trip.date_to < new Date().toISOString()
+
+  if (isLoading) return <Spinner />
 
   return (
     <>
