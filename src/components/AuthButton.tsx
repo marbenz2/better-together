@@ -16,8 +16,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu'
+import { useUserStore } from '@/stores/userStore'
 
 export default function AuthButton() {
+  const { publicProfile } = useUserStore()
   const [isOpen, setIsOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -75,7 +77,10 @@ export default function AuthButton() {
       <DropdownMenu open={isOpen} onOpenChange={handleOpenChange}>
         <DropdownMenuTrigger>
           <Avatar>
-            <AvatarImage src={user.user_metadata.avatar_url} />
+            <AvatarImage
+              className="object-contain"
+              src={publicProfile?.profile_picture || undefined}
+            />
             <AvatarFallback>{userInitials}</AvatarFallback>
           </Avatar>
         </DropdownMenuTrigger>
