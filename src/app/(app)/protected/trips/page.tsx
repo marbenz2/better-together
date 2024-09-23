@@ -10,9 +10,9 @@ import InfoCard from '@/components/ui/info-card'
 
 export default function TripsPage() {
   const { groupId } = useGroupStore()
-  const { getGroupTrips } = useTripStore()
   const { user } = useUserStore()
   const { isInitialized } = useInitializationStore()
+  const { getGroupTrips } = useTripStore()
 
   useEffect(() => {
     if (isInitialized && groupId) {
