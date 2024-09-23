@@ -98,7 +98,7 @@ export const updatePublicProfile = cache(
       .update({
         first_name: profile.first_name,
         last_name: profile.last_name,
-        email: profile.email,
+        /* email: profile.email, */
         profile_picture: profile.profile_picture,
       })
       .eq('id', profile.id)
