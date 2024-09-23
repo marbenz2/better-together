@@ -1,6 +1,6 @@
 import { Profiles, Trips, TripMembers } from '@/types/supabase'
 
-export type PublicProfileType = Profiles | null
+export type PublicProfileType = Profiles
 
 export type SubscribedTripsType = {
   trips: Trips
