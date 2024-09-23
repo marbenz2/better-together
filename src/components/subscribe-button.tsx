@@ -8,10 +8,11 @@ import { usePaymentStore } from '@/stores/paymentStore'
 import { addSubscription, removeSubscription } from '@/utils/supabase/queries'
 import { showNotification } from '@/lib/utils'
 import Spinner from './ui/Spinner'
+import { ResponsiveDialog } from './ResponsiveDialog'
 
 export function TripSubscription() {
   const { user } = useUserStore()
-  const { trip } = useTripStore()
+  const { trip, getTripMembers } = useTripStore()
   const { isSubscribed, setIsSubscribed, setSubscribedTrips } = useUserStore()
   const { paymentStatus } = usePaymentStore()
 
@@ -34,6 +35,7 @@ export function TripSubscription() {
         ...(prevTrips || []),
         { trips: trip, subscribed_at: new Date().toISOString() },
       ])
+      getTripMembers(trip.id)
       showNotification(
         'Anmeldung erfolgt',
         `Du hast dich erfolgreich für die Reise angemeldet.`,
@@ -55,6 +57,7 @@ export function TripSubscription() {
       setSubscribedTrips((prevTrips) =>
         prevTrips ? prevTrips.filter((t) => t.trips.id !== trip.id) : [],
       )
+      getTripMembers(trip.id)
       showNotification(
         'Abmeldung erfolgt',
         'Du hast dich erfolgreich von der Reise abgemeldet',
@@ -119,9 +122,15 @@ function SubscriptionButton({
 
   return (
     <>
-      <Button onClick={handleClick} disabled={disabled || isPending}>
-        {isPending ? <Spinner /> : children}
-      </Button>
+      <ResponsiveDialog
+        title={`${isSubscribed ? 'Abmelden' : 'Anmelden'}`}
+        message={`Möchtest du dich wirklich für die Reise ${isSubscribed ? 'abmelden' : 'anmelden'}?`}
+        confirmText={isSubscribed ? 'Abmelden' : 'Anmelden'}
+        onConfirm={handleClick}
+        disabled={disabled || isPending}
+      >
+        <Button disabled={disabled || isPending}>{isPending ? <Spinner /> : children}</Button>
+      </ResponsiveDialog>
       {error && <p className="text-red-500">{error}</p>}
     </>
   )
