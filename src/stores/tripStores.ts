@@ -10,7 +10,7 @@ import {
   getUser,
   updateTrip,
 } from '@/utils/supabase/queries'
-import { GroupTripsType, GroupTripType, TripMembersType, UserType } from '@/types/trips'
+import { GroupTripsType, GroupTripType, TripMembersType } from '@/types/trips'
 import { showNotification } from '@/lib/utils'
 import { NotificationMessage } from '@/types/notification.'
 
