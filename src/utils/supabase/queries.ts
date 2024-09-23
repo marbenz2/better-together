@@ -91,6 +91,23 @@ export const getPublicProfile = cache(async (supabase: SupabaseClient, userId: s
   return { data, error }
 })
 
+export const updatePublicProfile = cache(
+  async (supabase: SupabaseClient, profile: PublicProfileType) => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({
+        first_name: profile.first_name,
+        last_name: profile.last_name,
+        email: profile.email,
+        profile_picture: profile.profile_picture,
+      })
+      .eq('id', profile.id)
+      .returns<PublicProfileType>()
+      .single()
+    return { data, error }
+  },
+)
+
 export const getTrip = cache(async (supabase: SupabaseClient, tripId: string) => {
   const { data, error } = await supabase
     .from('trips')
