@@ -13,6 +13,7 @@ import Image from 'next/image'
 import InfoCard from '@/components/ui/info-card'
 import { Table, TableBody, TableCell, TableRow } from '../ui/table'
 import { EditButton } from '../ui/edit-button'
+import { Button } from '../ui/button'
 
 export default function Profile() {
   const [isLoading, setIsLoading] = useState(false)
@@ -76,7 +77,7 @@ export default function Profile() {
         <CardFooter className="flex w-full pt-12 justify-center">
           <div className="flex flex-col xs:flex-row gap-4 w-full max-w-lg">
             <EditButton id={publicProfile.id} className="static" type="profile">
-              Edit
+              <Button className="w-full max-w-lg">Profil bearbeiten</Button>
             </EditButton>
           </div>
         </CardFooter>
