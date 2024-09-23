@@ -17,6 +17,7 @@ const navLinks = [
   { href: '/protected/groups', label: 'Gruppen' },
   { href: '/protected/trips', label: 'Reisen' },
   { href: '/protected/payments', label: 'Zahlungen' },
+  { href: '/protected/profile', label: 'Profil' },
   {
     href: 'mailto:benzinger.maxi@gmail.com?subject=Allgemeine%20Anfrage',
     label: 'Kontakt',
