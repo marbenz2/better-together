@@ -112,7 +112,7 @@ export default function Trips() {
             {currentTrips && currentTrips.length === 0 && (
               <CardDescription>Keine aktuellen Ausfahrten.</CardDescription>
             )}
-            {currentTrips && renderTrips(currentTrips)}
+            {currentTrips && renderTrips(currentTrips as ExtendedTrip[])}
           </CardContent>
         </CardBackPlate>
         <CardBackPlate className="flex-1">
@@ -124,7 +124,7 @@ export default function Trips() {
             {upcomingTrips && upcomingTrips.length === 0 && (
               <CardDescription>Keine aktuellen Ausfahrten.</CardDescription>
             )}
-            {upcomingTrips && renderTrips(upcomingTrips)}
+            {upcomingTrips && renderTrips(upcomingTrips as ExtendedTrip[])}
           </CardContent>
         </CardBackPlate>
       </div>
@@ -142,7 +142,7 @@ export default function Trips() {
                 {pastTrips && pastTrips.length === 0 && (
                   <CardDescription>Keine aktuellen Ausfahrten.</CardDescription>
                 )}
-                {pastTrips && renderTrips(pastTrips)}
+                {pastTrips && renderTrips(pastTrips as ExtendedTrip[])}
               </CardContent>
             </AccordionContent>
           </AccordionItem>
