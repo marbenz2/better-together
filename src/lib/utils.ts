@@ -23,3 +23,14 @@ export const showNotification = (
     toastStore.clearToast()
   }, 3000)
 }
+
+export const googleMapsUrl = (
+  name: string,
+  country: string,
+  street: string,
+  street_number: number,
+  plz: string,
+  ort: string,
+) => {
+  return `${process.env.NEXT_PUBLIC_GOOGLE_MAPS_SEARCH}${name},${country},${street}+${street_number},${plz}+${ort}`
+}
