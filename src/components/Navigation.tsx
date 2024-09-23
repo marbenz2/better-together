@@ -5,12 +5,12 @@ import AuthButton from './AuthButton'
 import MobileNavigation from '@/components/MobileMenu'
 
 const navLinks = [
-  { href: '/protected', label: 'Dashboard' },
+  { href: '/protected', label: 'Übersicht' },
   { href: '/protected/groups', label: 'Gruppen' },
   { href: '/protected/trips', label: 'Reisen' },
   { href: '/protected/payments', label: 'Zahlungen' },
   {
-    href: `mailto:${`mailto:benzinger.maxi@gmail.com?subject=Allgemeine%20Anfrage`}`,
+    href: 'mailto:benzinger.maxi@gmail.com?subject=Allgemeine%20Anfrage',
     label: 'Kontakt',
   },
 ]
