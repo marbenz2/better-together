@@ -44,7 +44,8 @@ export default function Profile() {
                   alt={publicProfile.first_name ?? 'avatar'}
                   width={250}
                   height={250}
-                  className="rounded-full"
+                  className="rounded-full w-64 h-auto"
+                  priority
                 />
               )}
               <Table>
