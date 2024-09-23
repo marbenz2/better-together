@@ -8,6 +8,7 @@ import { useToast } from '@/components/ui/use-toast'
 import { useToastStore } from '@/stores/toastStore'
 import { useUserStore } from '@/stores/userStore'
 import { useGroupStore } from '@/stores/groupStores'
+import Spinner from '@/components/ui/Spinner'
 
 export default function TripPage({ params }: { params: { id: string } }) {
   const { user } = useUserStore()
@@ -43,9 +44,7 @@ export default function TripPage({ params }: { params: { id: string } }) {
     loadData()
   }, [params.id, getTrip, getPaymentStatus, getAllUserGroups, user.id])
 
-  if (isLoading) {
-    return <div>Laden...</div>
-  }
+  if (isLoading) return <Spinner />
 
   return <Trip />
 }
