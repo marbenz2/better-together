@@ -13,7 +13,7 @@ import { BackButtonClient } from '@/components/ui/back-button-client'
 import InfoCard from '@/components/ui/info-card'
 import { PublicProfileType } from '@/types/user'
 
-type PublicProfileState = Omit<PublicProfileType, 'id' | 'created_at'>
+type PublicProfileState = Omit<PublicProfileType, 'id' | 'created_at' | 'email'>
 
 const EditProfile = () => {
   const { publicProfile, updatePublicProfile, getPublicProfile } = useUserStore()
@@ -33,7 +33,7 @@ const EditProfile = () => {
   }, [])
 
   const validateForm = useCallback(() => {
-    const requiredFields: (keyof PublicProfileState)[] = ['first_name', 'last_name', 'email']
+    const requiredFields: (keyof PublicProfileState)[] = ['first_name', 'last_name' /* , 'email' */]
     const isValid =
       userData && requiredFields.every((field: keyof PublicProfileState) => userData[field] !== '')
     setIsFormValid(!!isValid)
@@ -128,13 +128,14 @@ const EditProfile = () => {
               className="w-full"
             />
             {userData?.profile_picture ? (
-              <div className="relative flex w-full h-64">
+              <div className="flex justify-center items-center">
                 <Image
                   src={userData?.profile_picture}
                   alt="Vorschau des hochgeladenen Bildes"
-                  fill
-                  className="object-contain"
-                  loading="lazy"
+                  width={250}
+                  height={250}
+                  className="rounded-full w-64 h-auto"
+                  priority
                 />
               </div>
             ) : (
@@ -180,7 +181,7 @@ const EditProfile = () => {
               />
             </div>
           </div>
-          <div className="flex gap-2 w-full">
+          {/* <div className="flex gap-2 w-full">
             <div className="flex flex-col gap-2 w-full">
               <Label htmlFor="email">E-Mail</Label>
               <Input
@@ -194,7 +195,7 @@ const EditProfile = () => {
                 className="w-full"
               />
             </div>
-          </div>
+          </div> */}
           <ResponsiveDialog
             title="Profil aktualisieren"
             message={`Bist du sicher, dass du die Änderungen speichern möchtest?`}
