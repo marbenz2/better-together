@@ -14,6 +14,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import React, { useCallback, useEffect, useState } from 'react'
 import { BackButtonClient } from '../ui/back-button-client'
+import { googleMapsUrl } from '@/lib/utils'
 
 type TripDataState = {
   [K in keyof Omit<GroupTripType, 'id' | 'available_spots' | 'max_spots'>]: K extends
@@ -95,7 +96,19 @@ export default function CreateTrip() {
 
   const handleCreateTrip = async () => {
     try {
-      await createTrip(tripData as GroupTripType)
+      const anreiseLink = googleMapsUrl(
+        tripData.name,
+        tripData.land,
+        tripData.street,
+        tripData.street_number || 0,
+        tripData.plz,
+        tripData.ort,
+      )
+
+      await createTrip({
+        ...tripData,
+        anreise_link: anreiseLink,
+      } as GroupTripType)
       setTripData(INITIAL_TRIP_DATA)
       router.push('/protected/trips')
     } catch (error) {
@@ -359,18 +372,6 @@ export default function CreateTrip() {
               />
             </div>
           </div>
-          <RequiredLabel htmlFor="anreise_link">Anreise Link</RequiredLabel>
-          <Input
-            type="text"
-            id="anreise_link"
-            name="anreise_link"
-            placeholder="https://maps.google.com/..."
-            autoComplete="off"
-            required
-            value={tripData.anreise_link}
-            onChange={handleInputChange}
-            className="w-full"
-          />
           <Label htmlFor="down_payment">Anzahlung</Label>
           <div className="relative">
             <Input
