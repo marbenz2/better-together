@@ -43,23 +43,25 @@ export default function ForgotPassword({ searchParams }: { searchParams: Message
   }
 
   return (
-    <div className="flex flex-col flex-1 p-4 w-full items-center">
-      <BackButtonServer href="/" />
-      <form className="flex-1 flex flex-col w-full justify-center gap-2 text-foreground [&>input]:mb-6 max-w-md p-4">
-        <h1 className="text-2xl font-medium">Passwort zurücksetzen</h1>
-        <p className="text-sm text-foreground/60">
-          Du erinnerst dich wieder?{' '}
-          <Link className="text-blue-600 font-medium underline" href="/login">
-            Anmelden
-          </Link>
-        </p>
-        <div className="flex flex-col gap-2 [&>input]:mb-3 mt-8">
-          <Label htmlFor="email">Email</Label>
-          <Input name="email" placeholder="you@example.com" required autoComplete="email" />
-          <SubmitButton formAction={forgotPassword}>Passwort zurücksetzen</SubmitButton>
-          <FormMessage message={searchParams} />
-        </div>
-      </form>
+    <div className="flex flex-col flex-1 p-4 w-full">
+      <BackButtonServer href="/" className="static" />
+      <div className="flex flex-1 w-full items-center justify-center">
+        <form className="flex-1 flex flex-col w-full justify-center gap-2 text-foreground [&>input]:mb-6 max-w-md p-4">
+          <h1 className="text-2xl font-medium">Passwort zurücksetzen</h1>
+          <p className="text-sm text-foreground/60">
+            Du erinnerst dich wieder?{' '}
+            <Link className="text-blue-600 font-medium underline" href="/login">
+              Anmelden
+            </Link>
+          </p>
+          <div className="flex flex-col gap-2 [&>input]:mb-3 mt-8">
+            <Label htmlFor="email">Email</Label>
+            <Input name="email" placeholder="you@example.com" required autoComplete="email" />
+            <SubmitButton formAction={forgotPassword}>Passwort zurücksetzen</SubmitButton>
+            <FormMessage message={searchParams} />
+          </div>
+        </form>
+      </div>
     </div>
   )
 }

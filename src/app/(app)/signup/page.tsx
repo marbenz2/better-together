@@ -64,73 +64,81 @@ export default function Signup({ searchParams }: { searchParams: Message }) {
   }
 
   return (
-    <div className="w-full flex-1 flex items-center h-screen sm:max-w-lg justify-center gap-2 p-4">
-      <BackButtonServer href="/" />
-      <form className="flex flex-col w-full justify-center gap-2 text-foreground [&>input]:mb-6 max-w-xl">
-        <h1 className="text-2xl font-medium">Registrieren</h1>
-        <p className="text-sm text text-foreground/60">
-          Du hast schon einen Account?{' '}
-          <Link className="text-blue-600 font-medium underline" href="/login">
-            Anmelden
-          </Link>
-        </p>
-        <div className="mt-8 flex flex-col gap-2 [&>input]:mb-3">
-          <Label htmlFor="email">Email</Label>
-          <Input name="email" placeholder="you@example.com" autoComplete="email" required />
-          <div className="flex flex-col sm:flex-row justify-between gap-2">
+    <div className="flex flex-col flex-1 p-4 w-full">
+      <BackButtonServer href="/" className="static" />
+      <div className="flex flex-1 w-full items-center justify-center">
+        <form className="flex flex-col w-full justify-center gap-2 text-foreground [&>input]:mb-6 max-w-xl">
+          <h1 className="text-2xl font-medium">Registrieren</h1>
+          <p className="text-sm text text-foreground/60">
+            Du hast schon einen Account?{' '}
+            <Link className="text-blue-600 font-medium underline" href="/login">
+              Anmelden
+            </Link>
+          </p>
+          <div className="mt-8 flex flex-col gap-8 [&>input]:mb-3">
             <div className="flex flex-col gap-2">
-              <Label htmlFor="first_name">Vorname</Label>
-              <Input name="first_name" placeholder="John" autoComplete="given-name" required />
+              <Label htmlFor="email">Email</Label>
+              <Input name="email" placeholder="you@example.com" autoComplete="email" required />
+            </div>
+            <div className="flex flex-col sm:flex-row justify-between gap-2">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="first_name">Vorname</Label>
+                <Input name="first_name" placeholder="John" autoComplete="given-name" required />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="last_name">Nachname</Label>
+                <Input name="last_name" placeholder="Doe" autoComplete="family-name" required />
+              </div>
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="last_name">Nachname</Label>
-              <Input name="last_name" placeholder="Doe" autoComplete="family-name" required />
+              <Label htmlFor="password">Passwort</Label>
+              <Input
+                type="password"
+                name="password"
+                placeholder="••••••••"
+                autoComplete="new-password"
+                required
+                showPasswordToggle={true}
+              />
             </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="confirmPassword">Passwort bestätigen</Label>
+              <Input
+                type="password"
+                name="confirmPassword"
+                placeholder="••••••••"
+                autoComplete="new-password"
+                required
+                showPasswordToggle={true}
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="group_link" className="flex items-center gap-2">
+                Gruppencode{' '}
+                <span
+                  className="cursor-pointer"
+                  title="Einen Gruppencode erhalten Sie von einem Gruppenadmin oder wenn Sie selbst eine Gruppe erstellen."
+                >
+                  <InfoIcon size={14} />
+                </span>
+              </Label>
+              <Input
+                type="text"
+                name="group_link"
+                value={queryId ? queryId : undefined}
+                placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+                autoComplete="off"
+                disabled={queryId ? true : undefined}
+              />
+              {queryId && <input type="hidden" name="group_link" value={queryId} />}
+            </div>
+            <SubmitButton formAction={signUp} pendingText="Registriere...">
+              Registrieren
+            </SubmitButton>
           </div>
-          <Label htmlFor="password">Passwort</Label>
-          <Input
-            type="password"
-            name="password"
-            placeholder="••••••••"
-            autoComplete="new-password"
-            required
-            showPasswordToggle={true}
-          />
-          <Label htmlFor="confirmPassword">Passwort bestätigen</Label>
-          <Input
-            type="password"
-            name="confirmPassword"
-            placeholder="••••••••"
-            autoComplete="new-password"
-            required
-            showPasswordToggle={true}
-          />
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="group_link" className="flex items-center gap-2">
-              Gruppencode{' '}
-              <span
-                className="cursor-pointer"
-                title="Einen Gruppencode erhalten Sie von einem Gruppenadmin oder wenn Sie selbst eine Gruppe erstellen."
-              >
-                <InfoIcon size={16} />
-              </span>
-            </Label>
-            <Input
-              type="text"
-              name="group_link"
-              value={queryId ? queryId : undefined}
-              placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
-              autoComplete="off"
-              disabled={queryId ? true : undefined}
-            />
-            {queryId && <input type="hidden" name="group_link" value={queryId} />}
-          </div>
-          <SubmitButton formAction={signUp} pendingText="Registriere...">
-            Registrieren
-          </SubmitButton>
-        </div>
-        <FormMessage message={searchParams} />
-      </form>
+          <FormMessage message={searchParams} />
+        </form>
+      </div>
     </div>
   )
 }
