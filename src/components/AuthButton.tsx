@@ -6,11 +6,23 @@ import { Button } from './ui/button'
 import { useEffect, useState } from 'react'
 import { User } from '@supabase/supabase-js'
 import Spinner from '@/components/ui/Spinner'
+import { ResponsiveDialog } from './ResponsiveDialog'
+import { LogOutIcon, SettingsIcon } from 'lucide-react'
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from './ui/dropdown-menu'
 
 export default function AuthButton() {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const supabase = createClient()
+
+  const userInitials = user?.user_metadata.first_name[0] + user?.user_metadata.last_name[0]
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -40,6 +52,10 @@ export default function AuthButton() {
     }
   }
 
+  const onClickPreventDefault = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.preventDefault()
+  }
+
   if (isLoading) {
     return <Spinner />
   }
@@ -47,9 +63,39 @@ export default function AuthButton() {
   return user ? (
     <div className="flex items-center gap-4">
       <p className="hidden sm:block">Hey, {user.user_metadata.first_name}!</p>
-      <Button variant="outline" type="submit" onClick={handleSignOut}>
-        Logout
-      </Button>
+      <DropdownMenu>
+        <DropdownMenuTrigger>
+          <Avatar>
+            <AvatarImage src={user.user_metadata.avatar_url} />
+            <AvatarFallback>{userInitials}</AvatarFallback>
+          </Avatar>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuItem>
+            <Link href="/protected/profile">
+              <div className="flex items-center gap-3">
+                <SettingsIcon size={16} />
+                Profil
+              </div>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator className="bg-border" />
+          <DropdownMenuItem onClick={onClickPreventDefault}>
+            <ResponsiveDialog
+              title="Abmelden"
+              message="Wollen Sie sich wirklich abmelden?"
+              confirmText="Abmelden"
+              onConfirm={handleSignOut}
+              buttonVariant="destructive"
+            >
+              <div className="flex items-center gap-3">
+                <LogOutIcon size={16} className="text-destructive" />
+                Abmelden
+              </div>
+            </ResponsiveDialog>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   ) : (
     <div className="flex gap-2">
