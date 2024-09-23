@@ -1,8 +1,15 @@
 import { create } from 'zustand'
-import { getPublicProfile, getSubscribedTrips, getUser } from '@/utils/supabase/queries'
+import {
+  getPublicProfile,
+  getSubscribedTrips,
+  getUser,
+  updatePublicProfile,
+} from '@/utils/supabase/queries'
 import { createClient } from '@/utils/supabase/client'
 import { User } from '@supabase/supabase-js'
 import { PublicProfileType, SubscribedTripsType } from '@/types/user'
+import { NotificationMessage } from '@/types/notification.'
+import { showNotification } from '@/lib/utils'
 
 interface UserState {
   user: User
@@ -11,6 +18,7 @@ interface UserState {
   publicProfile: PublicProfileType | null
   setPublicProfile: (profile: PublicProfileType) => void
   getPublicProfile: (userId?: string) => Promise<void>
+  updatePublicProfile: (profile: PublicProfileType) => Promise<void>
   subscribedTrips: SubscribedTripsType | null
   setSubscribedTrips: (
     subscribedTrips:
@@ -20,6 +28,17 @@ interface UserState {
   getSubscribedTrips: (userId?: string) => Promise<void>
   isSubscribed: boolean
   setIsSubscribed: (isSubscribed: boolean) => void
+}
+
+const handleError = (error: any, defaultTitle: string, defaultMessage: string) => {
+  const errorMessages: { [key: string]: NotificationMessage } = {}
+
+  const errorMessage = errorMessages[error.code] || {
+    title: defaultTitle,
+    message: defaultMessage,
+    variant: 'destructive',
+  }
+  showNotification(errorMessage.title, errorMessage.message, errorMessage.variant)
 }
 
 export const useUserStore = create<UserState>((set) => ({
@@ -51,6 +70,33 @@ export const useUserStore = create<UserState>((set) => ({
     }
     if (data) {
       set({ publicProfile: data })
+    }
+  },
+
+  updatePublicProfile: async (profile: PublicProfileType) => {
+    try {
+      const supabase = createClient()
+      const { data: user } = await getUser(supabase)
+      if (!user) {
+        console.error('Kein Benutzer gefunden')
+        return
+      }
+      const { data, error } = await updatePublicProfile(supabase, profile)
+      if (error) throw error
+      if (data && !error) {
+        set({ publicProfile: data as PublicProfileType })
+        showNotification(
+          'Profil aktualisiert',
+          `Dein Profil wurde erfolgreich aktualisiert.`,
+          'success',
+        )
+      }
+    } catch (error) {
+      handleError(
+        error,
+        'Fehler beim Aktualisieren des Profils',
+        'Es ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
+      )
     }
   },
 
