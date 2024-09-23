@@ -9,8 +9,7 @@ import Link from 'next/link'
 
 export default function ConditionalShowGroup() {
   const pathname = usePathname()
-  const { userGroups } = useGroupStore()
-  const { setGroupId, setSelectedGroupName } = useGroupStore()
+  const { userGroups, setGroupId, setSelectedGroupName } = useGroupStore()
 
   useEffect(() => {
     const defaultGroup = userGroups.find((group) => group.favourite) || userGroups[0]
@@ -20,7 +19,9 @@ export default function ConditionalShowGroup() {
     }
   }, [userGroups, setGroupId, setSelectedGroupName])
 
-  if (pathname.match(/^\/protected\/trips\/[^/]+$/)) {
+  if (
+    pathname.match(/^\/protected\/(trips\/[^/]+|profile|edit-trip\/[^/]+|edit-profile\/[^/]+)$/)
+  ) {
     return null
   }
 
