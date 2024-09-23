@@ -8,6 +8,7 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData()
     const file = formData.get('file') as File
+    const id = formData.get('id') as string
 
     if (!file) {
       return NextResponse.json({ error: 'Keine Datei hochgeladen' }, { status: 400 })
@@ -15,7 +16,7 @@ export async function POST(request: NextRequest) {
 
     const fileExt = file.name.split('.').pop()
     const fileName = `${uuidv4()}.${fileExt}`
-    const filePath = `media/${fileName}`
+    const filePath = `media/${id}/${fileName}`
 
     const { data, error } = await supabase.storage
       .from('better-together-media')
