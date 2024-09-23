@@ -20,11 +20,20 @@ import InfoCard from '../ui/info-card'
 export default function Trip() {
   const router = useRouter()
   const { user, subscribedTrips, isSubscribed, setIsSubscribed } = useUserStore()
-  const { trip, deleteTrip } = useTripStore()
-  const { userGroups } = useGroupStore()
+  const { tripMembers, trip, deleteTrip, getTripMembers } = useTripStore()
+  const { tripPublicProfiles, userGroups, getAllTripPublicProfiles } = useGroupStore()
 
   const isCreator = trip?.created_by === user?.id
   const isCurrentUserInGroup = userGroups.some((group) => group.groups.id === trip?.group_id)
+
+  useEffect(() => {
+    if (trip) {
+      getTripMembers(trip.id)
+    }
+    if (tripMembers) {
+      getAllTripPublicProfiles(tripMembers.map((member) => member.user_id))
+    }
+  }, [trip, getTripMembers, getAllTripPublicProfiles, tripMembers])
 
   useEffect(() => {
     if (trip && subscribedTrips) {
@@ -185,6 +194,19 @@ export default function Trip() {
                   {trip.available_spots} / {trip.max_spots}
                 </TableCell>
               </TableRow>
+              {tripMembers && (
+                <TableRow>
+                  <TableHead>Teilnehmer</TableHead>
+                  <TableCell>
+                    {tripPublicProfiles.map((profile, index) => (
+                      <span key={profile.id}>
+                        {profile.first_name} {profile.last_name}
+                        {index < tripPublicProfiles.length - 1 && ', '}
+                      </span>
+                    ))}
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>{' '}
           {isSubscribed && timeOfSubscription && (

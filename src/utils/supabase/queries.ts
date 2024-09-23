@@ -374,3 +374,12 @@ export const deleteTrip = cache(async (supabase: SupabaseClient, tripId: string)
     .single()
   return { data, error }
 })
+
+export const getTripMembers = cache(async (supabase: SupabaseClient, tripId: string) => {
+  const { data, error } = await supabase
+    .from('trip_members')
+    .select('user_id')
+    .eq('trip_id', tripId)
+    .returns<TripMembers[]>()
+  return { data, error }
+})

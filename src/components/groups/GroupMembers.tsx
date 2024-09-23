@@ -19,8 +19,13 @@ const getBadgeColor = (role: string): string => {
 
 export default function GroupMembers() {
   const { user } = useUserStore()
-  const { groupId, groupMembers, publicProfiles, getAllGroupMembers, getAllPublicProfiles } =
-    useGroupStore()
+  const {
+    groupId,
+    groupMembers,
+    groupPublicProfiles,
+    getAllGroupMembers,
+    getAllGroupPublicProfiles,
+  } = useGroupStore()
 
   useEffect(() => {
     if (groupId) {
@@ -37,11 +42,11 @@ export default function GroupMembers() {
 
   useEffect(() => {
     if (memberIds.length > 0) {
-      getAllPublicProfiles(memberIds).catch((error) =>
+      getAllGroupPublicProfiles(memberIds).catch((error) =>
         console.error('Fehler beim Abrufen der öffentlichen Profile:', error),
       )
     }
-  }, [memberIds, getAllPublicProfiles])
+  }, [memberIds, getAllGroupPublicProfiles])
 
   const isAdmin = groupMembers?.find((gm) => gm.user_id === user?.id)?.role === 'admin'
 
@@ -49,9 +54,9 @@ export default function GroupMembers() {
     <div className="flex flex-col gap-4 w-full justify-center">
       <CardTitle className="text-xl">Gruppenmitglieder</CardTitle>
       <div className="flex flex-wrap gap-4">
-        {publicProfiles &&
-          publicProfiles.length > 1 &&
-          publicProfiles.map((member) => {
+        {groupPublicProfiles &&
+          groupPublicProfiles.length > 1 &&
+          groupPublicProfiles.map((member) => {
             const groupMember = groupMembers.find((gm) => gm.user_id === member.id)
             const badgeColor = getBadgeColor(groupMember?.role || 'member')
             const isCurrentUser = member.id === user?.id
@@ -80,12 +85,12 @@ export default function GroupMembers() {
               )
             }
           })}
-        {publicProfiles && publicProfiles.length === 1 && (
+        {groupPublicProfiles && groupPublicProfiles.length === 1 && (
           <Badge
-            key={publicProfiles[0].id}
+            key={groupPublicProfiles[0].id}
             className={`bg-primary text-white ${getBadgeColor(groupMembers[0]?.role)} ring-2 ring-info-foreground`}
           >
-            {publicProfiles[0].first_name} {publicProfiles[0].last_name}
+            {groupPublicProfiles[0].first_name} {groupPublicProfiles[0].last_name}
           </Badge>
         )}
       </div>

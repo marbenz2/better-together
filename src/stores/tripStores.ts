@@ -6,10 +6,11 @@ import {
   deleteTrip,
   getGroupTrips,
   getTrip,
+  getTripMembers,
   getUser,
   updateTrip,
 } from '@/utils/supabase/queries'
-import { GroupTripsType, GroupTripType } from '@/types/trips'
+import { GroupTripsType, GroupTripType, TripMembersType, UserType } from '@/types/trips'
 import { showNotification } from '@/lib/utils'
 import { NotificationMessage } from '@/types/notification.'
 
@@ -23,6 +24,8 @@ interface TripState {
   createTrip: (trip: GroupTripType) => Promise<void>
   updateTrip: (trip: GroupTripType) => Promise<void>
   deleteTrip: (tripId: string) => Promise<void>
+  tripMembers: TripMembersType | null
+  getTripMembers: (tripId: string) => Promise<void>
 }
 
 const handleError = (error: any, defaultTitle: string, defaultMessage: string) => {
@@ -144,6 +147,28 @@ export const useTripStore = create<TripState>((set) => ({
       handleError(
         error,
         'Fehler beim Löschen der Reise',
+        'Es ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
+      )
+    }
+  },
+  tripMembers: [],
+  getTripMembers: async (tripId: string) => {
+    try {
+      const supabase = createClient()
+      const { data: user } = await getUser(supabase)
+      if (!user) {
+        console.error('Kein Benutzer gefunden')
+        return
+      }
+      const { data, error } = await getTripMembers(supabase, tripId)
+      if (error) throw error
+      if (data && !error) {
+        set({ tripMembers: data as TripMembersType })
+      }
+    } catch (error) {
+      handleError(
+        error,
+        'Fehler beim Abrufen der Reise-Mitglieder',
         'Es ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
       )
     }

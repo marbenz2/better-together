@@ -25,6 +25,8 @@ interface GroupState {
   selectedGroupName: string | null
   groupMembers: GroupMembersType
   publicProfiles: PublicProfilesType[]
+  tripPublicProfiles: PublicProfilesType[]
+  groupPublicProfiles: PublicProfilesType[]
   setUserGroups: (userGroups: UserGroupsType) => void
   setGroupId: (groupId: string | null) => void
   setSelectedGroupName: (name: string | null) => void
@@ -37,6 +39,8 @@ interface GroupState {
   setFavourite: (groupIdToFavourite: string, isFavourite: boolean) => Promise<void>
   getAllGroupMembers: (groupId: string) => Promise<void>
   getAllPublicProfiles: (user_ids: string[]) => Promise<void>
+  getAllTripPublicProfiles: (user_ids: string[]) => Promise<void>
+  getAllGroupPublicProfiles: (user_ids: string[]) => Promise<void>
   getAllUserGroups: (userId: string) => Promise<void>
   removeUserFromGroup: (userId: string, groupId: string) => Promise<void>
   makeUserAdmin: (userId: string, groupId: string) => Promise<void>
@@ -78,6 +82,8 @@ export const useGroupStore = create<GroupState>((set, get) => ({
   selectedGroupName: null,
   groupMembers: [],
   publicProfiles: [],
+  tripPublicProfiles: [],
+  groupPublicProfiles: [],
 
   setGroupId: (groupId) => set((state) => ({ ...state, groupId })),
   setSelectedGroupName: (name) => set((state) => ({ ...state, selectedGroupName: name })),
@@ -357,6 +363,38 @@ export const useGroupStore = create<GroupState>((set, get) => ({
       if (error) throw error
 
       set({ publicProfiles: data || [] })
+    } catch (error) {
+      handleError(
+        error,
+        'Fehler beim Laden der öffentlichen Profile',
+        'Es ist ein Fehler beim Laden der öffentlichen Profile aufgetreten, bitte versuche es später erneut.',
+      )
+    }
+  },
+
+  getAllTripPublicProfiles: async (user_ids) => {
+    try {
+      const supabase = createClient()
+      const { data, error } = await getPublicProfiles(supabase, user_ids)
+      if (error) throw error
+
+      set({ tripPublicProfiles: data || [] })
+    } catch (error) {
+      handleError(
+        error,
+        'Fehler beim Laden der öffentlichen Profile',
+        'Es ist ein Fehler beim Laden der öffentlichen Profile aufgetreten, bitte versuche es später erneut.',
+      )
+    }
+  },
+
+  getAllGroupPublicProfiles: async (user_ids) => {
+    try {
+      const supabase = createClient()
+      const { data, error } = await getPublicProfiles(supabase, user_ids)
+      if (error) throw error
+
+      set({ groupPublicProfiles: data || [] })
     } catch (error) {
       handleError(
         error,
