@@ -219,6 +219,7 @@ export default function Trip() {
                 <TableRow>
                   <TableHead>Teilnehmer</TableHead>
                   <TableCell>
+                    {tripPublicProfiles.length === 0 && '-'}
                     {tripPublicProfiles.map((profile, index) => (
                       <span key={profile.id}>
                         {profile.first_name} {profile.last_name}
