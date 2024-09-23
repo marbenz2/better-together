@@ -18,6 +18,7 @@ import {
 } from './ui/dropdown-menu'
 
 export default function AuthButton() {
+  const [isOpen, setIsOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const supabase = createClient()
@@ -52,8 +53,16 @@ export default function AuthButton() {
     }
   }
 
-  const onClickPreventDefault = (e: React.MouseEvent<HTMLDivElement>) => {
+  const preventDefault = (e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault()
+  }
+
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open)
+  }
+
+  const handleLinkClick = () => {
+    setIsOpen(false)
   }
 
   if (isLoading) {
@@ -63,7 +72,7 @@ export default function AuthButton() {
   return user ? (
     <div className="flex items-center gap-4">
       <p className="hidden sm:block">Hey, {user.user_metadata.first_name}!</p>
-      <DropdownMenu>
+      <DropdownMenu open={isOpen} onOpenChange={handleOpenChange}>
         <DropdownMenuTrigger>
           <Avatar>
             <AvatarImage src={user.user_metadata.avatar_url} />
@@ -72,15 +81,15 @@ export default function AuthButton() {
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           <DropdownMenuItem>
-            <Link href="/protected/profile">
-              <div className="flex items-center gap-3">
+            <Link href="/protected/profile" className="w-full" onClick={handleLinkClick}>
+              <div className="flex items-center gap-3 cursor-pointer">
                 <SettingsIcon size={16} />
                 Profil
               </div>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator className="bg-border" />
-          <DropdownMenuItem onClick={onClickPreventDefault}>
+          <DropdownMenuItem onClick={preventDefault}>
             <ResponsiveDialog
               title="Abmelden"
               message="Wollen Sie sich wirklich abmelden?"
@@ -88,7 +97,7 @@ export default function AuthButton() {
               onConfirm={handleSignOut}
               buttonVariant="destructive"
             >
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 w-full cursor-pointer">
                 <LogOutIcon size={16} className="text-destructive" />
                 Abmelden
               </div>
