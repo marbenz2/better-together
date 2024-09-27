@@ -68,14 +68,13 @@ export default function CreateTrip() {
       'street_number',
       'rooms',
       'beds',
-      'anreise_link',
       'image',
     ]
     const isValid = requiredFields.every(
       (field) =>
         tripData[field] !== '' &&
         tripData[field] !== null &&
-        (field !== 'street_number' ||
+        ((field !== 'street_number' && field !== 'rooms' && field !== 'beds') ||
           (typeof tripData[field] === 'number' && !isNaN(tripData[field] as number))),
     )
     setIsFormValid(isValid)
