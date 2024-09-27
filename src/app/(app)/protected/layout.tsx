@@ -34,7 +34,7 @@ export default async function ProtectedLayout({ children }: { children: React.Re
       <div className="w-full">
         <Navigation />
       </div>
-      <div className="flex-1 flex flex-col items-center gap-8 w-full px-1 md:px-4">
+      <div className="flex-1 flex flex-col items-center gap-8 w-full px-2 md:px-4">
         <ClientStoreInitializer userId={user.id}>
           <ConditionalShowGroup />
           {children}
