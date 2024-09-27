@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useCallback } from 'react'
 import {
   Card,
   CardBackPlate,
@@ -12,15 +12,28 @@ import {
 } from '@/components/ui/card'
 import Paypal from './Paypal'
 import { CheckCircleIcon } from 'lucide-react'
-import { Separator } from '../ui/separator'
+import { Separator } from '@/components/ui/separator'
 import Link from 'next/link'
 import { usePaymentStore } from '@/stores/paymentStore'
 import { Trips } from '@/types/supabase'
 import { useUserStore } from '@/stores/userStore'
 import { useGroupStore } from '@/stores/groupStores'
-import Spinner from '../ui/Spinner'
+import Spinner from '@/components/ui/Spinner'
+import { useRouter } from 'next/navigation'
+import InfoCard from '@/components/ui/info-card'
+
+type PaymentStatus = {
+  down_payment: boolean
+  full_payment: boolean
+  final_payment: boolean
+}
+
+type TransactionsId = {
+  [key: string]: string
+}
 
 export default function Payments() {
+  const router = useRouter()
   const { groupId } = useGroupStore()
   const { paymentDetails, getPaymentDetails } = usePaymentStore()
   const { user, subscribedTrips } = useUserStore()
@@ -30,21 +43,29 @@ export default function Payments() {
     [subscribedTrips, groupId],
   )
 
+  const handlePaymentSuccess = useCallback(() => {
+    getPaymentDetails()
+  }, [getPaymentDetails])
+
   if (!paymentDetails) return <Spinner />
 
-  const handlePaymentSuccess = () => {
-    getPaymentDetails()
-  }
-
-  function renderPaymentSection(
-    title: string,
-    paymentType: string,
-    paymentAmount: number | null,
-    paymentStatus: boolean,
-    userId: string,
-    tripId: string,
-    transactionsId: { [key: string]: string },
-  ) {
+  const PaymentSection = ({
+    title,
+    paymentType,
+    paymentAmount,
+    paymentStatus,
+    userId,
+    tripId,
+    transactionsId,
+  }: {
+    title: string
+    paymentType: string
+    paymentAmount: number | null
+    paymentStatus: boolean
+    userId: string
+    tripId: string
+    transactionsId: TransactionsId
+  }) => {
     if (paymentStatus === false && paymentAmount) {
       return (
         <div className="flex flex-col gap-4 items-center w-full md:max-w-md">
@@ -57,7 +78,7 @@ export default function Payments() {
             user_id={userId}
             trip_id={tripId}
             payment_type={paymentType}
-            onPaymentSuccess={() => handlePaymentSuccess()}
+            onPaymentSuccess={handlePaymentSuccess}
           />
         </div>
       )
@@ -69,7 +90,7 @@ export default function Payments() {
             <CardDescription>{paymentAmount}€</CardDescription>
           </div>
           <div className="relative flex flex-col w-full h-full gap-4 items-center justify-center text-center">
-            <CheckCircleIcon size={48} className="text-success" />
+            <CheckCircleIcon size={48} className="text-green-400" />
             <p>Bereits bezahlt</p>
             <CardDescription>
               Zahlungs ID: {transactionsId[`${paymentType}_paypal_id`]}
@@ -81,97 +102,78 @@ export default function Payments() {
     return null
   }
 
-  function PaymentCard({
+  const PaymentCard = ({
     trip,
     paymentStatus,
     userId,
     transactionsId,
   }: {
     trip: Trips
-    paymentStatus: {
-      down_payment: boolean
-      full_payment: boolean
-      final_payment: boolean
-    }
+    paymentStatus: PaymentStatus
     userId: string
-    transactionsId: { [key: string]: string }
-  }) {
+    transactionsId: TransactionsId
+  }) => {
     return (
       <Card key={trip.id}>
         <CardHeader className="text-center lg:text-start w-full">
           <CardTitle>{trip.name}</CardTitle>
           <CardDescription className="text-balance">
-            {new Date(trip.date_from).toLocaleDateString('de-DE', {
-              weekday: 'short',
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })}{' '}
-            -{' '}
-            {new Date(trip.date_to).toLocaleDateString('de-DE', {
-              weekday: 'short',
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })}
+            {formatDate(trip.date_from)} - {formatDate(trip.date_to)}
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col md:flex-row gap-8 md:gap-4 xl:gap-8 w-full">
-          {renderPaymentSection(
-            'Anzahlung',
-            'down_payment',
-            trip.down_payment,
-            paymentStatus.down_payment,
-            userId,
-            trip.id,
-            transactionsId,
+          {!paymentStatus.down_payment &&
+            !paymentStatus.full_payment &&
+            !paymentStatus.final_payment && (
+              <InfoCard description="Bisher keine Zahlungen eingetragen." />
+            )}
+          {paymentStatus.down_payment && (
+            <PaymentSection
+              title="Vorauszahlung"
+              paymentType="down_payment"
+              paymentAmount={trip.down_payment}
+              paymentStatus={paymentStatus.down_payment}
+              userId={userId}
+              tripId={trip.id}
+              transactionsId={transactionsId}
+            />
           )}
-          <Separator className="md:hidden block" />
-          <Separator orientation="vertical" className="hidden md:block" />
-          {renderPaymentSection(
-            'Hauptzahlung',
-            'full_payment',
-            trip.full_payment,
-            paymentStatus.full_payment,
-            userId,
-            trip.id,
-            transactionsId,
+          {paymentStatus.full_payment && (
+            <>
+              <Separator className="md:hidden block" />
+              <Separator orientation="vertical" className="hidden md:block" />
+              <PaymentSection
+                title="Hauptzahlung"
+                paymentType="full_payment"
+                paymentAmount={trip.full_payment}
+                paymentStatus={paymentStatus.full_payment}
+                userId={userId}
+                tripId={trip.id}
+                transactionsId={transactionsId}
+              />
+            </>
           )}
-          <Separator className="md:hidden block" />
-          <Separator orientation="vertical" className="hidden md:block" />
-          {renderPaymentSection(
-            'Schlusszahlung',
-            'final_payment',
-            trip.final_payment,
-            paymentStatus.final_payment,
-            userId,
-            trip.id,
-            transactionsId,
+
+          {paymentStatus.final_payment && (
+            <>
+              <Separator className="md:hidden block" />
+              <Separator orientation="vertical" className="hidden md:block" />
+              <PaymentSection
+                title="Schlusszahlung"
+                paymentType="final_payment"
+                paymentAmount={trip.final_payment}
+                paymentStatus={paymentStatus.final_payment}
+                userId={userId}
+                tripId={trip.id}
+                transactionsId={transactionsId}
+              />
+            </>
           )}
         </CardContent>
         <CardFooter className="justify-center">
           <CardDescription>
             Falls es Fragen zu einer oder mehrer Zahlungen gibt,{' '}
-            <Link
-              href={`mailto:benzinger.maxi@gmail.com?subject=Zahlungsanfrage%20${
-                user?.user_metadata.first_name
-              }%20${user?.user_metadata.last_name}?body=Resiedaten:%20${
-                trip.name
-              }%20von%20${new Date(trip.date_from).toLocaleDateString('de-DE', {
-                weekday: 'short',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })}%20-%20${new Date(trip.date_to).toLocaleDateString('de-DE', {
-                weekday: 'short',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })}%0ANutzer:%20${user?.user_metadata.first_name}%20${
-                user?.user_metadata.last_name
-              }%0AE-Mail:%20${user?.email}%0A%0AFrage:%20`}
-              className="underline decoration-dashed"
-            >
+            <Link href={generateEmailLink(trip, user)} className="underline decoration-dashed">
               kontaktiere
             </Link>{' '}
             uns.
@@ -189,19 +191,16 @@ export default function Payments() {
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         {paymentDetails && filteredTrips && filteredTrips.length > 0 ? (
-          filteredTrips?.map((trip) => {
-            const paymentStatus = paymentDetails?.find((sub) => sub.trip_id === trip.trips.id)
-            const transactionsId = paymentDetails?.reduce(
-              (acc, sub) => {
-                if (sub.trip_id === trip.trips.id) {
-                  acc['down_payment_paypal_id'] = sub.down_payment_paypal_id ?? ''
-                  acc['full_payment_paypal_id'] = sub.full_payment_paypal_id ?? ''
-                  acc['final_payment_paypal_id'] = sub.final_payment_paypal_id ?? ''
-                }
-                return acc
-              },
-              {} as { [key: string]: string },
-            )
+          filteredTrips.map((trip) => {
+            const paymentStatus = paymentDetails.find((sub) => sub.trip_id === trip.trips.id)
+            const transactionsId = paymentDetails.reduce((acc, sub) => {
+              if (sub.trip_id === trip.trips.id) {
+                acc['down_payment_paypal_id'] = sub.down_payment_paypal_id ?? ''
+                acc['full_payment_paypal_id'] = sub.full_payment_paypal_id ?? ''
+                acc['final_payment_paypal_id'] = sub.final_payment_paypal_id ?? ''
+              }
+              return acc
+            }, {} as TransactionsId)
 
             if (paymentStatus) {
               return (
@@ -229,4 +228,23 @@ export default function Payments() {
       </CardContent>
     </CardBackPlate>
   )
+}
+
+function formatDate(date: string): string {
+  return new Date(date).toLocaleDateString('de-DE', {
+    weekday: 'short',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+}
+
+function generateEmailLink(trip: Trips, user: any): string {
+  return `mailto:benzinger.maxi@gmail.com?subject=Zahlungsanfrage%20${
+    user?.user_metadata.first_name
+  }%20${user?.user_metadata.last_name}?body=Resiedaten:%20${
+    trip.name
+  }%20von%20${formatDate(trip.date_from)}%20-%20${formatDate(trip.date_to)}%0ANutzer:%20${
+    user?.user_metadata.first_name
+  }%20${user?.user_metadata.last_name}%0AE-Mail:%20${user?.email}%0A%0AFrage:%20`
 }
