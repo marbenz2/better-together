@@ -47,31 +47,59 @@ interface GroupState {
   removeUserAdmin: (userId: string, groupId: string) => Promise<void>
 }
 
-const handleError = (error: any, defaultTitle: string, defaultMessage: string) => {
-  const errorMessages: { [key: string]: NotificationMessage } = {
+const handleError = (
+  error: any,
+  defaultTitle: string,
+  defaultMessage: string,
+  context?: string,
+) => {
+  const errorMessages: { [key: string]: { [context: string]: NotificationMessage } } = {
     '23505': {
-      title: 'Fehler',
-      message: 'Dieser Name ist bereits vergeben.',
-      variant: 'destructive',
+      default: {
+        title: 'Fehler',
+        message: 'Ein Eintrag mit diesem Namen existiert bereits.',
+        variant: 'destructive',
+      },
+      createGroup: {
+        title: 'Fehler',
+        message: 'Eine Gruppe mit diesem Namen existiert bereits.',
+        variant: 'destructive',
+      },
+      renameGroup: {
+        title: 'Fehler',
+        message: 'Eine Gruppe mit diesem Namen existiert bereits.',
+        variant: 'destructive',
+      },
+      joinGroup: {
+        title: 'Fehler',
+        message: 'Du bist bereits Mitglied dieser Gruppe.',
+        variant: 'destructive',
+      },
     },
     '22P02': {
-      title: 'Fehler',
-      message: 'Das war kein korrektes Format eines Einladungslinks.',
-      variant: 'destructive',
+      default: {
+        title: 'Fehler',
+        message: 'Das war kein korrektes Format eines Einladungslinks.',
+        variant: 'destructive',
+      },
     },
     '23503': {
-      title: 'Fehler',
-      message: 'Falscher Einladungslink.',
-      variant: 'destructive',
+      default: {
+        title: 'Fehler',
+        message: 'Falscher Einladungslink.',
+        variant: 'destructive',
+      },
     },
   }
 
   const errorCode = error?.code || 'unknown'
-  const errorMessage = errorMessages[errorCode] || {
-    title: defaultTitle,
-    message: defaultMessage,
-    variant: 'destructive',
-  }
+  const errorContext = context || 'default'
+  const errorMessage = errorMessages[errorCode]?.[errorContext] ||
+    errorMessages[errorCode]?.default || {
+      title: defaultTitle,
+      message: defaultMessage,
+      variant: 'destructive',
+    }
 
   showNotification(errorMessage.title, errorMessage.message, errorMessage.variant)
 }
@@ -144,6 +172,7 @@ export const useGroupStore = create<GroupState>((set, get) => ({
         error,
         'Fehler beim Erstellen der Gruppe',
         'Es ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
+        'createGroup',
       )
     }
   },
@@ -190,6 +219,7 @@ export const useGroupStore = create<GroupState>((set, get) => ({
         error,
         'Fehler beim Beitreten der Gruppe',
         'Es ist ein Fehler beim Beitreten der Gruppe aufgetreten, bitte versuche es später erneut.',
+        'joinGroup',
       )
     }
   },
@@ -306,6 +336,7 @@ export const useGroupStore = create<GroupState>((set, get) => ({
         error,
         'Fehler beim Umbennen der Gruppe',
         'Es ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
+        'renameGroup',
       )
     }
   },
