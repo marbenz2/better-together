@@ -38,16 +38,22 @@ export default function Profile() {
           <div className="flex flex-col gap-2">
             <h3 className="text-lg font-medium">Persönliche Informationen</h3>
             <div className="flex flex-col md:flex-row gap-12 items-center">
-              {publicProfile.profile_picture && (
-                <Image
-                  src={publicProfile.profile_picture}
-                  alt={publicProfile.first_name ?? 'avatar'}
-                  width={250}
-                  height={250}
-                  className="rounded-full w-64 h-auto"
-                  priority
-                />
-              )}
+              <div className="relative flex w-full max-w-[350px] h-[350px] p-4 rounded-lg border">
+                {publicProfile.profile_picture ? (
+                  <div className="relative w-full h-full">
+                    <Image
+                      src={publicProfile.profile_picture}
+                      alt={publicProfile.first_name ?? 'avatar'}
+                      fill
+                      sizes="(max-width: 300px) (max-height: 400px)"
+                      className="object-cover"
+                      priority
+                    />
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center w-full h-full">Profilbild</div>
+                )}
+              </div>
               <Table>
                 <TableBody>
                   <TableRow>

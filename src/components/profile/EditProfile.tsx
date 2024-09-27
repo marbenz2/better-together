@@ -127,31 +127,33 @@ const EditProfile = () => {
               onChange={handleImageUpload}
               className="w-full"
             />
-            {userData?.profile_picture ? (
-              <div className="flex justify-center items-center">
-                <Image
-                  src={userData?.profile_picture}
-                  alt="Vorschau des hochgeladenen Bildes"
-                  width={250}
-                  height={250}
-                  className="rounded-full w-64 h-auto"
-                  priority
-                />
-              </div>
-            ) : (
-              <div className="relative flex w-full h-64 items-center justify-center overflow-hidden">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="100%"
-                  height="100%"
-                  viewBox="0 0 100 100"
-                  preserveAspectRatio="none"
-                >
-                  <polygon points="0,0 100,0 0,100" fill="rgba(255,255,255,0.2)" />
-                  <polygon points="100,0 100,100 0,100" fill="rgba(255,255,255,0.3)" />
-                </svg>
-              </div>
-            )}
+            <div className="relative flex w-full max-w-[350px] h-[350px] p-4 rounded-lg border self-center">
+              {userData?.profile_picture ? (
+                <div className="relative w-full h-full">
+                  <Image
+                    src={userData?.profile_picture}
+                    alt="Vorschau des hochgeladenen Bildes"
+                    fill
+                    sizes="(max-width: 350px) (max-height: 450px)"
+                    className="object-cover"
+                    priority
+                  />
+                </div>
+              ) : (
+                <div className="relative flex w-full h-full items-center justify-center overflow-hidden">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="100%"
+                    height="100%"
+                    viewBox="0 0 100 100"
+                    preserveAspectRatio="none"
+                  >
+                    <polygon points="0,0 100,0 0,100" fill="rgba(255,255,255,0.2)" />
+                    <polygon points="100,0 100,100 0,100" fill="rgba(255,255,255,0.3)" />
+                  </svg>
+                </div>
+              )}
+            </div>
           </div>
           <div className="flex gap-2 w-full">
             <div className="flex flex-col gap-2 w-full">
