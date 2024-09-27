@@ -98,7 +98,7 @@ export default function Trip() {
           <div className="flex justify-between mb-4">
             <BackButtonClient className="static" />
             {isCreator && (
-              <div className="flex gap-12">
+              <div className="flex gap-6">
                 <EditButton id={trip.id} className="static" type="trip">
                   <PencilIcon size={24} />
                 </EditButton>
