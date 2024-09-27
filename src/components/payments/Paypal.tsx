@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { redirect } from 'next/navigation'
 
 import {
   PayPalButtons,
@@ -23,6 +22,21 @@ interface OrderData {
   }
 }
 
+interface ApprovalDetails {
+  id: string
+  status: string
+  purchase_units: Array<{
+    payments: {
+      captures: Array<{
+        amount: {
+          value: string
+          currency_code: string
+        }
+      }>
+    }
+  }>
+}
+
 interface PaypalProps {
   user_id: string
   payment_type: string
@@ -38,10 +52,15 @@ export default function Paypal({
   trip_id,
   onPaymentSuccess,
 }: PaypalProps) {
-  const [approvalDetails, setApprovalDetails] = useState<any>(null)
+  const [approvalDetails, setApprovalDetails] = useState<ApprovalDetails | null>(null)
 
   const initialOptions: ReactPayPalScriptOptions = {
     clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID!,
+  }
+
+  if (!process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID) {
+    console.error('PayPal Client ID ist nicht konfiguriert')
+    return <div>PayPal-Konfigurationsfehler</div>
   }
 
   const createOrder: PayPalButtonsComponentProps['createOrder'] = async () => {
@@ -54,6 +73,10 @@ export default function Paypal({
         }),
       })
 
+      if (!response.ok) {
+        throw new Error(`HTTP-Fehler! Status: ${response.status}`)
+      }
+
       const orderData: OrderData = await response.json()
 
       if (!orderData.data.order.id) {
@@ -62,7 +85,12 @@ export default function Paypal({
 
       return orderData.data.order.id
     } catch (error) {
-      console.error(error)
+      console.error('Fehler beim Erstellen der Bestellung:', error)
+      showNotification(
+        'Bestellungsfehler',
+        'Es gab ein Problem beim Erstellen Ihrer Zahlung. Bitte versuchen Sie es später erneut.',
+        'destructive',
+      )
       throw error
     }
   }
@@ -117,7 +145,6 @@ export default function Paypal({
       'Zahlung wurde durch den Benutzer abgebrochen',
       'destructive',
     )
-    redirect('/payments/ErrorPage')
   }
 
   const onError: PayPalButtonsComponentProps['onError'] = (err) => {
@@ -126,7 +153,6 @@ export default function Paypal({
       'Bei der Verarbeitung Ihrer Zahlung ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
       'destructive',
     )
-    redirect('/payments/ErrorPage')
   }
 
   const styles: PayPalButtonsComponentProps['style'] = {
@@ -135,6 +161,8 @@ export default function Paypal({
     height: 40,
   }
 
+  /*   if (isLoading) return <Spinner />
+   */
   return (
     <div className="flex w-full justify-center">
       <PayPalScriptProvider options={initialOptions}>
