@@ -7,7 +7,7 @@ import { UserGroupsType } from '@/types/dashboard'
 import { CopyIcon } from 'lucide-react'
 
 interface GroupCodeProps {
-  userGroups: UserGroupsType
+  userGroups: UserGroupsType[]
   groupId: string | null | false
 }
 
