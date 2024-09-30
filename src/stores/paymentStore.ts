@@ -4,61 +4,48 @@ import { getPaymentDetails, getPayments, getPaymentStatus } from '@/utils/supaba
 import { PaymentDetailsType, PaymentStatusType, PaymentsType } from '@/types/payment'
 
 interface PaymentState {
-  paymentStatus: PaymentStatusType | null
-  getPaymentStatus: (tripId: string) => Promise<void>
+  paymentStatus: PaymentStatusType[] | null
+  getPaymentStatus: (userId: string, tripId: string) => Promise<void>
 
   paymentDetails: PaymentDetailsType[] | null
-  getPaymentDetails: () => Promise<void>
+  getPaymentDetails: (userId: string) => Promise<void>
 
   payments: PaymentsType[] | null
   getPayments: (groupId: string) => Promise<void>
 }
 
-export const usePaymentStore = create<PaymentState>((set) => ({
-  paymentStatus: null,
-  getPaymentStatus: async (tripId: string) => {
-    const supabase = createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-    if (!user) {
-      console.error('Kein Benutzer gefunden')
-      return
-    }
-    const { data, error } = await getPaymentStatus(supabase, user.id, tripId)
-    if (error) {
-      console.error('Fehler beim Abrufen der Zahlungsstatus:', error)
-      return
-    }
-    set({ paymentStatus: data })
-  },
+export const usePaymentStore = create<PaymentState>((set) => {
+  const supabase = createClient()
 
-  paymentDetails: [],
-  getPaymentDetails: async () => {
-    const supabase = createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-    if (!user) {
-      console.error('Kein Benutzer gefunden')
-      return
-    }
-    const { data, error } = await getPaymentDetails(supabase, user.id)
-    if (error) {
-      console.error('Fehler beim Abrufen der Zahlungsdetails:', error)
-      return
-    }
-    set({ paymentDetails: data || [] })
-  },
+  return {
+    paymentStatus: null,
+    getPaymentStatus: async (userId: string, tripId: string) => {
+      const { data, error } = await getPaymentStatus(supabase, userId, tripId)
+      if (error) {
+        console.error('Fehler beim Abrufen der Zahlungsstatus:', error)
+        return
+      }
+      set({ paymentStatus: data })
+    },
 
-  payments: [],
-  getPayments: async (groupId: string) => {
-    const supabase = createClient()
-    const { data, error } = await getPayments(supabase, groupId)
-    if (error) {
-      console.error('Fehler beim Abrufen der Zahlungen:', error)
-      return
-    }
-    set({ payments: data })
-  },
-}))
+    paymentDetails: [],
+    getPaymentDetails: async (userId: string) => {
+      const { data, error } = await getPaymentDetails(supabase, userId)
+      if (error) {
+        console.error('Fehler beim Abrufen der Zahlungsdetails:', error)
+        return
+      }
+      set({ paymentDetails: data || [] })
+    },
+
+    payments: [],
+    getPayments: async (groupId: string) => {
+      const { data, error } = await getPayments(supabase, groupId)
+      if (error) {
+        console.error('Fehler beim Abrufen der Zahlungen:', error)
+        return
+      }
+      set({ payments: data })
+    },
+  }
+})
