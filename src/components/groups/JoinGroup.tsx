@@ -9,14 +9,16 @@ import { CardTitle } from '@/components/ui/card'
 import { LogInIcon } from 'lucide-react'
 import { useGroupStore } from '@/stores/groupStores'
 import { ResponsiveDialog } from '@/components/ResponsiveDialog'
+import { useUserStore } from '@/stores/userStore'
 
 export default function JoinGroup() {
+  const { user } = useUserStore()
   const { joinGroup } = useGroupStore()
   const [newJoinGroupName, setNewJoinGroupName] = useState('')
 
   const handleJoinGroup = async () => {
     try {
-      await joinGroup(newJoinGroupName)
+      await joinGroup(newJoinGroupName, user.id)
       setNewJoinGroupName('')
     } catch (error) {
       console.error('Fehler beim Beitreten der Gruppe:', error)
