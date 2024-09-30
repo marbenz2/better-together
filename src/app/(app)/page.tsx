@@ -11,9 +11,7 @@ export default async function Index() {
   const supabase = createClient()
   const { data: user } = await getUser(supabase)
 
-  const [publicProfile] = await Promise.all([
-    user && getPublicProfile(supabase, user.id).then((profile) => profile.data),
-  ])
+  const [publicProfileResult] = await Promise.all([user && getPublicProfile(supabase, user.id)])
 
   return (
     <div className="flex-1 w-full flex flex-col items-center">
@@ -30,7 +28,7 @@ export default async function Index() {
         {user && (
           <div className="flex flex-col gap-16 items-center justify-center">
             <h2 className="text-4xl text-center">
-              Willkommen zurück, {publicProfile ? publicProfile?.first_name : <Spinner />}!
+              Willkommen zurück, {publicProfileResult?.data?.first_name ?? <Spinner />}!
             </h2>
             <Link href={'protected/'}>
               <Button variant="outline">Zu den Reisen</Button>
