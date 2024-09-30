@@ -19,7 +19,6 @@ import { Trips } from '@/types/supabase'
 import { useUserStore } from '@/stores/userStore'
 import { useGroupStore } from '@/stores/groupStores'
 import Spinner from '@/components/ui/Spinner'
-import { useRouter } from 'next/navigation'
 import InfoCard from '@/components/ui/info-card'
 
 type PaymentStatus = {
@@ -33,7 +32,6 @@ type TransactionsId = {
 }
 
 export default function Payments() {
-  const router = useRouter()
   const { groupId } = useGroupStore()
   const { paymentDetails, getPaymentDetails } = usePaymentStore()
   const { user, subscribedTrips } = useUserStore()
@@ -44,8 +42,8 @@ export default function Payments() {
   )
 
   const handlePaymentSuccess = useCallback(() => {
-    getPaymentDetails()
-  }, [getPaymentDetails])
+    getPaymentDetails(user.id)
+  }, [getPaymentDetails, user.id])
 
   if (!paymentDetails) return <Spinner />
 
