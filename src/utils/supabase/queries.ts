@@ -4,6 +4,7 @@ import { GroupMembers, Groups, TripMembers, Trips } from '@/types/supabase'
 import { PublicProfilesType, UserGroupsType } from '@/types/dashboard'
 import { PublicProfileType } from '@/types/user'
 import { GroupTripType } from '@/types/trips'
+import { createClient } from './client'
 
 type GetUserResult = {
   data: User | null
@@ -17,8 +18,6 @@ export const getUser = cache(async (supabase: SupabaseClient): Promise<GetUserRe
   } = await supabase.auth.getUser()
   return { data: user, error: error as PostgrestError | null }
 })
-
-//hier muss groupMembers einzelne keys und groups als objekt mit allen keys
 
 type GetUserGroupsResult = {
   data: UserGroupsType[] | null
@@ -449,11 +448,8 @@ type AddSubscriptionResult = {
 }
 
 export const addSubscription = cache(
-  async (
-    supabase: SupabaseClient,
-    tripId: string,
-    userId: string,
-  ): Promise<AddSubscriptionResult> => {
+  async (tripId: string, userId: string): Promise<AddSubscriptionResult> => {
+    const supabase = createClient()
     const { data: existingSubscription, error: fetchError } = await supabase
       .from('trip_members')
       .select('id')
@@ -477,6 +473,7 @@ export const addSubscription = cache(
         subscribed_at: new Date().toISOString(),
       })
       .select()
+      .returns<TripMembers>()
       .single()
 
     return { data, error }
@@ -489,11 +486,8 @@ type RemoveSubscriptionResult = {
 }
 
 export const removeSubscription = cache(
-  async (
-    supabase: SupabaseClient,
-    tripId: string,
-    userId: string,
-  ): Promise<RemoveSubscriptionResult> => {
+  async (tripId: string, userId: string): Promise<RemoveSubscriptionResult> => {
+    const supabase = createClient()
     const { data: subscription, error: fetchError } = await supabase
       .from('trip_members')
       .select('down_payment, full_payment, final_payment')
@@ -529,11 +523,11 @@ type SetTripStatusResult = {
 
 export const setTripStatus = cache(
   async (
-    supabase: SupabaseClient,
     tripId: string,
     userId: string,
     status: 'upcoming' | 'current' | 'done',
   ): Promise<SetTripStatusResult> => {
+    const supabase = createClient()
     const { data, error } = await supabase
       .from('trips')
       .update({ status })

@@ -12,7 +12,6 @@ import { ResponsiveDialog } from './ResponsiveDialog'
 import { createClient } from '@/utils/supabase/client'
 
 export function TripSubscription() {
-  const supabase = createClient()
   const { user } = useUserStore()
   const { trip, getTripMembers } = useTripStore()
   const { isSubscribed, setIsSubscribed, setSubscribedTrips } = useUserStore()
@@ -27,7 +26,7 @@ export function TripSubscription() {
 
   const handleSubscribe = async () => {
     try {
-      const { error } = await addSubscription(supabase, trip.id, user.id)
+      const { error } = await addSubscription(trip.id, user.id)
       if (error) {
         console.error('Fehler beim Anmelden:', error)
         return
@@ -50,7 +49,7 @@ export function TripSubscription() {
 
   const handleUnsubscribe = async () => {
     try {
-      const { error } = await removeSubscription(supabase, trip.id, user.id)
+      const { error } = await removeSubscription(trip.id, user.id)
       if (error) {
         console.error('Fehler beim Abmelden:', error)
         return
