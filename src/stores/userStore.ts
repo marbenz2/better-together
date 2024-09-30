@@ -8,7 +8,7 @@ import {
 import { createClient } from '@/utils/supabase/client'
 import { User } from '@supabase/supabase-js'
 import { PublicProfileType, SubscribedTripsType } from '@/types/user'
-import { NotificationMessage } from '@/types/notification.'
+import { NotificationMessage } from '@/types/notification'
 import { showNotification } from '@/lib/utils'
 
 interface UserState {
@@ -41,87 +41,87 @@ const handleError = (error: any, defaultTitle: string, defaultMessage: string) =
   showNotification(errorMessage.title, errorMessage.message, errorMessage.variant)
 }
 
-export const useUserStore = create<UserState>((set) => ({
-  user: {} as User,
-  setUser: (user) => set({ user }),
+export const useUserStore = create<UserState>((set) => {
+  const supabase = createClient()
 
-  getUser: async () => {
-    const supabase = createClient()
-    const { data: user, error } = await getUser(supabase)
-    if (error) {
-      console.error('Error fetching user:', error)
-      return
-    }
-    if (user) {
-      set({ user })
-    }
-  },
+  return {
+    user: {} as User,
+    setUser: (user) => set({ user }),
 
-  publicProfile: null,
-  setPublicProfile: (publicProfile) => set({ publicProfile }),
-
-  getPublicProfile: async (userId?: string) => {
-    const supabase = createClient()
-    const user = userId || useUserStore.getState().user.id
-    const { data, error } = await getPublicProfile(supabase, user)
-    if (error) {
-      console.error('Error fetching public profile:', error)
-      return
-    }
-    if (data) {
-      set({ publicProfile: data })
-    }
-  },
-
-  updatePublicProfile: async (profile: PublicProfileType) => {
-    try {
-      const supabase = createClient()
-      const { data: user } = await getUser(supabase)
-      if (!user) {
-        console.error('Kein Benutzer gefunden')
+    getUser: async () => {
+      const { data: user, error } = await getUser(supabase)
+      if (error) {
+        console.error('Error fetching user:', error)
         return
       }
-      const { data, error } = await updatePublicProfile(supabase, profile)
-      if (error) throw error
-      if (data && !error) {
-        set({ publicProfile: data as PublicProfileType })
-        showNotification(
-          'Profil aktualisiert',
-          `Dein Profil wurde erfolgreich aktualisiert.`,
-          'success',
+      if (user) {
+        set({ user })
+      }
+    },
+
+    publicProfile: null,
+    setPublicProfile: (publicProfile) => set({ publicProfile }),
+
+    getPublicProfile: async (userId?: string) => {
+      const user = userId || useUserStore.getState().user.id
+      const { data, error } = await getPublicProfile(supabase, user)
+      if (error) {
+        console.error('Error fetching public profile:', error)
+        return
+      }
+      if (data) {
+        set({ publicProfile: data })
+      }
+    },
+
+    updatePublicProfile: async (profile: PublicProfileType) => {
+      try {
+        const { data: user } = await getUser(supabase)
+        if (!user) {
+          console.error('Kein Benutzer gefunden')
+          return
+        }
+        const { data, error } = await updatePublicProfile(supabase, profile)
+        if (error) throw error
+        if (data && !error) {
+          set({ publicProfile: data as PublicProfileType })
+          showNotification(
+            'Profil aktualisiert',
+            `Dein Profil wurde erfolgreich aktualisiert.`,
+            'success',
+          )
+        }
+      } catch (error) {
+        handleError(
+          error,
+          'Fehler beim Aktualisieren des Profils',
+          'Es ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
         )
       }
-    } catch (error) {
-      handleError(
-        error,
-        'Fehler beim Aktualisieren des Profils',
-        'Es ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
-      )
-    }
-  },
+    },
 
-  subscribedTrips: null,
-  setSubscribedTrips: (subscribedTrips) =>
-    set((state) => ({
-      subscribedTrips:
-        typeof subscribedTrips === 'function'
-          ? subscribedTrips(state.subscribedTrips)
-          : subscribedTrips,
-    })),
+    subscribedTrips: null,
+    setSubscribedTrips: (subscribedTrips) =>
+      set((state) => ({
+        subscribedTrips:
+          typeof subscribedTrips === 'function'
+            ? subscribedTrips(state.subscribedTrips)
+            : subscribedTrips,
+      })),
 
-  getSubscribedTrips: async (userId?: string) => {
-    const supabase = createClient()
-    const user = userId || useUserStore.getState().user.id
-    const { data, error } = await getSubscribedTrips(supabase, user)
-    if (error) {
-      console.error('Error fetching subscribed trips:', error)
-      return
-    }
-    if (data) {
-      set({ subscribedTrips: data })
-    }
-  },
+    getSubscribedTrips: async (userId?: string) => {
+      const user = userId || useUserStore.getState().user.id
+      const { data, error } = await getSubscribedTrips(supabase, user)
+      if (error) {
+        console.error('Error fetching subscribed trips:', error)
+        return
+      }
+      if (data) {
+        set({ subscribedTrips: data })
+      }
+    },
 
-  isSubscribed: false,
-  setIsSubscribed: (isSubscribed) => set({ isSubscribed }),
-}))
+    isSubscribed: false,
+    setIsSubscribed: (isSubscribed) => set({ isSubscribed }),
+  }
+})
