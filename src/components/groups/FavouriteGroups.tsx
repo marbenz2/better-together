@@ -3,14 +3,16 @@
 import { Badge } from '@/components/ui/badge'
 import { CardTitle } from '@/components/ui/card'
 import { useGroupStore } from '@/stores/groupStores'
+import { useUserStore } from '@/stores/userStore'
 import { StarIcon } from 'lucide-react'
 
 export default function FavouriteGroups() {
+  const { user } = useUserStore()
   const { userGroups, setFavourite } = useGroupStore()
 
   const handleOnStarClick = async (group_id: string, group_favourite: boolean) => {
     try {
-      await setFavourite(group_id, !group_favourite)
+      await setFavourite(group_id, !group_favourite, user.id)
     } catch (error) {
       console.error('Fehler beim Setzen der Favoriten:', error)
     }
