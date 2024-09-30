@@ -9,8 +9,10 @@ import { CardTitle } from '@/components/ui/card'
 import { FolderPenIcon } from 'lucide-react'
 import { useGroupStore } from '@/stores/groupStores'
 import { ResponsiveDialog } from '../ResponsiveDialog'
+import { useUserStore } from '@/stores/userStore'
 
 export default function RenameGroup() {
+  const { user } = useUserStore()
   const { renameGroup, userGroups, groupId } = useGroupStore()
   const [changeGroupName, setChangeGroupName] = useState('')
   const groupName = userGroups.find((group) => group.group_id === groupId)?.groups.name || ''
@@ -18,7 +20,7 @@ export default function RenameGroup() {
   const handleRenameGroup = async () => {
     try {
       if (groupId) {
-        await renameGroup(groupId, changeGroupName)
+        await renameGroup(groupId, changeGroupName, user.id)
       } else {
         console.error('Group ID is null or undefined')
       }
