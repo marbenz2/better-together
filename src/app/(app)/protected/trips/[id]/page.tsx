@@ -35,7 +35,7 @@ export default function TripPage({ params }: { params: { id: string } }) {
         setIsLoading(true)
         await Promise.all([
           getTrip(params.id),
-          getPaymentStatus(params.id),
+          getPaymentStatus(user.id, params.id),
           getAllUserGroups(user.id),
         ])
         setIsLoading(false)
