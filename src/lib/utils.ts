@@ -1,5 +1,5 @@
 import { useToastStore } from '@/stores/toastStore'
-import { NotificationVariant } from '@/types/notification.'
+import { NotificationVariant } from '@/types/notification'
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 
