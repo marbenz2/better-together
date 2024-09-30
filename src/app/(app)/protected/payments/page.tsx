@@ -8,6 +8,7 @@ import { useUserStore } from '@/stores/userStore'
 import { useEffect } from 'react'
 
 export default function PaymentPage() {
+  const { user } = useUserStore()
   const { getSubscribedTrips } = useUserStore()
   const { getPaymentDetails } = usePaymentStore()
   const { toast } = useToast()
@@ -24,9 +25,9 @@ export default function PaymentPage() {
   }, [title, message, variant, toast])
 
   useEffect(() => {
-    getPaymentDetails()
+    getPaymentDetails(user.id)
     getSubscribedTrips()
-  }, [getPaymentDetails, getSubscribedTrips])
+  }, [getPaymentDetails, getSubscribedTrips, user.id])
 
   return <Payments />
 }
