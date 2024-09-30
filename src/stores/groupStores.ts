@@ -10,33 +10,33 @@ import {
   leaveExistingGroup,
   getGroupMembers,
   getPublicProfiles,
-  getUser,
   getUserGroups,
   removeUserFromGroup,
   makeUserAdmin,
   removeUserAdmin,
 } from '@/utils/supabase/queries'
-import { NotificationMessage } from '@/types/notification.'
+import { NotificationMessage } from '@/types/notification'
 import { showNotification } from '@/lib/utils'
+import { useUserStore } from './userStore'
 
 interface GroupState {
-  userGroups: UserGroupsType
+  userGroups: UserGroupsType[]
   groupId: string | null
   selectedGroupName: string | null
-  groupMembers: GroupMembersType
+  groupMembers: GroupMembersType[]
   publicProfiles: PublicProfilesType[]
   tripPublicProfiles: PublicProfilesType[]
   groupPublicProfiles: PublicProfilesType[]
-  setUserGroups: (userGroups: UserGroupsType) => void
+  setUserGroups: (userGroups: UserGroupsType[]) => void
   setGroupId: (groupId: string | null) => void
   setSelectedGroupName: (name: string | null) => void
   handleOnValueChange: (value: string) => void
-  createGroup: (groupName: string) => Promise<void>
-  joinGroup: (inviteCode: string) => Promise<void>
-  leaveGroup: (groupIdToLeave: string) => Promise<void>
-  deleteGroup: (groupIdToDelete: string) => Promise<void>
-  renameGroup: (groupIdToRename: string, newName: string) => Promise<void>
-  setFavourite: (groupIdToFavourite: string, isFavourite: boolean) => Promise<void>
+  createGroup: (groupName: string, userId: string) => Promise<void>
+  joinGroup: (inviteCode: string, userId: string) => Promise<void>
+  leaveGroup: (groupIdToLeave: string, userId: string) => Promise<void>
+  deleteGroup: (groupIdToDelete: string, userId: string) => Promise<void>
+  renameGroup: (groupIdToRename: string, newName: string, userId: string) => Promise<void>
+  setFavourite: (groupIdToFavourite: string, isFavourite: boolean, userId: string) => Promise<void>
   getAllGroupMembers: (groupId: string) => Promise<void>
   getAllPublicProfiles: (user_ids: string[]) => Promise<void>
   getAllTripPublicProfiles: (user_ids: string[]) => Promise<void>
@@ -104,416 +104,390 @@ const handleError = (
   showNotification(errorMessage.title, errorMessage.message, errorMessage.variant)
 }
 
-export const useGroupStore = create<GroupState>((set, get) => ({
-  userGroups: [],
-  groupId: null,
-  selectedGroupName: null,
-  groupMembers: [],
-  publicProfiles: [],
-  tripPublicProfiles: [],
-  groupPublicProfiles: [],
+export const useGroupStore = create<GroupState>((set, get) => {
+  const supabase = createClient()
+  return {
+    userGroups: [] as UserGroupsType[],
+    groupId: null as string | null,
+    selectedGroupName: null as string | null,
+    groupMembers: [] as GroupMembersType[],
+    publicProfiles: [] as PublicProfilesType[],
+    tripPublicProfiles: [] as PublicProfilesType[],
+    groupPublicProfiles: [] as PublicProfilesType[],
 
-  setGroupId: (groupId) => set((state) => ({ ...state, groupId })),
-  setSelectedGroupName: (name) => set((state) => ({ ...state, selectedGroupName: name })),
-  setUserGroups: (userGroups) => set((state) => ({ ...state, userGroups })),
+    setGroupId: (groupId) => set({ groupId }),
+    setSelectedGroupName: (name) => set({ selectedGroupName: name }),
+    setUserGroups: (userGroups) => set({ userGroups }),
 
-  handleOnValueChange: (value) => {
-    const { userGroups } = get()
-    const selectedGroup = userGroups?.find((group) => group.groups.name === value)
-    if (selectedGroup) {
-      set((state) => ({
-        ...state,
-        groupId: selectedGroup.group_id,
-        selectedGroupName: value,
-      }))
-    }
-  },
-
-  createGroup: async (groupName) => {
-    try {
-      const supabase = createClient()
-      const { data: user } = await getUser(supabase)
-      if (!user) {
-        console.error('Kein Benutzer gefunden')
-        return
+    handleOnValueChange: (value) => {
+      const { userGroups } = get()
+      const selectedGroup = userGroups?.find((group) => group.groups.name === value)
+      if (selectedGroup) {
+        set({
+          groupId: selectedGroup.group_id,
+          selectedGroupName: value,
+        })
       }
-      const { data: group, error } = await addNewGroup(supabase, user.id, groupName)
-      if (error) throw error
+    },
 
-      if (group && !error) {
-        set((state) => ({
-          userGroups: [
-            ...state.userGroups,
-            {
-              group_id: group.id,
-              favourite: true,
-              role: 'admin',
-              groups: {
-                id: group.id,
-                name: groupName,
-                created_at: group.created_at,
-                created_by: group.created_by,
-                description: group.description,
+    createGroup: async (groupName, userId) => {
+      try {
+        const { data: group, error } = await addNewGroup(supabase, userId, groupName)
+        if (error) throw error
+
+        if (group) {
+          set((state) => ({
+            userGroups: [
+              ...state.userGroups,
+              {
+                group_id: group.id,
+                favourite: true,
+                role: 'admin',
+                groups: {
+                  id: group.id,
+                  name: groupName,
+                  created_at: group.created_at,
+                  created_by: group.created_by,
+                  description: group.description,
+                },
               },
-            },
-          ],
-          groupId: group.id,
-          selectedGroupName: group.name,
-          groupMembers: [],
-        }))
-        showNotification(
-          'Gruppe erstellt',
-          `Die Gruppe "${group.name}" wurde erfolgreich erstellt.`,
-          'success',
-        )
-      }
-    } catch (error) {
-      handleError(
-        error,
-        'Fehler beim Erstellen der Gruppe',
-        'Es ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
-        'createGroup',
-      )
-    }
-  },
-
-  joinGroup: async (inviteCode) => {
-    try {
-      const supabase = createClient()
-      const { data: user } = await getUser(supabase)
-      if (!user) {
-        console.error('Kein Benutzer gefunden')
-        return
-      }
-      const { data: group, error } = await joinExistingGroup(supabase, user.id, inviteCode)
-      if (error) throw error
-      if (group && !error) {
-        set((state) => ({
-          userGroups: [
-            ...state.userGroups,
-            {
-              group_id: group.id,
-              favourite: false,
-              role: 'member',
-              groups: {
-                id: group.id,
-                name: group.name,
-                created_at: group.created_at,
-                created_by: group.created_by,
-                description: group.description,
-              },
-            },
-          ],
-          groupId: group.id,
-          selectedGroupName: group.name,
-          groupMembers: [],
-        }))
-        showNotification(
-          'Gruppe beigetreten',
-          `Du hast erfolgreich der Gruppe "${group.name}" beigetreten.`,
-          'success',
-        )
-      }
-    } catch (error) {
-      handleError(
-        error,
-        'Fehler beim Beitreten der Gruppe',
-        'Es ist ein Fehler beim Beitreten der Gruppe aufgetreten, bitte versuche es später erneut.',
-        'joinGroup',
-      )
-    }
-  },
-
-  leaveGroup: async (groupIdToLeave) => {
-    try {
-      const supabase = createClient()
-      const { data: user } = await getUser(supabase)
-      if (!user) {
-        console.error('Kein Benutzer gefunden')
-        return
-      }
-      const { error } = await leaveExistingGroup(supabase, user.id, groupIdToLeave)
-      if (error) throw error
-
-      set((state) => ({
-        userGroups: state.userGroups.filter((group) => group.group_id !== groupIdToLeave),
-        groupId: state.groupId === groupIdToLeave ? null : state.groupId,
-        selectedGroupName:
-          state.selectedGroupName === groupIdToLeave ? null : state.selectedGroupName,
-        groupMembers: undefined,
-      }))
-
-      showNotification(
-        'Gruppe verlassen',
-        `Du hast erfolgreich die Gruppe "${groupIdToLeave}" verlassen.`,
-        'success',
-      )
-    } catch (error) {
-      handleError(
-        error,
-        'Fehler beim Verlassen der Gruppe',
-        'Es ist ein Fehler beim Verlassen der Gruppe aufgetreten, bitte versuche es später erneut.',
-      )
-    }
-  },
-
-  deleteGroup: async (groupIdToDelete) => {
-    try {
-      const supabase = createClient()
-      const { data: user } = await getUser(supabase)
-      if (!user) {
-        console.error('Kein Benutzer gefunden')
-        return
-      }
-      const { error } = await deleteExistingGroup(supabase, user.id, groupIdToDelete)
-      if (error) throw error
-
-      set((state) => {
-        const updatedGroups = state.userGroups.filter((group) => group.group_id !== groupIdToDelete)
-        let newGroupId = state.groupId
-        let newSelectedGroupName = state.selectedGroupName
-
-        if (updatedGroups.length > 0) {
-          const nextGroup = updatedGroups.find((group) => group.favourite) || updatedGroups[0]
-          newGroupId = nextGroup.group_id
-          newSelectedGroupName = nextGroup.groups.name
+            ],
+            groupId: group.id,
+            selectedGroupName: group.name,
+            groupMembers: [],
+          }))
           showNotification(
-            'Gruppe gelöscht',
-            `Die Gruppe wurde gelöscht. Sie sind jetzt in der Gruppe "${nextGroup.groups.name}".`,
-            'success',
-          )
-        } else {
-          newGroupId = null
-          newSelectedGroupName = null
-          showNotification(
-            'Gruppe gelöscht',
-            'Die letzte Gruppe wurde gelöscht. Sie sind jetzt in keiner Gruppe mehr.',
+            'Gruppe erstellt',
+            `Die Gruppe "${group.name}" wurde erfolgreich erstellt.`,
             'success',
           )
         }
+      } catch (error) {
+        handleError(
+          error,
+          'Fehler beim Erstellen der Gruppe',
+          'Es ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
+          'createGroup',
+        )
+      }
+    },
 
-        return {
-          userGroups: updatedGroups,
-          groupId: newGroupId,
-          selectedGroupName: newSelectedGroupName,
-          groupMembers: undefined,
+    joinGroup: async (inviteCode, userId) => {
+      try {
+        const { data: group, error } = await joinExistingGroup(supabase, userId, inviteCode)
+        if (error) throw error
+        if (group) {
+          set((state) => ({
+            userGroups: [
+              ...state.userGroups,
+              {
+                group_id: group.id,
+                favourite: false,
+                role: 'member',
+                groups: {
+                  id: group.id,
+                  name: group.name,
+                  created_at: group.created_at,
+                  created_by: group.created_by,
+                  description: group.description,
+                },
+              },
+            ],
+            groupId: group.id,
+            selectedGroupName: group.name,
+            groupMembers: [],
+          }))
+          showNotification(
+            'Gruppe beigetreten',
+            `Du hast erfolgreich der Gruppe "${group.name}" beigetreten.`,
+            'success',
+          )
         }
-      })
-    } catch (error) {
-      handleError(
-        error,
-        'Fehler beim Löschen der Gruppe',
-        'Es ist ein Fehler beim Löschen der Gruppe aufgetreten, bitte versuche es später erneut.',
-      )
-    }
-  },
-
-  renameGroup: async (groupIdToRename, newName) => {
-    try {
-      const supabase = createClient()
-      const { data: user } = await getUser(supabase)
-      if (!user) {
-        console.error('Kein Benutzer gefunden')
-        return
+      } catch (error) {
+        handleError(
+          error,
+          'Fehler beim Beitreten der Gruppe',
+          'Es ist ein Fehler beim Beitreten der Gruppe aufgetreten, bitte versuche es später erneut.',
+          'joinGroup',
+        )
       }
-      const { error } = await renameExistingGroup(supabase, user.id, groupIdToRename, newName)
-      if (error) throw error
-      set((state) => ({
-        userGroups: state.userGroups.map((group) =>
-          group.group_id === groupIdToRename
-            ? { ...group, groups: { ...group.groups, name: newName } }
-            : group,
-        ),
-        selectedGroupName: newName,
-      }))
-      showNotification(
-        'Gruppe umbenannt',
-        `Die Gruppe wurde erfolgreich in "${newName}" umbenannt.`,
-        'success',
-      )
-    } catch (error) {
-      handleError(
-        error,
-        'Fehler beim Umbennen der Gruppe',
-        'Es ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
-        'renameGroup',
-      )
-    }
-  },
+    },
 
-  setFavourite: async (groupIdToFavourite, isFavourite) => {
-    try {
-      const supabase = createClient()
-      const { data: user } = await getUser(supabase)
-      if (!user) {
-        console.error('Kein Benutzer gefunden')
-        return
+    leaveGroup: async (groupIdToLeave, userId) => {
+      try {
+        const { error } = await leaveExistingGroup(supabase, userId, groupIdToLeave)
+        if (error) throw error
+
+        set((state) => ({
+          userGroups: state.userGroups.filter((group) => group.group_id !== groupIdToLeave),
+          groupId: state.groupId === groupIdToLeave ? null : state.groupId,
+          selectedGroupName:
+            state.selectedGroupName === groupIdToLeave ? null : state.selectedGroupName,
+          groupMembers: [],
+        }))
+
+        await useUserStore.getState().getSubscribedTrips()
+
+        showNotification(
+          'Gruppe verlassen',
+          `Du hast erfolgreich die Gruppe und alle zugehörigen Reisen verlassen.`,
+          'success',
+        )
+      } catch (error) {
+        handleError(
+          error,
+          'Fehler beim Verlassen der Gruppe',
+          'Es ist ein Fehler beim Verlassen der Gruppe aufgetreten, bitte versuche es später erneut.',
+        )
       }
-      const { error } = await setFavouriteGroup(supabase, user.id, groupIdToFavourite, isFavourite)
-      if (error) throw error
+    },
 
-      set((state) => ({
-        userGroups: state.userGroups.map((group) =>
-          group.group_id === groupIdToFavourite ? { ...group, favourite: isFavourite } : group,
-        ),
-      }))
+    deleteGroup: async (groupIdToDelete, userId) => {
+      try {
+        const { error } = await deleteExistingGroup(supabase, userId, groupIdToDelete)
+        if (error) throw error
 
-      showNotification(
-        'Favoriten gesetzt',
-        `Die Gruppe wurde erfolgreich als Favorit ${isFavourite ? 'gesetzt' : 'entfernt'}.`,
-        'success',
-      )
-    } catch (error) {
-      handleError(
-        error,
-        'Fehler beim Setzen der Favoriten',
-        'Es ist ein Fehler beim Setzen der Favoriten aufgetreten, bitte versuche es später erneut.',
-      )
-    }
-  },
+        set((state) => {
+          const updatedGroups = state.userGroups.filter(
+            (group) => group.group_id !== groupIdToDelete,
+          )
+          let newGroupId = state.groupId
+          let newSelectedGroupName = state.selectedGroupName
 
-  getAllGroupMembers: async (groupId) => {
-    try {
-      const supabase = createClient()
-      const { data, error } = await getGroupMembers(supabase, groupId)
-      if (error) throw error
-      set({ groupMembers: data || [] })
-    } catch (error) {
-      handleError(
-        error,
-        'Fehler beim Laden der Gruppenmitglieder',
-        'Es ist ein Fehler beim Laden der Gruppenmitglieder aufgetreten, bitte versuche es später erneut.',
-      )
-    }
-  },
+          if (updatedGroups.length > 0) {
+            const nextGroup = updatedGroups.find((group) => group.favourite) || updatedGroups[0]
+            newGroupId = nextGroup.group_id
+            newSelectedGroupName = nextGroup.groups.name
+            showNotification(
+              'Gruppe gelöscht',
+              `Die Gruppe wurde gelöscht. Sie sind jetzt in der Gruppe "${nextGroup.groups.name}".`,
+              'success',
+            )
+          } else {
+            newGroupId = null
+            newSelectedGroupName = null
+            showNotification(
+              'Gruppe gelöscht',
+              'Die letzte Gruppe wurde gelöscht. Sie sind jetzt in keiner Gruppe mehr.',
+              'success',
+            )
+          }
 
-  getAllPublicProfiles: async (user_ids) => {
-    try {
-      const supabase = createClient()
-      const { data, error } = await getPublicProfiles(supabase, user_ids)
-      if (error) throw error
+          return {
+            userGroups: updatedGroups,
+            groupId: newGroupId,
+            selectedGroupName: newSelectedGroupName,
+            groupMembers: [],
+          }
+        })
+      } catch (error) {
+        handleError(
+          error,
+          'Fehler beim Löschen der Gruppe',
+          'Es ist ein Fehler beim Löschen der Gruppe aufgetreten, bitte versuche es später erneut.',
+        )
+      }
+    },
 
-      set({ publicProfiles: data || [] })
-    } catch (error) {
-      handleError(
-        error,
-        'Fehler beim Laden der öffentlichen Profile',
-        'Es ist ein Fehler beim Laden der öffentlichen Profile aufgetreten, bitte versuche es später erneut.',
-      )
-    }
-  },
+    renameGroup: async (groupIdToRename, newName, userId) => {
+      try {
+        const { error } = await renameExistingGroup(supabase, userId, groupIdToRename, newName)
+        if (error) throw error
+        set((state) => ({
+          userGroups: state.userGroups.map((group) =>
+            group.group_id === groupIdToRename
+              ? { ...group, groups: { ...group.groups, name: newName } }
+              : group,
+          ),
+          selectedGroupName: newName,
+        }))
+        showNotification(
+          'Gruppe umbenannt',
+          `Die Gruppe wurde erfolgreich in "${newName}" umbenannt.`,
+          'success',
+        )
+      } catch (error) {
+        handleError(
+          error,
+          'Fehler beim Umbennen der Gruppe',
+          'Es ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
+        )
+      }
+    },
 
-  getAllTripPublicProfiles: async (user_ids) => {
-    try {
-      const supabase = createClient()
-      const { data, error } = await getPublicProfiles(supabase, user_ids)
-      if (error) throw error
+    setFavourite: async (groupIdToFavourite, isFavourite, userId) => {
+      try {
+        const { error } = await setFavouriteGroup(supabase, userId, groupIdToFavourite, isFavourite)
+        if (error) throw error
 
-      set({ tripPublicProfiles: data || [] })
-    } catch (error) {
-      handleError(
-        error,
-        'Fehler beim Laden der öffentlichen Profile',
-        'Es ist ein Fehler beim Laden der öffentlichen Profile aufgetreten, bitte versuche es später erneut.',
-      )
-    }
-  },
+        set((state) => ({
+          userGroups: state.userGroups.map((group) =>
+            group.group_id === groupIdToFavourite ? { ...group, favourite: isFavourite } : group,
+          ),
+        }))
 
-  getAllGroupPublicProfiles: async (user_ids) => {
-    try {
-      const supabase = createClient()
-      const { data, error } = await getPublicProfiles(supabase, user_ids)
-      if (error) throw error
+        showNotification(
+          'Favoriten gesetzt',
+          `Die Gruppe wurde erfolgreich als Favorit ${isFavourite ? 'gesetzt' : 'entfernt'}.`,
+          'success',
+        )
+      } catch (error) {
+        handleError(
+          error,
+          'Fehler beim Setzen der Favoriten',
+          'Es ist ein Fehler beim Setzen der Favoriten aufgetreten, bitte versuche es später erneut.',
+        )
+      }
+    },
 
-      set({ groupPublicProfiles: data || [] })
-    } catch (error) {
-      handleError(
-        error,
-        'Fehler beim Laden der öffentlichen Profile',
-        'Es ist ein Fehler beim Laden der öffentlichen Profile aufgetreten, bitte versuche es später erneut.',
-      )
-    }
-  },
+    getAllGroupMembers: async (groupId) => {
+      try {
+        const { data, error } = await getGroupMembers(supabase, groupId)
+        if (error) throw error
+        set({ groupMembers: data ?? [] })
+      } catch (error) {
+        handleError(
+          error,
+          'Fehler beim Laden der Gruppenmitglieder',
+          'Es ist ein Fehler beim Laden der Gruppenmitglieder aufgetreten, bitte versuche es später erneut.',
+        )
+        set({ groupMembers: [] })
+      }
+    },
 
-  getAllUserGroups: async (userId) => {
-    try {
-      const supabase = createClient()
-      const { data, error } = await getUserGroups(supabase, userId)
-      if (error) throw error
+    getAllPublicProfiles: async (user_ids) => {
+      try {
+        const { data, error } = await getPublicProfiles(supabase, user_ids)
+        if (error) throw error
+        set({ publicProfiles: data ?? [] })
+      } catch (error) {
+        handleError(
+          error,
+          'Fehler beim Laden der öffentlichen Profile',
+          'Es ist ein Fehler beim Laden der öffentlichen Profile aufgetreten, bitte versuche es später erneut.',
+        )
+        set({ publicProfiles: [] })
+      }
+    },
 
-      set({ userGroups: data as unknown as UserGroupsType })
-    } catch (error) {
-      handleError(
-        error,
-        'Fehler beim Laden der Gruppen',
-        'Es ist ein Fehler beim Laden der Gruppen aufgetreten, bitte versuche es später erneut.',
-      )
-    }
-  },
+    getAllTripPublicProfiles: async (user_ids) => {
+      try {
+        const { data, error } = await getPublicProfiles(supabase, user_ids)
+        if (error) throw error
+        set({ tripPublicProfiles: data ?? [] })
+      } catch (error) {
+        handleError(
+          error,
+          'Fehler beim Laden der öffentlichen Profile',
+          'Es ist ein Fehler beim Laden der öffentlichen Profile aufgetreten, bitte versuche es später erneut.',
+        )
+        set({ tripPublicProfiles: [] })
+      }
+    },
 
-  removeUserFromGroup: async (userId, groupId) => {
-    try {
-      const supabase = createClient()
-      const { error } = await removeUserFromGroup(supabase, userId, groupId)
-      if (error) throw error
-      set((state) => ({
-        groupMembers: state.groupMembers.filter((member) => member.user_id !== userId),
-      }))
-      showNotification('Benutzer entfernt', 'Der Benutzer wurde erfolgreich entfernt.', 'success')
-    } catch (error) {
-      handleError(
-        error,
-        'Fehler beim Entfernen des Benutzers',
-        'Es ist ein Fehler beim Entfernen des Benutzers aufgetreten, bitte versuche es später erneut.',
-      )
-    }
-  },
+    getAllGroupPublicProfiles: async (user_ids) => {
+      try {
+        const { data, error } = await getPublicProfiles(supabase, user_ids)
+        if (error) throw error
+        set({ groupPublicProfiles: data ?? [] })
+      } catch (error) {
+        handleError(
+          error,
+          'Fehler beim Laden der öffentlichen Profile',
+          'Es ist ein Fehler beim Laden der öffentlichen Profile aufgetreten, bitte versuche es später erneut.',
+        )
+        set({ groupPublicProfiles: [] })
+      }
+    },
 
-  makeUserAdmin: async (userId, groupId) => {
-    try {
-      const supabase = createClient()
-      const { error } = await makeUserAdmin(supabase, userId, groupId)
-      if (error) throw error
-      set((state) => ({
-        groupMembers: state.groupMembers.map((member) =>
-          member.user_id === userId ? { ...member, role: 'admin' } : member,
-        ),
-      }))
-      showNotification(
-        'Admin gesetzt',
-        'Der Benutzer wurde erfolgreich zum Admin ernannt.',
-        'success',
-      )
-    } catch (error) {
-      handleError(
-        error,
-        'Fehler beim Setzen des Admins',
-        'Es ist ein Fehler beim Setzen des Admins aufgetreten, bitte versuche es später erneut.',
-      )
-    }
-  },
+    getAllUserGroups: async (userId) => {
+      try {
+        const { data, error } = await getUserGroups(supabase, userId)
+        if (error) throw error
+        set({ userGroups: data ?? [] })
+      } catch (error) {
+        handleError(
+          error,
+          'Fehler beim Laden der Gruppen',
+          'Es ist ein Fehler beim Laden der Gruppen aufgetreten, bitte versuche es später erneut.',
+        )
+        set({ userGroups: [] })
+      }
+    },
 
-  removeUserAdmin: async (userId, groupId) => {
-    try {
-      const supabase = createClient()
-      const { error } = await removeUserAdmin(supabase, userId, groupId)
-      if (error) throw error
-      set((state) => ({
-        groupMembers: state.groupMembers.map((member) =>
-          member.user_id === userId ? { ...member, role: 'member' } : member,
-        ),
-      }))
-      showNotification(
-        'Admin entfernt',
-        'Der Benutzer wurde erfolgreich als Admin entzogen.',
-        'success',
-      )
-    } catch (error) {
-      handleError(
-        error,
-        'Fehler beim Entfernen des Admins',
-        'Es ist ein Fehler beim Entfernen des Admins aufgetreten, bitte versuche es später erneut.',
-      )
-    }
-  },
-}))
+    removeUserFromGroup: async (userId, groupId) => {
+      try {
+        const { error } = await removeUserFromGroup(supabase, userId, groupId)
+        if (error) throw error
+
+        set((state) => ({
+          groupMembers: state.groupMembers.filter((member) => member.user_id !== userId),
+        }))
+
+        await get().getAllGroupMembers(groupId)
+
+        if (userId === useUserStore.getState().user.id) {
+          await useUserStore.getState().getSubscribedTrips()
+        }
+
+        showNotification(
+          'Benutzer entfernt',
+          'Der Benutzer wurde erfolgreich aus der Gruppe und allen zugehörigen Reisen entfernt.',
+          'success',
+        )
+      } catch (error) {
+        handleError(
+          error,
+          'Fehler beim Entfernen des Benutzers',
+          'Es ist ein Fehler beim Entfernen des Benutzers aufgetreten, bitte versuche es später erneut.',
+        )
+      }
+    },
+
+    makeUserAdmin: async (userId, groupId) => {
+      try {
+        const { error } = await makeUserAdmin(supabase, userId, groupId)
+        if (error) throw error
+        set((state) => ({
+          groupMembers: state.groupMembers.map((member) =>
+            member.user_id === userId ? { ...member, role: 'admin' } : member,
+          ),
+        }))
+        showNotification(
+          'Admin gesetzt',
+          'Der Benutzer wurde erfolgreich zum Admin ernannt.',
+          'success',
+        )
+      } catch (error) {
+        handleError(
+          error,
+          'Fehler beim Setzen des Admins',
+          'Es ist ein Fehler beim Setzen des Admins aufgetreten, bitte versuche es später erneut.',
+        )
+      }
+    },
+
+    removeUserAdmin: async (userId, groupId) => {
+      try {
+        const { error } = await removeUserAdmin(supabase, userId, groupId)
+        if (error) throw error
+        set((state) => ({
+          groupMembers: state.groupMembers.map((member) =>
+            member.user_id === userId ? { ...member, role: 'member' } : member,
+          ),
+        }))
+        showNotification(
+          'Admin-Rechte entfernt',
+          'Die Admin-Rechte des Benutzers wurden erfolgreich entfernt.',
+          'success',
+        )
+      } catch (error) {
+        handleError(
+          error,
+          'Fehler beim Entfernen der Admin-Rechte',
+          'Es ist ein Fehler beim Entfernen der Admin-Rechte aufgetreten, bitte versuche es später erneut.',
+        )
+      }
+    },
+  }
+})
