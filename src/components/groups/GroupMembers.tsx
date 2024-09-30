@@ -4,8 +4,8 @@ import { Badge } from '@/components/ui/badge'
 import { CardTitle } from '@/components/ui/card'
 import { useGroupStore } from '@/stores/groupStores'
 import { useEffect, useMemo } from 'react'
-import DropdownBadge from '@/components/DropdownBadge'
 import { useUserStore } from '@/stores/userStore'
+import DropdownMemberBadge from '@/components/DropdownMemberBadge'
 
 const getBadgeColor = (role: string): string => {
   switch (role) {
@@ -64,7 +64,7 @@ export default function GroupMembers() {
 
             if (isAdmin && member.id !== user?.id) {
               return (
-                <DropdownBadge
+                <DropdownMemberBadge
                   key={member.id}
                   className={`${badgeColor} ${borderStyle}`}
                   isAdmin={isAdmin}
@@ -72,7 +72,7 @@ export default function GroupMembers() {
                   groupId={groupId || ''}
                 >
                   {member.first_name} {member.last_name}
-                </DropdownBadge>
+                </DropdownMemberBadge>
               )
             } else {
               return (
