@@ -3,14 +3,14 @@ import { Trips, TripMembers, GroupMembers, Groups, Profiles } from '@/types/supa
 export type GroupMembersType = {
   user_id: GroupMembers['user_id']
   role: GroupMembers['role']
-}[]
+}
 
 export type UserGroupsType = {
   group_id: GroupMembers['group_id']
   favourite: GroupMembers['favourite']
   role: GroupMembers['role']
-  groups: Groups
-}[]
+  groups: Pick<Groups, 'name' | 'id' | 'created_at' | 'created_by' | 'description'>
+}
 
 export type SubscribedTripsType = {
   trips: Trips

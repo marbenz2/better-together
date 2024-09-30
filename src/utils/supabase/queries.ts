@@ -1,43 +1,68 @@
-import { SupabaseClient } from '@supabase/supabase-js'
+import { PostgrestError, SupabaseClient, User } from '@supabase/supabase-js'
 import { cache } from 'react'
-import { createClient } from './client'
 import { GroupMembers, Groups, TripMembers, Trips } from '@/types/supabase'
-import { PublicProfilesType } from '@/types/dashboard'
+import { PublicProfilesType, UserGroupsType } from '@/types/dashboard'
 import { PublicProfileType } from '@/types/user'
 import { GroupTripType } from '@/types/trips'
 
-export const getUser = cache(async (supabase: SupabaseClient) => {
+type GetUserResult = {
+  data: User | null
+  error: PostgrestError | null
+}
+
+export const getUser = cache(async (supabase: SupabaseClient): Promise<GetUserResult> => {
   const {
     data: { user },
     error,
   } = await supabase.auth.getUser()
-  return { data: user, error }
+  return { data: user, error: error as PostgrestError | null }
 })
 
-export const getUserGroups = cache(async (supabase: SupabaseClient, userId: string) => {
-  const { data, error } = await supabase
-    .from('group_members')
-    .select('group_id, favourite, role, groups(*)')
-    .eq('user_id', userId)
-    .returns<
-      ({ group_id: GroupMembers['group_id'] } & { favourite: GroupMembers['favourite'] } & {
-        role: GroupMembers['role']
-      } & { groups: Groups })[]
-    >()
-  return { data, error }
-})
+//hier muss groupMembers einzelne keys und groups als objekt mit allen keys
 
-export const getGroupMembers = cache(async (supabase: SupabaseClient, groupId: string) => {
-  const { data, error } = await supabase
-    .from('group_members')
-    .select('user_id, role')
-    .eq('group_id', groupId)
-    .returns<({ user_id: GroupMembers['user_id'] } & { role: GroupMembers['role'] })[]>()
-  return { data, error }
-})
+type GetUserGroupsResult = {
+  data: UserGroupsType[] | null
+  error: PostgrestError | null
+}
+
+export const getUserGroups = cache(
+  async (supabase: SupabaseClient, userId: string): Promise<GetUserGroupsResult> => {
+    const { data, error } = await supabase
+      .from('group_members')
+      .select('group_id, favourite, role, groups(*)')
+      .eq('user_id', userId)
+      .returns<UserGroupsType[]>()
+    return { data, error }
+  },
+)
+
+type GetGroupMembersResult = {
+  data: Pick<GroupMembers, 'user_id' | 'role'>[] | null
+  error: PostgrestError | null
+}
+
+export const getGroupMembers = cache(
+  async (supabase: SupabaseClient, groupId: string): Promise<GetGroupMembersResult> => {
+    const { data, error } = await supabase
+      .from('group_members')
+      .select('user_id, role')
+      .eq('group_id', groupId)
+      .returns<Pick<GroupMembers, 'user_id' | 'role'>[]>()
+    return { data, error }
+  },
+)
+
+type RemoveUserFromGroupResult = {
+  data: Pick<GroupMembers, 'group_id' | 'favourite' | 'role'>[] | null
+  error: PostgrestError | null
+}
 
 export const removeUserFromGroup = cache(
-  async (supabase: SupabaseClient, userId: string, groupId: string) => {
+  async (
+    supabase: SupabaseClient,
+    userId: string,
+    groupId: string,
+  ): Promise<RemoveUserFromGroupResult> => {
     const { data, error } = await supabase
       .from('group_members')
       .delete()
@@ -47,6 +72,11 @@ export const removeUserFromGroup = cache(
     return { data, error }
   },
 )
+
+type MakeUserAdminResult = {
+  data: GroupMembers | null
+  error: PostgrestError | null
+}
 
 export const makeUserAdmin = cache(
   async (supabase: SupabaseClient, userId: string, groupId: string) => {
@@ -60,8 +90,17 @@ export const makeUserAdmin = cache(
   },
 )
 
+type RemoveUserAdminResult = {
+  data: Pick<GroupMembers, 'group_id' | 'favourite' | 'role'>[] | null
+  error: PostgrestError | null
+}
+
 export const removeUserAdmin = cache(
-  async (supabase: SupabaseClient, userId: string, groupId: string) => {
+  async (
+    supabase: SupabaseClient,
+    userId: string,
+    groupId: string,
+  ): Promise<RemoveUserAdminResult> => {
     const { data, error } = await supabase
       .from('group_members')
       .update({ role: 'member' })
@@ -72,27 +111,49 @@ export const removeUserAdmin = cache(
   },
 )
 
-export const getPublicProfiles = cache(async (supabase: SupabaseClient, userIds: string[]) => {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .in('id', userIds)
-    .returns<PublicProfilesType[]>()
-  return { data, error }
-})
+type GetPublicProfilesResult = {
+  data: PublicProfilesType[] | null
+  error: PostgrestError | null
+}
 
-export const getPublicProfile = cache(async (supabase: SupabaseClient, userId: string) => {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', userId)
-    .returns<PublicProfileType[]>()
-    .maybeSingle()
-  return { data, error }
-})
+export const getPublicProfiles = cache(
+  async (supabase: SupabaseClient, userIds: string[]): Promise<GetPublicProfilesResult> => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .in('id', userIds)
+      .returns<PublicProfilesType[]>()
+    return { data, error }
+  },
+)
+
+type PublicProfileResult = {
+  data: PublicProfileType | null
+  error: PostgrestError | null
+}
+
+export const getPublicProfile = cache(
+  async (supabase: SupabaseClient, userId: string): Promise<PublicProfileResult> => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .returns<PublicProfileType>()
+      .maybeSingle()
+    return { data, error }
+  },
+)
+
+type UpdatePublicProfileResult = {
+  data: PublicProfileType | null
+  error: PostgrestError | null
+}
 
 export const updatePublicProfile = cache(
-  async (supabase: SupabaseClient, profile: PublicProfileType) => {
+  async (
+    supabase: SupabaseClient,
+    profile: PublicProfileType,
+  ): Promise<UpdatePublicProfileResult> => {
     const { data, error } = await supabase
       .from('profiles')
       .update({
@@ -108,83 +169,148 @@ export const updatePublicProfile = cache(
   },
 )
 
-export const getTrip = cache(async (supabase: SupabaseClient, tripId: string) => {
-  const { data, error } = await supabase
-    .from('trips')
-    .select('*')
-    .eq('id', tripId)
-    .returns<Trips[]>()
-    .single()
-  return { data, error }
-})
+type GetTripResult = {
+  data: Trips | null
+  error: PostgrestError | null
+}
 
-export const getGroupTrips = cache(async (supabase: SupabaseClient, groupId: string) => {
-  const { data, error } = await supabase
-    .from('trips')
-    .select('*')
-    .eq('group_id', groupId)
-    .returns<Trips[]>()
-  return { data, error }
-})
+export const getTrip = cache(
+  async (supabase: SupabaseClient, tripId: string): Promise<GetTripResult> => {
+    const { data, error } = await supabase
+      .from('trips')
+      .select('*')
+      .eq('id', tripId)
+      .returns<Trips[]>()
+      .single()
+    return { data, error }
+  },
+)
 
-export const getSubscribedTrips = cache(async (supabase: SupabaseClient, userId: string) => {
-  const { data, error } = await supabase
-    .from('trip_members')
-    .select('trips(*), subscribed_at')
-    .eq('user_id', userId)
-    .returns<({ trips: Trips } & { subscribed_at: TripMembers['subscribed_at'] })[]>()
-  return { data, error }
-})
+type GetGroupTripsResult = {
+  data: Trips[] | null
+  error: PostgrestError | null
+}
 
-export const getPayments = cache(async (supabase: SupabaseClient, groupId: string) => {
-  const { data, error } = await supabase
-    .from('trips')
-    .select('id, down_payment, full_payment, final_payment')
-    .eq('group_id', groupId)
-    .returns<Pick<Trips, 'id' | 'down_payment' | 'full_payment' | 'final_payment'>[]>()
-  return { data, error }
-})
+export const getGroupTrips = cache(
+  async (supabase: SupabaseClient, groupId: string): Promise<GetGroupTripsResult> => {
+    const { data, error } = await supabase
+      .from('trips')
+      .select('*')
+      .eq('group_id', groupId)
+      .returns<Trips[]>()
+    return { data, error }
+  },
+)
+
+type GetSubscribedTripsResult = {
+  data: ({ trips: Trips } & { subscribed_at: TripMembers['subscribed_at'] })[] | null
+  error: PostgrestError | null
+}
+
+export const getSubscribedTrips = cache(
+  async (supabase: SupabaseClient, userId: string): Promise<GetSubscribedTripsResult> => {
+    const { data, error } = await supabase
+      .from('trip_members')
+      .select('trips(*), subscribed_at')
+      .eq('user_id', userId)
+      .returns<({ trips: Trips } & { subscribed_at: TripMembers['subscribed_at'] })[]>()
+    return { data, error }
+  },
+)
+
+type GetPaymentsResult = {
+  data: Pick<Trips, 'id' | 'down_payment' | 'full_payment' | 'final_payment'>[] | null
+  error: PostgrestError | null
+}
+
+export const getPayments = cache(
+  async (supabase: SupabaseClient, groupId: string): Promise<GetPaymentsResult> => {
+    const { data, error } = await supabase
+      .from('trips')
+      .select('id, down_payment, full_payment, final_payment')
+      .eq('group_id', groupId)
+      .returns<Pick<Trips, 'id' | 'down_payment' | 'full_payment' | 'final_payment'>[]>()
+    return { data, error }
+  },
+)
+
+type GetPaymentStatusResult = {
+  data:
+    | Pick<TripMembers, 'id' | 'down_payment' | 'full_payment' | 'final_payment' | 'created_at'>[]
+    | null
+  error: PostgrestError | null
+}
 
 export const getPaymentStatus = cache(
-  async (supabase: SupabaseClient, userId: string, tripId: string) => {
+  async (
+    supabase: SupabaseClient,
+    userId: string,
+    tripId: string,
+  ): Promise<GetPaymentStatusResult> => {
     const { data, error } = await supabase
       .from('trip_members')
       .select('id, down_payment, full_payment, final_payment, created_at')
       .eq('user_id', userId)
       .eq('trip_id', tripId)
       .returns<
-        ({ id: TripMembers['id'] } & { down_payment: TripMembers['down_payment'] } & {
-          full_payment: TripMembers['full_payment']
-        } & { final_payment: TripMembers['final_payment'] } & {
-          created_at: TripMembers['created_at']
-        })[]
+        Pick<TripMembers, 'id' | 'down_payment' | 'full_payment' | 'final_payment' | 'created_at'>
       >()
       .maybeSingle()
     return { data, error }
   },
 )
 
-export const getPaymentDetails = cache(async (supabase: SupabaseClient, userId: string) => {
-  const { data, error } = await supabase
-    .from('trip_members')
-    .select(
-      'trip_id, down_payment, full_payment, final_payment, down_payment_paypal_id, full_payment_paypal_id, final_payment_paypal_id',
-    )
-    .eq('user_id', userId)
-    .returns<
-      ({ trip_id: TripMembers['trip_id'] } & { down_payment: TripMembers['down_payment'] } & {
-        full_payment: TripMembers['full_payment']
-      } & { final_payment: TripMembers['final_payment'] } & {
-        down_payment_paypal_id: TripMembers['down_payment_paypal_id']
-      } & { full_payment_paypal_id: TripMembers['full_payment_paypal_id'] } & {
-        final_payment_paypal_id: TripMembers['final_payment_paypal_id']
-      })[]
-    >()
-  return { data, error }
-})
+type GetPaymentDetailsResult = {
+  data:
+    | Pick<
+        TripMembers,
+        | 'trip_id'
+        | 'down_payment'
+        | 'full_payment'
+        | 'final_payment'
+        | 'down_payment_paypal_id'
+        | 'full_payment_paypal_id'
+        | 'final_payment_paypal_id'
+      >[]
+    | null
+  error: PostgrestError | null
+}
+
+export const getPaymentDetails = cache(
+  async (supabase: SupabaseClient, userId: string): Promise<GetPaymentDetailsResult> => {
+    const { data, error } = await supabase
+      .from('trip_members')
+      .select(
+        'trip_id, down_payment, full_payment, final_payment, down_payment_paypal_id, full_payment_paypal_id, final_payment_paypal_id',
+      )
+      .eq('user_id', userId)
+      .returns<
+        Pick<
+          TripMembers,
+          | 'trip_id'
+          | 'down_payment'
+          | 'full_payment'
+          | 'final_payment'
+          | 'down_payment_paypal_id'
+          | 'full_payment_paypal_id'
+          | 'final_payment_paypal_id'
+        >[]
+      >()
+    return { data, error }
+  },
+)
+
+type AddNewGroupResult = {
+  data: Groups | null
+  error: PostgrestError | null
+}
 
 export const addNewGroup = cache(
-  async (supabase: SupabaseClient, userId: string, groupName: string) => {
+  async (
+    supabase: SupabaseClient,
+    userId: string,
+    groupName: string,
+  ): Promise<AddNewGroupResult> => {
     const { data, error } = await supabase
       .from('groups')
       .insert([{ name: groupName, created_by: userId }])
@@ -201,8 +327,17 @@ export const addNewGroup = cache(
   },
 )
 
+type DeleteExistingGroupResult = {
+  data: Groups[] | null
+  error: PostgrestError | null
+}
+
 export const deleteExistingGroup = cache(
-  async (supabase: SupabaseClient, userId: string, groupId: string) => {
+  async (
+    supabase: SupabaseClient,
+    userId: string,
+    groupId: string,
+  ): Promise<DeleteExistingGroupResult> => {
     const { data, error } = await supabase
       .from('groups')
       .delete()
@@ -213,8 +348,17 @@ export const deleteExistingGroup = cache(
   },
 )
 
+type LeaveExistingGroupResult = {
+  data: GroupMembers[] | null
+  error: PostgrestError | null
+}
+
 export const leaveExistingGroup = cache(
-  async (supabase: SupabaseClient, userId: string, groupId: string) => {
+  async (
+    supabase: SupabaseClient,
+    userId: string,
+    groupId: string,
+  ): Promise<LeaveExistingGroupResult> => {
     const { data, error } = await supabase
       .from('group_members')
       .delete()
@@ -225,8 +369,18 @@ export const leaveExistingGroup = cache(
   },
 )
 
+type RenameExistingGroupResult = {
+  data: Groups[] | null
+  error: PostgrestError | null
+}
+
 export const renameExistingGroup = cache(
-  async (supabase: SupabaseClient, userId: string, groupId: string, newName: string) => {
+  async (
+    supabase: SupabaseClient,
+    userId: string,
+    groupId: string,
+    newName: string,
+  ): Promise<RenameExistingGroupResult> => {
     const { data, error } = await supabase
       .from('groups')
       .update({ name: newName })
@@ -238,8 +392,17 @@ export const renameExistingGroup = cache(
   },
 )
 
+type JoinExistingGroupResult = {
+  data: Groups | null
+  error: PostgrestError | null
+}
+
 export const joinExistingGroup = cache(
-  async (supabase: SupabaseClient, userId: string, groupId: string) => {
+  async (
+    supabase: SupabaseClient,
+    userId: string,
+    groupId: string,
+  ): Promise<JoinExistingGroupResult> => {
     const { error: insertError } = await supabase
       .from('group_members')
       .insert([{ user_id: userId, group_id: groupId, favourite: false, role: 'member' }])
@@ -256,8 +419,18 @@ export const joinExistingGroup = cache(
   },
 )
 
+type SetFavouriteGroupResult = {
+  data: GroupMembers[] | null
+  error: PostgrestError | null
+}
+
 export const setFavouriteGroup = cache(
-  async (supabase: SupabaseClient, userId: string, groupId: string, newFavourite: boolean) => {
+  async (
+    supabase: SupabaseClient,
+    userId: string,
+    groupId: string,
+    newFavourite: boolean,
+  ): Promise<SetFavouriteGroupResult> => {
     const { data, error } = await supabase
       .from('group_members')
       .update({ favourite: newFavourite })
@@ -269,62 +442,97 @@ export const setFavouriteGroup = cache(
   },
 )
 
-export const addSubscription = cache(async (tripId: string, userId: string) => {
-  const supabase = createClient()
-  const { data: existingSubscription, error: fetchError } = await supabase
-    .from('trip_members')
-    .select('id')
-    .eq('user_id', userId)
-    .eq('trip_id', tripId)
-    .maybeSingle()
+type AddSubscriptionResult = {
+  data: TripMembers[] | null
+  error: PostgrestError | null
+}
 
-  if (fetchError) return { data: null, error: fetchError }
-  if (existingSubscription)
-    return { data: null, error: new Error('User is already subscribed to this trip') }
+export const addSubscription = cache(
+  async (
+    supabase: SupabaseClient,
+    tripId: string,
+    userId: string,
+  ): Promise<AddSubscriptionResult> => {
+    const { data: existingSubscription, error: fetchError } = await supabase
+      .from('trip_members')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('trip_id', tripId)
+      .maybeSingle()
 
-  const { data, error } = await supabase
-    .from('trip_members')
-    .insert({
-      user_id: userId,
-      trip_id: tripId,
-      role: 'member',
-      subscribed_at: new Date().toISOString(),
-    })
-    .select()
-    .single()
+    if (fetchError) return { data: null, error: fetchError }
+    if (existingSubscription)
+      return {
+        data: null,
+        error: { message: 'Benutzer ist bereits für diese Reise angemeldet' } as PostgrestError,
+      }
 
-  return { data, error }
-})
+    const { data, error } = await supabase
+      .from('trip_members')
+      .insert({
+        user_id: userId,
+        trip_id: tripId,
+        role: 'member',
+        subscribed_at: new Date().toISOString(),
+      })
+      .select()
+      .single()
 
-export const removeSubscription = cache(async (tripId: string, userId: string) => {
-  const supabase = createClient()
-  const { data: subscription, error: fetchError } = await supabase
-    .from('trip_members')
-    .select('down_payment, full_payment, final_payment')
-    .eq('user_id', userId)
-    .eq('trip_id', tripId)
-    .returns<TripMembers[]>()
-    .single()
+    return { data, error }
+  },
+)
 
-  if (fetchError) return { data: null, error: fetchError }
-  if (subscription.down_payment || subscription.full_payment || subscription.final_payment) {
-    return { data: null, error: new Error('Cannot unsubscribe after payment has been made') }
-  }
+type RemoveSubscriptionResult = {
+  data: TripMembers[] | null
+  error: PostgrestError | null
+}
 
-  const { data, error } = await supabase
-    .from('trip_members')
-    .delete()
-    .eq('user_id', userId)
-    .eq('trip_id', tripId)
-    .select()
-    .returns<TripMembers[]>()
+export const removeSubscription = cache(
+  async (
+    supabase: SupabaseClient,
+    tripId: string,
+    userId: string,
+  ): Promise<RemoveSubscriptionResult> => {
+    const { data: subscription, error: fetchError } = await supabase
+      .from('trip_members')
+      .select('down_payment, full_payment, final_payment')
+      .eq('user_id', userId)
+      .eq('trip_id', tripId)
+      .returns<TripMembers[]>()
+      .single()
 
-  return { data, error }
-})
+    if (fetchError) return { data: null, error: fetchError }
+    if (subscription.down_payment || subscription.full_payment || subscription.final_payment) {
+      return {
+        data: null,
+        error: { message: 'Abmeldung nach erfolgter Zahlung nicht möglich' } as PostgrestError,
+      }
+    }
+
+    const { data, error } = await supabase
+      .from('trip_members')
+      .delete()
+      .eq('user_id', userId)
+      .eq('trip_id', tripId)
+      .select()
+      .returns<TripMembers[]>()
+
+    return { data, error }
+  },
+)
+
+type SetTripStatusResult = {
+  data: Trips | null
+  error: PostgrestError | null
+}
 
 export const setTripStatus = cache(
-  async (tripId: string, userId: string, status: 'upcoming' | 'current' | 'done') => {
-    const supabase = createClient()
+  async (
+    supabase: SupabaseClient,
+    tripId: string,
+    userId: string,
+    status: 'upcoming' | 'current' | 'done',
+  ): Promise<SetTripStatusResult> => {
     const { data, error } = await supabase
       .from('trips')
       .update({ status })
@@ -337,14 +545,19 @@ export const setTripStatus = cache(
   },
 )
 
+type UpdatePaymentStatusResult = {
+  data: TripMembers | null
+  error: PostgrestError | null
+}
+
 export const updatePaymentStatus = cache(
   async (
+    supabase: SupabaseClient,
     userId: string,
     tripId: string,
     paymentType: 'down_payment' | 'full_payment' | 'final_payment',
     transactionId: string,
-  ) => {
-    const supabase = createClient()
+  ): Promise<UpdatePaymentStatusResult> => {
     const { data, error } = await supabase
       .from('trip_members')
       .update({
@@ -360,43 +573,71 @@ export const updatePaymentStatus = cache(
   },
 )
 
-export const createTrip = cache(async (supabase: SupabaseClient, trip: GroupTripType) => {
-  const { data, error } = await supabase
-    .from('trips')
-    .insert(trip)
-    .select()
-    .returns<Trips>()
-    .single()
-  return { data, error }
-})
+type CreateTripResult = {
+  data: Trips | null
+  error: PostgrestError | null
+}
 
-export const updateTrip = cache(async (supabase: SupabaseClient, trip: GroupTripType) => {
-  const { data, error } = await supabase
-    .from('trips')
-    .update(trip)
-    .eq('id', trip.id)
-    .select()
-    .returns<Trips>()
-    .single()
-  return { data, error }
-})
+export const createTrip = cache(
+  async (supabase: SupabaseClient, trip: GroupTripType): Promise<CreateTripResult> => {
+    const { data, error } = await supabase
+      .from('trips')
+      .insert(trip)
+      .select()
+      .returns<Trips>()
+      .single()
+    return { data, error }
+  },
+)
 
-export const deleteTrip = cache(async (supabase: SupabaseClient, tripId: string) => {
-  const { data, error } = await supabase
-    .from('trips')
-    .delete()
-    .eq('id', tripId)
-    .select()
-    .returns<Trips>()
-    .single()
-  return { data, error }
-})
+type UpdateTripResult = {
+  data: Trips | null
+  error: PostgrestError | null
+}
 
-export const getTripMembers = cache(async (supabase: SupabaseClient, tripId: string) => {
-  const { data, error } = await supabase
-    .from('trip_members')
-    .select('user_id')
-    .eq('trip_id', tripId)
-    .returns<TripMembers[]>()
-  return { data, error }
-})
+export const updateTrip = cache(
+  async (supabase: SupabaseClient, trip: GroupTripType): Promise<UpdateTripResult> => {
+    const { data, error } = await supabase
+      .from('trips')
+      .update(trip)
+      .eq('id', trip.id)
+      .select()
+      .returns<Trips>()
+      .single()
+    return { data, error }
+  },
+)
+
+type DeleteTripResult = {
+  data: Trips | null
+  error: PostgrestError | null
+}
+
+export const deleteTrip = cache(
+  async (supabase: SupabaseClient, tripId: string): Promise<DeleteTripResult> => {
+    const { data, error } = await supabase
+      .from('trips')
+      .delete()
+      .eq('id', tripId)
+      .select()
+      .returns<Trips>()
+      .single()
+    return { data, error }
+  },
+)
+
+type GetTripMembersResult = {
+  data: TripMembers[] | null
+  error: PostgrestError | null
+}
+
+export const getTripMembers = cache(
+  async (supabase: SupabaseClient, tripId: string): Promise<GetTripMembersResult> => {
+    const { data, error } = await supabase
+      .from('trip_members')
+      .select('user_id')
+      .eq('trip_id', tripId)
+      .returns<TripMembers[]>()
+    return { data, error }
+  },
+)
