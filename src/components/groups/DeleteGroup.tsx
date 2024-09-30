@@ -10,9 +10,11 @@ import {
 import { Button } from '@/components/ui/button'
 import { CardTitle } from '@/components/ui/card'
 import { useGroupStore } from '@/stores/groupStores'
+import { useUserStore } from '@/stores/userStore'
 import { TrashIcon } from 'lucide-react'
 
 export default function DeleteGroup() {
+  const { user } = useUserStore()
   const { deleteGroup, userGroups, groupId } = useGroupStore()
 
   const groupName = userGroups.find((group) => group.group_id === groupId)?.groups.name
@@ -20,7 +22,7 @@ export default function DeleteGroup() {
   const handleDeleteGroup = async (groupId: string | null) => {
     if (!groupId) return
     try {
-      await deleteGroup(groupId)
+      await deleteGroup(groupId, user.id)
     } catch (error) {
       console.error('Fehler beim Löschen der Gruppe:', error)
     }
