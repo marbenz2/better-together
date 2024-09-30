@@ -11,6 +11,7 @@ import { useGroupStore } from '@/stores/groupStores'
 
 import { cn, showNotification } from '@/lib/utils'
 import { ResponsiveDialog } from './ResponsiveDialog'
+import { usePaymentStore } from '@/stores/paymentStore'
 
 interface DropdownBadgeProps extends React.HTMLProps<HTMLDivElement> {
   isAdmin: boolean
@@ -18,15 +19,19 @@ interface DropdownBadgeProps extends React.HTMLProps<HTMLDivElement> {
   groupId: string
 }
 
-export default function DropdownBadge({
+export default function DropdownMemberBadge({
   children,
   isAdmin,
   userId,
   groupId,
   ...props
 }: DropdownBadgeProps) {
+  const { paymentStatus } = usePaymentStore()
   const { removeUserFromGroup, makeUserAdmin, removeUserAdmin, groupMembers } = useGroupStore()
   const [isOpen, setIsOpen] = React.useState(false)
+
+  const hasPaid =
+    paymentStatus?.down_payment || paymentStatus?.full_payment || paymentStatus?.final_payment
 
   const isChosenUserAdmin =
     groupMembers.find((member) => member.user_id === userId)?.role === 'admin'
@@ -71,7 +76,12 @@ export default function DropdownBadge({
     if (isChosenUserAdmin) {
       showNotification('Info', 'Der Benutzer ist ein Admin', 'info')
     } else {
-      removeUserFromGroup(userId, groupId)
+      // hier muss geprüft werden ob der User schon für trips bezahlt hat, wenn ja, kann er nicht entfernt weden
+      if (hasPaid) {
+        showNotification('Info', 'Der Benutzer hat bereits für Reisen bezahlt', 'info')
+      } else {
+        removeUserFromGroup(userId, groupId)
+      }
     }
     setIsOpen(false)
   }
