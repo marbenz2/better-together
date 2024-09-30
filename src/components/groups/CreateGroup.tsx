@@ -8,14 +8,16 @@ import { CardTitle } from '@/components/ui/card'
 import { PlusIcon } from 'lucide-react'
 import { useGroupStore } from '@/stores/groupStores'
 import { ResponsiveDialog } from '@/components/ResponsiveDialog'
+import { useUserStore } from '@/stores/userStore'
 
 export default function CreateGroup() {
+  const { user } = useUserStore()
   const [newGroupName, setNewGroupName] = useState('')
   const { createGroup } = useGroupStore()
 
   const handleCreateGroup = async () => {
     try {
-      await createGroup(newGroupName)
+      await createGroup(newGroupName, user.id)
       setNewGroupName('')
     } catch (error) {
       console.error('Fehler beim Erstellen der Gruppe:', error)
