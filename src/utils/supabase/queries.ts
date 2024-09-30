@@ -235,9 +235,10 @@ export const getPayments = cache(
 )
 
 type GetPaymentStatusResult = {
-  data:
-    | Pick<TripMembers, 'id' | 'down_payment' | 'full_payment' | 'final_payment' | 'created_at'>[]
-    | null
+  data: Pick<
+    TripMembers,
+    'id' | 'down_payment' | 'full_payment' | 'final_payment' | 'created_at'
+  > | null
   error: PostgrestError | null
 }
 

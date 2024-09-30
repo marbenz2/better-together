@@ -4,7 +4,7 @@ import { getPaymentDetails, getPayments, getPaymentStatus } from '@/utils/supaba
 import { PaymentDetailsType, PaymentStatusType, PaymentsType } from '@/types/payment'
 
 interface PaymentState {
-  paymentStatus: PaymentStatusType[] | null
+  paymentStatus: PaymentStatusType | null
   getPaymentStatus: (userId: string, tripId: string) => Promise<void>
 
   paymentDetails: PaymentDetailsType[] | null
