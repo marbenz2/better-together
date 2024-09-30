@@ -22,7 +22,7 @@ export default function LeaveGroup() {
   const handleLeaveGroup = async (groupId: string | null) => {
     if (!groupId) return
     try {
-      await leaveGroup(groupId)
+      await leaveGroup(groupId, user.id)
     } catch (error) {
       console.error('Fehler beim Verlassen der Gruppe:', error)
     }
