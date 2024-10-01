@@ -122,7 +122,9 @@ export default function Trips() {
               upcomingTrips.length === 0 &&
               currentTrips &&
               currentTrips.length === 0 && (
-                <CardDescription>Keine aktuellen Ausfahrten.</CardDescription>
+                <CardDescription>
+                  In dieser Gruppe gibt es noch keine anstehenden Reisen.
+                </CardDescription>
               )}
             {currentTrips && renderTrips(currentTrips as ExtendedTrip[])}
             {upcomingTrips && renderTrips(upcomingTrips as ExtendedTrip[])}
@@ -140,7 +142,9 @@ export default function Trips() {
             <AccordionContent>
               <CardContent className="flex flex-col sm:flex-row flex-wrap gap-12 sm:gap-4 pt-1">
                 {pastTrips && pastTrips.length === 0 && (
-                  <CardDescription>Keine aktuellen Ausfahrten.</CardDescription>
+                  <CardDescription>
+                    In dieser Gruppe gibt es noch keine vergangenen Reisen.
+                  </CardDescription>
                 )}
                 {pastTrips && renderTrips(pastTrips as ExtendedTrip[])}
               </CardContent>
