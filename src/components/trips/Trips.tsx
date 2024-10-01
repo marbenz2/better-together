@@ -94,16 +94,14 @@ export default function Trips() {
 
   return (
     <div className="flex flex-col gap-12 max-w-7xl w-full mx-auto">
-      <div className="flex justify-center">
-        <Link className="text-primary w-full max-w-lg" href={`/protected/create-trip`}>
-          <Button className="relative flex text-xs pl-10 w-full max-w-lg">
-            <PlusIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" />
-            Reise erstellen
-          </Button>
-        </Link>
-      </div>
+      <Link className="text-primary w-fit" href={`/protected/create-trip`}>
+        <Button className="relative flex text-xs pl-10 w-fit">
+          <PlusIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" />
+          Reise erstellen
+        </Button>
+      </Link>
       <div className="flex flex-col md:flex-row gap-12">
-        <CardBackPlate>
+        {/*         <CardBackPlate>
           <CardHeader>
             <CardTitle>Aktuell</CardTitle>
             <CardDescription>Aktuelle Ausfahrt</CardDescription>
@@ -114,16 +112,19 @@ export default function Trips() {
             )}
             {currentTrips && renderTrips(currentTrips as ExtendedTrip[])}
           </CardContent>
-        </CardBackPlate>
+        </CardBackPlate> */}
         <CardBackPlate className="flex-1">
           <CardHeader>
-            <CardTitle>Anstehend</CardTitle>
-            <CardDescription>Geplante Ausfahrten</CardDescription>
+            <CardTitle>Anstehende Reisen</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col sm:flex-row flex-wrap gap-12 sm:gap-4 pt-1">
-            {upcomingTrips && upcomingTrips.length === 0 && (
-              <CardDescription>Keine aktuellen Ausfahrten.</CardDescription>
-            )}
+            {upcomingTrips &&
+              upcomingTrips.length === 0 &&
+              currentTrips &&
+              currentTrips.length === 0 && (
+                <CardDescription>Keine aktuellen Ausfahrten.</CardDescription>
+              )}
+            {currentTrips && renderTrips(currentTrips as ExtendedTrip[])}
             {upcomingTrips && renderTrips(upcomingTrips as ExtendedTrip[])}
           </CardContent>
         </CardBackPlate>
@@ -133,9 +134,8 @@ export default function Trips() {
           <AccordionItem value="item-1">
             <CardHeader>
               <AccordionTrigger className="py-0">
-                <CardTitle>Beendet</CardTitle>
+                <CardTitle>Vergangene Reisen</CardTitle>
               </AccordionTrigger>
-              <CardDescription>Beendete Ausfahrten</CardDescription>
             </CardHeader>
             <AccordionContent>
               <CardContent className="flex flex-col sm:flex-row flex-wrap gap-12 sm:gap-4 pt-1">
