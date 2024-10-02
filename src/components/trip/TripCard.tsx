@@ -52,6 +52,10 @@ const TripCard = ({
           <Table>
             <TableBody>
               <TableRow>
+                <TableHead>Location:</TableHead>
+                <TableCell>{trip.location_name}</TableCell>
+              </TableRow>
+              <TableRow>
                 <TableHead>Land:</TableHead>
                 <TableCell>{trip.land}</TableCell>
               </TableRow>
