@@ -5,17 +5,17 @@ import Image from 'next/image'
 import { PencilIcon, SquareArrowOutUpRight, Trash2Icon } from 'lucide-react'
 import { Table, TableBody, TableCell, TableHead, TableRow } from '@/components/ui/table'
 import { TripSubscription } from '@/components/subscribe-button'
-import Link from 'next/link'
 import { BackButtonClient } from '@/components/ui/back-button-client'
 import { useUserStore } from '@/stores/userStore'
 import { useTripStore } from '@/stores/tripStores'
 import { useEffect, useState } from 'react'
 import Spinner from '@/components/ui/Spinner'
-import { EditButton } from '@/components/ui/edit-button'
 import { ResponsiveDialog } from '@/components/ResponsiveDialog'
 import { useRouter } from 'next/navigation'
 import { useGroupStore } from '@/stores/groupStores'
 import InfoCard from '../ui/info-card'
+import { ButtonLink } from '../ui/button-link'
+import { Button } from '../ui/button'
 
 export default function Trip() {
   const router = useRouter()
@@ -82,6 +82,9 @@ export default function Trip() {
       console.error('Fehler beim Löschen der Reise:', error)
     }
   }
+  const handleEditTrip = () => {
+    router.push(`/protected/edit-trip/${trip.id}`)
+  }
 
   const subscription = subscribedTrips?.find(
     (subscribedTrip) => subscribedTrip.trips.id === trip.id,
@@ -99,9 +102,18 @@ export default function Trip() {
             <BackButtonClient className="static" />
             {isCreator && (
               <div className="flex gap-6">
-                <EditButton id={trip.id} className="static" type="trip">
-                  <PencilIcon size={24} />
-                </EditButton>
+                <ResponsiveDialog
+                  title="Reise bearbeiten"
+                  message="Wollen Sie diese Reise wirklich bearbeiten?"
+                  confirmText="Reise bearbeiten"
+                  info="Diese Aktion kann nicht rückgängig gemacht werden."
+                  infoType="warning"
+                  onConfirm={handleEditTrip}
+                >
+                  <Button>
+                    <PencilIcon className="w-4 h-4" />
+                  </Button>
+                </ResponsiveDialog>
                 <ResponsiveDialog
                   title="Reise löschen"
                   message="Wollen Sie diese Reise wirklich löschen?"
@@ -111,9 +123,9 @@ export default function Trip() {
                   buttonVariant="destructive"
                   onConfirm={handleDeleteTrip}
                 >
-                  <div className="flex items-center justify-center w-full h-full cursor-pointer">
-                    <Trash2Icon className="text-destructive" size={24} />
-                  </div>
+                  <Button variant="destructive">
+                    <Trash2Icon className="w-4 h-4" />
+                  </Button>
                 </ResponsiveDialog>
               </div>
             )}
@@ -152,9 +164,7 @@ export default function Trip() {
             <CardContent className="p-0">
               Euer nächstes Abenteuer erwartet euch in{' '}
               <span className="font-bold">{trip.land}</span>! Diese Reise führt euch nach{' '}
-              <span className="font-bold">
-                {trip.plz} {trip.ort}
-              </span>
+              <span className="font-bold">{trip.ort}</span>
               {trip.ort !== trip.area && (
                 <>
                   , einem charmanten Ort in der malerischen Region{' '}
@@ -169,25 +179,38 @@ export default function Trip() {
               entspannender Momente! Um eure Anreise so einfach wie möglich zu gestalten, könnt ihr
               euch hier direkt die Route anzeigen lassen: <br />
               <br />
-              <Link
+              {/*               <Link
                 href={trip.anreise_link}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex gap-2 items-center w-fit"
               >
-                Google Maps <SquareArrowOutUpRight size={14} />
-              </Link>
+                Google Maps <SquareArrowOutUpRight className="w-4 h-4" />
+              </Link> */}
+              <ButtonLink
+                href={trip.anreise_link}
+                label="Google Maps"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-fit"
+              >
+                <SquareArrowOutUpRight className="w-4 h-4" />
+              </ButtonLink>
             </CardContent>
           </div>
           <Table>
             <TableBody>
+              <TableRow>
+                <TableHead>Location:</TableHead>
+                <TableCell>{trip.location_name}</TableCell>
+              </TableRow>
               <TableRow>
                 <TableHead>Land:</TableHead>
                 <TableCell>{trip.land}</TableCell>
               </TableRow>
               <TableRow>
                 <TableHead>Gebiet:</TableHead>
-                <TableCell>{trip.area}</TableCell>
+                <TableCell>{trip.area || '-'}</TableCell>
               </TableRow>
               <TableRow>
                 <TableHead>Ort:</TableHead>
