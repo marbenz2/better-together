@@ -194,6 +194,7 @@ export type Database = {
           id: string
           image: string
           land: string
+          location_name: string
           max_spots: number
           name: string
           ort: string
@@ -218,6 +219,7 @@ export type Database = {
           id?: string
           image: string
           land: string
+          location_name: string
           max_spots: number
           name: string
           ort: string
@@ -242,6 +244,7 @@ export type Database = {
           id?: string
           image?: string
           land?: string
+          location_name?: string
           max_spots?: number
           name?: string
           ort?: string
