@@ -21,9 +21,8 @@ import type { Trips } from '@/types/supabase'
 import { ExtendedTrip } from '@/types/trips'
 import CheckSubscribeIcon from '../CheckSubscribeIcon'
 import { setTripStatus } from '@/utils/supabase/queries'
-import { Button } from '@/components/ui/button'
-import Link from 'next/link'
 import { PlusIcon } from 'lucide-react'
+import { ButtonLink } from '../ui/button-link'
 
 export default function Trips() {
   const { user, subscribedTrips } = useUserStore()
@@ -94,25 +93,14 @@ export default function Trips() {
 
   return (
     <div className="flex flex-col gap-12 max-w-7xl w-full mx-auto">
-      <Link className="text-primary w-fit" href={`/protected/create-trip`}>
-        <Button className="relative flex text-xs pl-10 w-fit">
-          <PlusIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" />
-          Reise erstellen
-        </Button>
-      </Link>
+      <ButtonLink
+        className="w-full xs:w-fit"
+        href={'/protected/create-trip'}
+        label="Reise erstellen"
+      >
+        <PlusIcon className="w-4 h-4" />
+      </ButtonLink>
       <div className="flex flex-col md:flex-row gap-12">
-        {/*         <CardBackPlate>
-          <CardHeader>
-            <CardTitle>Aktuell</CardTitle>
-            <CardDescription>Aktuelle Ausfahrt</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col sm:flex-row flex-wrap gap-12 sm:gap-4 pt-1">
-            {currentTrips && currentTrips.length === 0 && (
-              <CardDescription>Keine aktuellen Ausfahrten.</CardDescription>
-            )}
-            {currentTrips && renderTrips(currentTrips as ExtendedTrip[])}
-          </CardContent>
-        </CardBackPlate> */}
         <CardBackPlate className="flex-1">
           <CardHeader>
             <CardTitle>Anstehende Reisen</CardTitle>
