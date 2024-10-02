@@ -6,7 +6,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Badge } from '@/components/ui/badge'
-import { ArrowDownIcon } from 'lucide-react'
+import { ArrowDownIcon, CrownIcon } from 'lucide-react'
 import { useGroupStore } from '@/stores/groupStores'
 
 import { cn, showNotification } from '@/lib/utils'
@@ -17,6 +17,7 @@ interface DropdownBadgeProps extends React.HTMLProps<HTMLDivElement> {
   isAdmin: boolean
   userId: string
   groupId: string
+  role: string
 }
 
 export default function DropdownMemberBadge({
@@ -24,6 +25,7 @@ export default function DropdownMemberBadge({
   isAdmin,
   userId,
   groupId,
+  role,
   ...props
 }: DropdownBadgeProps) {
   const { paymentStatus } = usePaymentStore()
@@ -93,6 +95,9 @@ export default function DropdownMemberBadge({
           className={cn('bg-primary text-white cursor-pointer gap-2', props.className)}
           onClick={handleOnClick}
         >
+          {role === 'admin' && (
+            <CrownIcon className="w-4 h-4 mr-2" strokeWidth={1.5} fill="yellow" />
+          )}
           {children}
           <ArrowDownIcon
             size={14}
