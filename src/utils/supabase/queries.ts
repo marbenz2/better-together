@@ -547,12 +547,12 @@ type UpdatePaymentStatusResult = {
 
 export const updatePaymentStatus = cache(
   async (
-    supabase: SupabaseClient,
     userId: string,
     tripId: string,
     paymentType: 'down_payment' | 'full_payment' | 'final_payment',
     transactionId: string,
   ): Promise<UpdatePaymentStatusResult> => {
+    const supabase = createClient()
     const { data, error } = await supabase
       .from('trip_members')
       .update({
