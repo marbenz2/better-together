@@ -45,6 +45,7 @@ const INITIAL_TRIP_DATA: TripDataState = {
   status: 'upcoming',
   street: '',
   street_number: '' as unknown as number,
+  location_name: '',
 }
 
 const EditTrip = () => {
@@ -86,6 +87,7 @@ const EditTrip = () => {
       'beds',
       'anreise_link',
       'image',
+      'location_name',
     ]
     const isValid = requiredFields.every(
       (field) =>
@@ -213,18 +215,20 @@ const EditTrip = () => {
               </div>
             )}
           </div>
-          <RequiredLabel htmlFor="name">Reisename</RequiredLabel>
-          <Input
-            type="text"
-            id="name"
-            name="name"
-            placeholder="Tripname eingeben"
-            autoComplete="off"
-            required
-            value={tripData.name}
-            onChange={handleInputChange}
-            className="w-full"
-          />
+          <div className="flex flex-col gap-2 w-full">
+            <RequiredLabel htmlFor="name">Reisename</RequiredLabel>
+            <Input
+              type="text"
+              id="name"
+              name="name"
+              placeholder="Reisename eingeben"
+              autoComplete="off"
+              required
+              value={tripData.name}
+              onChange={handleInputChange}
+              className="w-full"
+            />
+          </div>
           <div className="flex gap-2 w-full">
             <div className="flex flex-col gap-2 w-full">
               <RequiredLabel htmlFor="date_from">Startdatum</RequiredLabel>
@@ -276,6 +280,20 @@ const EditTrip = () => {
               placeholder="Gebiet eingeben"
               autoComplete="off"
               value={tripData.area || ''}
+              onChange={handleInputChange}
+              className="w-full"
+            />
+          </div>
+          <div className="flex flex-col gap-2 w-full">
+            <RequiredLabel htmlFor="location_name">Location</RequiredLabel>
+            <Input
+              type="text"
+              id="location_name"
+              name="location_name"
+              placeholder="Location eingeben"
+              autoComplete="off"
+              required
+              value={tripData.location_name}
               onChange={handleInputChange}
               className="w-full"
             />
@@ -370,49 +388,53 @@ const EditTrip = () => {
               />
             </div>
           </div>
-          <Label htmlFor="down_payment">Anzahlung</Label>
-          <div className="relative">
-            <Input
-              type="number"
-              id="down_payment"
-              name="down_payment"
-              placeholder="Anzahlung eingeben"
-              autoComplete="off"
-              value={tripData.down_payment ?? ''}
-              onChange={handleInputChange}
-              className="w-full pl-6"
-            />
-            <span className="absolute left-2 top-1/2 transform -translate-y-1/2">€</span>
+          <div className="flex flex-col gap-2 w-full">
+            <Label htmlFor="down_payment">Anzahlung</Label>
+            <div className="relative">
+              <Input
+                type="number"
+                id="down_payment"
+                name="down_payment"
+                placeholder="Anzahlung eingeben"
+                autoComplete="off"
+                value={tripData.down_payment ?? ''}
+                onChange={handleInputChange}
+                className="w-full pl-6"
+              />
+              <span className="absolute left-2 top-1/2 transform -translate-y-1/2">€</span>
+            </div>
           </div>
-
-          <Label htmlFor="full_payment">Hauptzahlung</Label>
-          <div className="relative">
-            <Input
-              type="number"
-              id="full_payment"
-              name="full_payment"
-              placeholder="Hauptzahlung eingeben"
-              autoComplete="off"
-              value={tripData.full_payment ?? ''}
-              onChange={handleInputChange}
-              className="w-full pl-6"
-            />
-            <span className="absolute left-2 top-1/2 transform -translate-y-1/2">€</span>
+          <div className="flex flex-col gap-2 w-full">
+            <Label htmlFor="full_payment">Hauptzahlung</Label>
+            <div className="relative">
+              <Input
+                type="number"
+                id="full_payment"
+                name="full_payment"
+                placeholder="Hauptzahlung eingeben"
+                autoComplete="off"
+                value={tripData.full_payment ?? ''}
+                onChange={handleInputChange}
+                className="w-full pl-6"
+              />
+              <span className="absolute left-2 top-1/2 transform -translate-y-1/2">€</span>
+            </div>
           </div>
-
-          <Label htmlFor="final_payment">Abschlussbetrag</Label>
-          <div className="relative">
-            <Input
-              type="number"
-              id="final_payment"
-              name="final_payment"
-              placeholder="Abschlussbetrag eingeben"
-              autoComplete="off"
-              value={tripData.final_payment ?? ''}
-              onChange={handleInputChange}
-              className="w-full pl-6"
-            />
-            <span className="absolute left-2 top-1/2 transform -translate-y-1/2">€</span>
+          <div className="flex flex-col gap-2 w-full">
+            <Label htmlFor="final_payment">Abschlussbetrag</Label>
+            <div className="relative">
+              <Input
+                type="number"
+                id="final_payment"
+                name="final_payment"
+                placeholder="Abschlussbetrag eingeben"
+                autoComplete="off"
+                value={tripData.final_payment ?? ''}
+                onChange={handleInputChange}
+                className="w-full pl-6"
+              />
+              <span className="absolute left-2 top-1/2 transform -translate-y-1/2">€</span>
+            </div>
           </div>
           <ResponsiveDialog
             title="Trip aktualisieren"
