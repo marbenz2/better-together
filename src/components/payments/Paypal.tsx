@@ -38,18 +38,18 @@ interface ApprovalDetails {
 }
 
 interface PaypalProps {
-  user_id: string
-  payment_type: string
   price: number
+  user_id: string
   trip_id: string
+  payment_type: string
   onPaymentSuccess: () => void
 }
 
 export default function Paypal({
-  user_id,
-  payment_type,
   price,
+  user_id,
   trip_id,
+  payment_type,
   onPaymentSuccess,
 }: PaypalProps) {
   const [approvalDetails, setApprovalDetails] = useState<ApprovalDetails | null>(null)
