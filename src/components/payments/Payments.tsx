@@ -89,7 +89,7 @@ export default function Payments() {
             <CardDescription>{paymentAmount}€</CardDescription>
           </div>
           <div className="relative flex flex-col w-full h-full gap-4 items-center justify-center text-center">
-            <CheckCircleIcon size={48} className="text-green-400" />
+            <CheckCircleIcon className="w-12 h-12 text-green-400" />
             <p>Bereits bezahlt</p>
             <CardDescription>
               Zahlungs ID: {transactionsId[`${paymentType}_paypal_id`]}
@@ -120,7 +120,7 @@ export default function Payments() {
             {formatDate(trip.date_from)} - {formatDate(trip.date_to)}
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col md:flex-row gap-8 md:gap-4 xl:gap-8 w-full">
+        <CardContent className="flex flex-col md:flex-row gap-8 md:gap-4 xl:gap-8 w-full py-8">
           {!trip.down_payment && !trip.full_payment && !trip.final_payment && (
             <InfoCard description="Bisher keine Zahlungen eingetragen." />
           )}
