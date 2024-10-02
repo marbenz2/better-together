@@ -8,7 +8,7 @@ export default function Header() {
         Mache dir und deinen Freunden den gemeinsamen Urlaub leichter.
       </h2>
       <div className="flex gap-8 justify-center items-center">
-        <h1 className="uppercase text-3xl font-black">Better together.</h1>
+        <h1 className="uppercase text-3xl font-black">Better. Together.</h1>
       </div>
     </div>
   )
