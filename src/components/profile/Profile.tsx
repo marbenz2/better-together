@@ -12,8 +12,8 @@ import {
 import Image from 'next/image'
 import InfoCard from '@/components/ui/info-card'
 import { Table, TableBody, TableCell, TableRow } from '../ui/table'
-import { EditButton } from '../ui/edit-button'
-import { Button } from '../ui/button'
+import { ButtonLink } from '../ui/button-link'
+import { PencilIcon } from 'lucide-react'
 
 export default function Profile() {
   const [isLoading, setIsLoading] = useState(false)
@@ -81,11 +81,15 @@ export default function Profile() {
             </div>
           </div>
         </CardContent>
-        <CardFooter className="flex w-full pt-12 justify-center">
+        <CardFooter className="flex w-full pt-12">
           <div className="flex flex-col xs:flex-row gap-4 w-full max-w-lg">
-            <EditButton id={publicProfile.id} className="static" type="profile">
-              <Button className="w-full max-w-lg">Profil bearbeiten</Button>
-            </EditButton>
+            <ButtonLink
+              className="w-fit"
+              href={`/protected/edit-profile/${publicProfile.id}`}
+              label="Profil bearbeiten"
+            >
+              <PencilIcon className="w-4 h-4" />
+            </ButtonLink>
           </div>
         </CardFooter>
       </CardBackPlate>
