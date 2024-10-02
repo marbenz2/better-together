@@ -168,7 +168,7 @@ export default function Paypal({
       <PayPalScriptProvider options={initialOptions}>
         {!approvalDetails && (
           <PayPalButtons
-            className="w-full max-w-xl"
+            className="w-full max-w-xl z-40"
             style={styles}
             createOrder={createOrder}
             onApprove={onApprove}
