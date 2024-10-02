@@ -6,14 +6,15 @@ import { useGroupStore } from '@/stores/groupStores'
 import { useEffect, useMemo } from 'react'
 import { useUserStore } from '@/stores/userStore'
 import DropdownMemberBadge from '@/components/DropdownMemberBadge'
+import { CrownIcon } from 'lucide-react'
 
 const getBadgeColor = (role: string): string => {
   switch (role) {
     case 'admin':
-      return 'bg-primary text-info'
+      return 'bg-primary text-primary-foreground'
     case 'member':
     default:
-      return 'bg-primary text-white'
+      return 'bg-primary text-primary-foreground'
   }
 }
 
@@ -70,6 +71,7 @@ export default function GroupMembers() {
                   isAdmin={isAdmin}
                   userId={member.id}
                   groupId={groupId || ''}
+                  role={groupMember?.role || 'member'}
                 >
                   {member.first_name} {member.last_name}
                 </DropdownMemberBadge>
@@ -80,6 +82,9 @@ export default function GroupMembers() {
                   key={member.id}
                   className={`bg-primary text-white ${badgeColor} ${borderStyle}`}
                 >
+                  {groupMember?.role === 'admin' && (
+                    <CrownIcon className="w-4 h-4 mr-2" strokeWidth={1.5} fill="yellow" />
+                  )}
                   {member.first_name} {member.last_name}
                 </Badge>
               )
@@ -90,6 +95,9 @@ export default function GroupMembers() {
             key={groupPublicProfiles[0].id}
             className={`bg-primary text-white ${getBadgeColor(groupMembers[0]?.role)} ring-2 ring-info-foreground`}
           >
+            {groupMembers[0]?.role === 'admin' && (
+              <CrownIcon className="w-4 h-4 mr-2" strokeWidth={1.5} fill="yellow" />
+            )}
             {groupPublicProfiles[0].first_name} {groupPublicProfiles[0].last_name}
           </Badge>
         )}
