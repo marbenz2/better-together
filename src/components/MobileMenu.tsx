@@ -11,7 +11,6 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
-import { Separator } from './ui/separator'
 import { FacebookIcon, InstagramIcon, TwitterIcon } from 'lucide-react'
 
 const navLinks = [
@@ -50,7 +49,10 @@ export default function MobileNavigation() {
         <div className="flex flex-col justify-between w-full h-full py-10">
           <div className="flex flex-col w-full items-start">
             {navLinks.map(({ href, label }, index) => (
-              <div key={label} className="flex flex-col w-full">
+              <div
+                key={label}
+                className={`flex flex-col w-full ${index < navLinks.length - 1 ? 'border-b' : ''}`}
+              >
                 <Link
                   href={href}
                   className="flex w-full px-6 py-6 items-center hover:bg-primary transition-colors duration-300"
@@ -58,11 +60,9 @@ export default function MobileNavigation() {
                 >
                   <span className="uppercase">{label}</span>
                 </Link>
-                {index < navLinks.length - 1 && <Separator className="bg-white/10" />}
               </div>
             ))}
           </div>
-          {/* social media icons/link on the bottom of the menu centered */}
           <div className="flex justify-center w-full gap-4 self-end">
             <Link href={'https://www.instagram.com/'} target="_blank" rel="noopener noreferrer">
               <InstagramIcon className="w-6 h-6 hover:text-primary transition-colors duration-300" />
