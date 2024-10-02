@@ -101,7 +101,7 @@ export default function Trip() {
           <div className="flex justify-between mb-4">
             <BackButtonClient className="static" />
             {isCreator && (
-              <div className="flex gap-6">
+              <div className="flex gap-4">
                 <ResponsiveDialog
                   title="Reise bearbeiten"
                   message="Wollen Sie diese Reise wirklich bearbeiten?"
