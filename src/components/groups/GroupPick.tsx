@@ -17,7 +17,7 @@ export default function GroupPick() {
   return (
     <Card className="w-full max-w-7xl">
       <CardHeader>
-        <CardTitle>Gruppe: </CardTitle>
+        <CardTitle>Gruppe:</CardTitle>
         <Select
           onValueChange={handleOnValueChange}
           defaultValue={selectedGroupName || undefined}
