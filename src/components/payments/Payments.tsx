@@ -66,10 +66,11 @@ export default function Payments() {
   }) => {
     if (paymentStatus === false && paymentAmount) {
       return (
-        <div className="flex flex-col gap-4 items-center w-full md:max-w-md">
-          <div className="flex flex-col text-center">
-            <CardTitle>{title}:</CardTitle>
-            <CardDescription>{paymentAmount}€</CardDescription>
+        <div className="flex flex-col gap-4 w-full md:max-w-md">
+          <div className="flex flex-col">
+            <CardDescription className="text-balance text-lg">
+              {title}: <span className="font-bold">{paymentAmount}€</span>
+            </CardDescription>
           </div>
           <Paypal
             price={paymentAmount}
@@ -113,19 +114,17 @@ export default function Payments() {
   }) => {
     return (
       <Card key={trip.id}>
-        <CardHeader className="text-center lg:text-start w-full">
+        <CardHeader className="w-full">
           <CardTitle>{trip.name}</CardTitle>
           <CardDescription className="text-balance">
             {formatDate(trip.date_from)} - {formatDate(trip.date_to)}
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col md:flex-row gap-8 md:gap-4 xl:gap-8 w-full">
-          {!paymentStatus.down_payment &&
-            !paymentStatus.full_payment &&
-            !paymentStatus.final_payment && (
-              <InfoCard description="Bisher keine Zahlungen eingetragen." />
-            )}
-          {paymentStatus.down_payment && (
+          {!trip.down_payment && !trip.full_payment && !trip.final_payment && (
+            <InfoCard description="Bisher keine Zahlungen eingetragen." />
+          )}
+          {trip.down_payment && (
             <PaymentSection
               title="Vorauszahlung"
               paymentType="down_payment"
@@ -136,10 +135,9 @@ export default function Payments() {
               transactionsId={transactionsId}
             />
           )}
-          {paymentStatus.full_payment && (
+          {trip.full_payment && (
             <>
               <Separator className="md:hidden block" />
-              <Separator orientation="vertical" className="hidden md:block" />
               <PaymentSection
                 title="Hauptzahlung"
                 paymentType="full_payment"
@@ -152,10 +150,9 @@ export default function Payments() {
             </>
           )}
 
-          {paymentStatus.final_payment && (
+          {trip.final_payment && (
             <>
               <Separator className="md:hidden block" />
-              <Separator orientation="vertical" className="hidden md:block" />
               <PaymentSection
                 title="Schlusszahlung"
                 paymentType="final_payment"
@@ -199,7 +196,6 @@ export default function Payments() {
               }
               return acc
             }, {} as TransactionsId)
-
             if (paymentStatus) {
               return (
                 <CardBackPlate key={trip.trips.id}>
