@@ -127,7 +127,7 @@ const EditTrip = () => {
 
   const handleUpdateTrip = async () => {
     const anreiseLink = googleMapsUrl(
-      tripData.name,
+      tripData.location_name,
       tripData.land,
       tripData.street,
       tripData.street_number || 0,
