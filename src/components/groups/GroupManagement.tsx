@@ -14,7 +14,7 @@ export default function GroupManagement() {
   const { userGroups, groupMembers, groupId } = useGroupStore()
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-12">
       {/* Favoriten */}
       {userGroups && userGroups.length > 0 && <FavouriteGroups />}
       {/* Gruppenmitglieder */}
