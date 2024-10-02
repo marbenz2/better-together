@@ -31,11 +31,11 @@ export default function FilteredSubscribedTrips() {
         )
       ) : (
         <CardDescription>
-          Du hast noch keine Reisen gebucht. Schau dir{' '}
+          Du bist noch nicht Teil einer Reise deiner Gruppe. Schau dir doch mal die{' '}
           <Link href={'/protected/trips'} className="underline decoration-dashed">
-            hier
+            anstehenden Reisen
           </Link>{' '}
-          alle Reisen an!
+          an oder erstelle eine neue Reise.
         </CardDescription>
       )}
     </div>
