@@ -14,13 +14,15 @@ import FilteredSubscribedTrips from './FilteredSubscribedTrips'
 import { useUserStore } from '@/stores/userStore'
 import Spinner from '@/components/ui/Spinner'
 import { useGroupStore } from '@/stores/groupStores'
+import { PalmtreeIcon, WalletIcon } from 'lucide-react'
+import { ButtonLink } from '../ui/button-link'
 
 export default function Dashboard() {
   const { publicProfile } = useUserStore()
   const { userGroups } = useGroupStore()
 
   return (
-    <CardBackPlate className="flex flex-col max-w-7xl w-full gap-8">
+    <CardBackPlate className="flex flex-col max-w-7xl w-full gap-12">
       <CardHeader>
         <CardTitle className="text-2xl">
           Hallo {publicProfile ? publicProfile?.first_name : <Spinner />}!
@@ -33,18 +35,14 @@ export default function Dashboard() {
           <FilteredSubscribedTrips />
         </CardContent>
       )}
-      <CardFooter className="flex w-full pt-12 justify-center">
+      <CardFooter className="flex w-full pt-12">
         <div className="flex flex-col xs:flex-row gap-4 w-full max-w-lg">
-          <Link href={'protected/trips'} className="w-full">
-            <Button aria-label="Neue Reisen ansehen" className="w-full">
-              <span className="xs:inline truncate">Neue Reisen ansehen</span>
-            </Button>
-          </Link>
-          <Link href={'/protected/payments'} className="w-full">
-            <Button aria-label="Zahlungen ansehen" className="w-full">
-              <span className="xs:inline truncate">Zahlungen ansehen</span>
-            </Button>
-          </Link>
+          <ButtonLink href={'/protected/trips'} label="Neue Reisen ansehen">
+            <PalmtreeIcon className="w-4 h-4" />
+          </ButtonLink>
+          <ButtonLink href={'/protected/payments'} label="Zahlungen ansehen">
+            <WalletIcon className="w-4 h-4" />
+          </ButtonLink>
         </div>
       </CardFooter>
     </CardBackPlate>
