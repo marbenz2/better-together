@@ -1,14 +1,14 @@
 'use client'
 
-import Payments from '@/components/payments/Payments'
+/* import Payments from '@/components/payments/Payments'
 import { useToast } from '@/components/ui/use-toast'
 import { usePaymentStore } from '@/stores/paymentStore'
 import { useToastStore } from '@/stores/toastStore'
 import { useUserStore } from '@/stores/userStore'
-import { useEffect } from 'react'
+import { useEffect } from 'react' */
 
 export default function PaymentPage() {
-  const { user } = useUserStore()
+  /*   const { user } = useUserStore()
   const { getSubscribedTrips } = useUserStore()
   const { getPaymentDetails } = usePaymentStore()
   const { toast } = useToast()
@@ -27,7 +27,10 @@ export default function PaymentPage() {
   useEffect(() => {
     getPaymentDetails(user.id)
     getSubscribedTrips()
-  }, [getPaymentDetails, getSubscribedTrips, user.id])
+  }, [getPaymentDetails, getSubscribedTrips, user.id]) */
 
-  return <Payments />
+  return <div>Payments</div>
+  {
+    /* <Payments /> */
+  }
 }
