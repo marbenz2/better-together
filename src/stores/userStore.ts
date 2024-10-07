@@ -30,15 +30,12 @@ interface UserState {
   setIsSubscribed: (isSubscribed: boolean) => void
 }
 
-const handleError = (error: any, defaultTitle: string, defaultMessage: string) => {
-  const errorMessages: { [key: string]: NotificationMessage } = {}
+const handleError = (error: unknown, defaultTitle: string, defaultMessage: string) => {
+  console.error(error)
 
-  const errorMessage = errorMessages[error.code] || {
-    title: defaultTitle,
-    message: defaultMessage,
-    variant: 'destructive',
-  }
-  showNotification(errorMessage.title, errorMessage.message, errorMessage.variant)
+  const errorMessage = error instanceof Error ? error.message : defaultMessage
+
+  showNotification(defaultTitle, errorMessage, 'destructive')
 }
 
 export const useUserStore = create<UserState>((set) => {
@@ -46,31 +43,44 @@ export const useUserStore = create<UserState>((set) => {
 
   return {
     user: {} as User,
-    setUser: (user) => set({ user }),
-
+    setUser: (user: User) => set({ user }),
     getUser: async () => {
-      const { data: user, error } = await getUser(supabase)
-      if (error) {
-        console.error('Error fetching user:', error)
-        return
-      }
-      if (user) {
-        set({ user })
+      try {
+        const { data, error } = await getUser(supabase)
+        if (error) {
+          throw error
+        }
+        set({ user: data ?? ({} as User) })
+      } catch (error) {
+        console.error('Fehler beim Abrufen des Benutzers:', error)
+        handleError(
+          error,
+          'Fehler beim Abrufen des Benutzers',
+          'Die Benutzerdaten konnten nicht abgerufen werden.',
+        )
+        set({ user: {} as User })
       }
     },
 
     publicProfile: null,
-    setPublicProfile: (publicProfile) => set({ publicProfile }),
-
+    setPublicProfile: (publicProfile: PublicProfileType) => set({ publicProfile }),
     getPublicProfile: async (userId?: string) => {
-      const user = userId || useUserStore.getState().user.id
-      const { data, error } = await getPublicProfile(supabase, user)
-      if (error) {
-        console.error('Error fetching public profile:', error)
-        return
-      }
-      if (data) {
-        set({ publicProfile: data })
+      try {
+        const user = userId || useUserStore.getState().user.id
+        const { data, error } = await getPublicProfile(supabase, user)
+        if (error) {
+          throw error
+        }
+        if (data) {
+          set({ publicProfile: data })
+        }
+      } catch (error) {
+        console.error('Fehler beim Abrufen des öffentlichen Profils:', error)
+        handleError(
+          error,
+          'Fehler beim Abrufen des öffentlichen Profils',
+          'Das öffentliche Profil konnte nicht abgerufen werden.',
+        )
       }
     },
 
@@ -83,7 +93,7 @@ export const useUserStore = create<UserState>((set) => {
         }
         const { data, error } = await updatePublicProfile(supabase, profile)
         if (error) throw error
-        if (data && !error) {
+        if (data) {
           set({ publicProfile: data as PublicProfileType })
           showNotification(
             'Profil aktualisiert',
