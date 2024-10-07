@@ -158,10 +158,10 @@ export const updatePublicProfile = cache(
       .update({
         first_name: profile.first_name,
         last_name: profile.last_name,
-        /* email: profile.email, */
         profile_picture: profile.profile_picture,
       })
       .eq('id', profile.id)
+      .select()
       .returns<PublicProfileType>()
       .single()
     return { data, error }
@@ -217,22 +217,6 @@ export const getSubscribedTrips = cache(
   },
 )
 
-type GetPaymentsResult = {
-  data: Pick<Trips, 'id' | 'down_payment' | 'full_payment' | 'final_payment'>[] | null
-  error: PostgrestError | null
-}
-
-export const getPayments = cache(
-  async (supabase: SupabaseClient, groupId: string): Promise<GetPaymentsResult> => {
-    const { data, error } = await supabase
-      .from('trips')
-      .select('id, down_payment, full_payment, final_payment')
-      .eq('group_id', groupId)
-      .returns<Pick<Trips, 'id' | 'down_payment' | 'full_payment' | 'final_payment'>[]>()
-    return { data, error }
-  },
-)
-
 type GetPaymentStatusResult = {
   data: Pick<
     TripMembers,
@@ -268,9 +252,9 @@ type GetPaymentDetailsResult = {
         | 'down_payment'
         | 'full_payment'
         | 'final_payment'
-        | 'down_payment_paypal_id'
-        | 'full_payment_paypal_id'
-        | 'final_payment_paypal_id'
+        | 'down_payment_amount'
+        | 'full_payment_amount'
+        | 'final_payment_amount'
       >[]
     | null
   error: PostgrestError | null
@@ -291,9 +275,9 @@ export const getPaymentDetails = cache(
           | 'down_payment'
           | 'full_payment'
           | 'final_payment'
-          | 'down_payment_paypal_id'
-          | 'full_payment_paypal_id'
-          | 'final_payment_paypal_id'
+          | 'down_payment_amount'
+          | 'full_payment_amount'
+          | 'final_payment_amount'
         >[]
       >()
     return { data, error }
@@ -568,6 +552,48 @@ export const updatePaymentStatus = cache(
   },
 )
 
+type SetUserPaymentsResult = {
+  data: TripMembers[] | null
+  error: PostgrestError | null
+}
+
+export const setUserPayments = cache(
+  async (
+    supabase: SupabaseClient,
+    payments: {
+      userId: string
+      tripId: string
+      down_payment_amount?: number | null
+      full_payment_amount?: number | null
+      final_payment_amount?: number | null
+      down_payment: boolean
+      full_payment: boolean
+      final_payment: boolean
+    }[],
+  ): Promise<SetUserPaymentsResult> => {
+    const results = await Promise.all(
+      payments.map(async ({ userId, tripId, ...paymentData }) => {
+        const { data, error } = await supabase
+          .from('trip_members')
+          .update(paymentData)
+          .eq('trip_id', tripId)
+          .eq('user_id', userId)
+          .select()
+          .single()
+        return { data, error }
+      }),
+    )
+
+    const successfulUpdates = results.filter((result) => !result.error).map((result) => result.data)
+    const errors = results.filter((result) => result.error).map((result) => result.error)
+
+    return {
+      data: successfulUpdates.length > 0 ? successfulUpdates : null,
+      error: errors.length > 0 ? errors[0] : null,
+    }
+  },
+)
+
 type CreateTripResult = {
   data: Trips | null
   error: PostgrestError | null
@@ -630,7 +656,7 @@ export const getTripMembers = cache(
   async (supabase: SupabaseClient, tripId: string): Promise<GetTripMembersResult> => {
     const { data, error } = await supabase
       .from('trip_members')
-      .select('user_id')
+      .select('*')
       .eq('trip_id', tripId)
       .returns<TripMembers[]>()
     return { data, error }
