@@ -1,4 +1,4 @@
-'use client'
+/* 'use client'
 
 import { useMemo, useCallback } from 'react'
 import {
@@ -242,3 +242,4 @@ function generateEmailLink(trip: Trips, user: any): string {
     user?.user_metadata.first_name
   }%20${user?.user_metadata.last_name}%0AE-Mail:%20${user?.email}%0A%0AFrage:%20`
 }
+ */

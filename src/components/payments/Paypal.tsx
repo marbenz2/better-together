@@ -1,4 +1,4 @@
-'use client'
+/* 'use client'
 
 import { useState } from 'react'
 
@@ -159,11 +159,11 @@ export default function Paypal({
     shape: 'rect',
     layout: 'vertical',
     height: 40,
-  }
+  } */
 
-  /*   if (isLoading) return <Spinner />
-   */
-  return (
+/*   if (isLoading) return <Spinner />
+ */
+/*   return (
     <div className="flex w-full justify-center">
       <PayPalScriptProvider options={initialOptions}>
         {!approvalDetails && (
@@ -179,4 +179,4 @@ export default function Paypal({
       </PayPalScriptProvider>
     </div>
   )
-}
+} */
