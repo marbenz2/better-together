@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import Image from 'next/image'
-import { PencilIcon, SquareArrowOutUpRight, Trash2Icon } from 'lucide-react'
+import { PencilIcon, SquareArrowOutUpRight, Trash2Icon, UsersIcon } from 'lucide-react'
 import { Table, TableBody, TableCell, TableHead, TableRow } from '@/components/ui/table'
 import { TripSubscription } from '@/components/subscribe-button'
 import { BackButtonClient } from '@/components/ui/back-button-client'
@@ -102,12 +102,13 @@ export default function Trip() {
             <BackButtonClient className="static" />
             {isCreator && (
               <div className="flex gap-4">
+                <ButtonLink href={`/protected/trips/${trip.id}/user-list`}>
+                  <UsersIcon className="w-4 h-4" />
+                </ButtonLink>
                 <ResponsiveDialog
                   title="Reise bearbeiten"
                   message="Wollen Sie diese Reise wirklich bearbeiten?"
                   confirmText="Reise bearbeiten"
-                  info="Diese Aktion kann nicht rückgängig gemacht werden."
-                  infoType="warning"
                   onConfirm={handleEditTrip}
                 >
                   <Button>
