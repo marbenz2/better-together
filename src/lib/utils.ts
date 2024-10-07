@@ -21,7 +21,7 @@ export const showNotification = (
   toastStore.showToast(title, message, variant)
   setTimeout(() => {
     toastStore.clearToast()
-  }, 3000)
+  }, 50)
 }
 
 export const googleMapsUrl = (
