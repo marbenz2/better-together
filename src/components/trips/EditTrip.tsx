@@ -1,52 +1,41 @@
 'use client'
 
-import { Input } from '@/components/forms/input'
-import { Label } from '@/components/forms/label'
-import { SubmitButton } from '@/components/forms/submit-button'
-import { ResponsiveDialog } from '@/components/ResponsiveDialog'
-import { CardTitle } from '@/components/ui/card'
-import { RequiredLabel } from '@/components/ui/required-label'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useForm } from 'react-hook-form'
+import * as z from 'zod'
 import { useGroupStore } from '@/stores/groupStores'
 import { useTripStore } from '@/stores/tripStores'
 import { useUserStore } from '@/stores/userStore'
 import { GroupTripType } from '@/types/trips'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { BackButtonClient } from '../ui/back-button-client'
 import { googleMapsUrl } from '@/lib/utils'
+import InfoCard from '../ui/info-card'
+import { Button } from '@/components/ui/button'
+import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
+import { CardBackPlate, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { ResponsiveDialog } from '@/components/ResponsiveDialog'
 
-type TripDataState = {
-  [K in keyof Omit<GroupTripType, 'id' | 'available_spots' | 'max_spots'>]: K extends
-    | 'beds'
-    | 'rooms'
-    | 'street_number'
-    ? number | ''
-    : GroupTripType[K]
-}
+const formSchema = z.object({
+  name: z.string().min(1, 'Reisename ist erforderlich'),
+  date_from: z.string().min(1, 'Startdatum ist erforderlich'),
+  date_to: z.string().min(1, 'Enddatum ist erforderlich'),
+  land: z.string().min(1, 'Land ist erforderlich'),
+  area: z.string().optional(),
+  location_name: z.string().min(1, 'Location ist erforderlich'),
+  plz: z.string().min(1, 'PLZ ist erforderlich'),
+  ort: z.string().min(1, 'Ort ist erforderlich'),
+  street: z.string().min(1, 'Straße ist erforderlich'),
+  street_number: z.number().min(1, 'Hausnummer ist erforderlich'),
+  rooms: z.number().min(1, 'Anzahl der Zimmer ist erforderlich'),
+  beds: z.number().min(1, 'Anzahl der Betten ist erforderlich'),
+  image: z.string().min(1, 'Bild ist erforderlich'),
+})
 
-const INITIAL_TRIP_DATA: TripDataState = {
-  created_by: '',
-  anreise_link: '',
-  area: '',
-  beds: '' as unknown as number,
-  date_from: '',
-  date_to: '',
-  down_payment: null,
-  final_payment: null,
-  full_payment: null,
-  group_id: '',
-  image: '',
-  land: '',
-  name: '',
-  ort: '',
-  plz: '',
-  rooms: '' as unknown as number,
-  status: 'upcoming',
-  street: '',
-  street_number: '' as unknown as number,
-  location_name: '',
-}
+type FormValues = z.infer<typeof formSchema>
 
 const EditTrip = () => {
   const { trip, updateTrip, getTrip } = useTripStore()
@@ -54,97 +43,74 @@ const EditTrip = () => {
   const { groupId } = useGroupStore()
   const { user } = useUserStore()
 
-  const [tripData, setTripData] = useState<TripDataState>(trip || INITIAL_TRIP_DATA)
-  const [isFormValid, setIsFormValid] = useState(false)
-
-  const handleInputChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = event.target
-    setTripData((prevData) => ({
-      ...prevData,
-      [name]: ['beds', 'rooms', 'street_number'].includes(name)
-        ? value === ''
-          ? ('' as unknown as number)
-          : parseInt(value, 10)
-        : ['down_payment', 'full_payment', 'final_payment'].includes(name)
-          ? value === ''
-            ? null
-            : parseFloat(value)
-          : value,
-    }))
-  }, [])
-
-  const validateForm = useCallback(() => {
-    const requiredFields: (keyof TripDataState)[] = [
-      'name',
-      'date_from',
-      'date_to',
-      'land',
-      'plz',
-      'ort',
-      'street',
-      'street_number',
-      'rooms',
-      'beds',
-      'anreise_link',
-      'image',
-      'location_name',
-    ]
-    const isValid = requiredFields.every(
-      (field) =>
-        tripData[field] !== '' &&
-        tripData[field] !== null &&
-        (field !== 'street_number' ||
-          (typeof tripData[field] === 'number' && !isNaN(tripData[field] as number))),
-    )
-    setIsFormValid(isValid)
-    return isValid
-  }, [tripData])
-
-  useEffect(() => {
-    validateForm()
-  }, [tripData, validateForm])
-
-  useEffect(() => {
-    if (groupId) {
-      setTripData((prevData) => ({
-        ...prevData,
-        group_id: groupId,
-        created_by: user.id,
-      }))
-    }
-  }, [groupId, user.id])
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: trip?.name || '',
+      date_from: trip?.date_from ? new Date(trip.date_from).toISOString().split('T')[0] : '',
+      date_to: trip?.date_to ? new Date(trip.date_to).toISOString().split('T')[0] : '',
+      land: trip?.land || '',
+      area: trip?.area || '',
+      location_name: trip?.location_name || '',
+      plz: trip?.plz || '',
+      ort: trip?.ort || '',
+      street: trip?.street || '',
+      street_number: trip?.street_number || 0,
+      rooms: trip?.rooms || 0,
+      beds: trip?.beds || 0,
+      image: trip?.image || '',
+    },
+  })
 
   useEffect(() => {
     if (trip) {
-      setTripData((prevData) => ({
-        ...prevData,
-        ...trip,
-        date_from: formatDate(trip.date_from),
-        date_to: formatDate(trip.date_to),
-      }))
+      form.reset({
+        name: trip.name,
+        date_from: new Date(trip.date_from).toISOString().split('T')[0],
+        date_to: new Date(trip.date_to).toISOString().split('T')[0],
+        land: trip.land,
+        area: trip.area || '',
+        location_name: trip.location_name,
+        plz: trip.plz,
+        ort: trip.ort,
+        street: trip.street,
+        street_number: trip.street_number,
+        rooms: trip.rooms,
+        beds: trip.beds,
+        image: trip.image,
+      })
     }
-  }, [trip])
+  }, [trip, form])
 
-  const handleUpdateTrip = async () => {
+  const isCreator = trip?.created_by === user?.id
+
+  if (!isCreator) {
+    return (
+      <InfoCard
+        title="Keine Berechtigung"
+        description="Du hast keine Berechtigung, diese Reise zu bearbeiten."
+        variant="warning"
+      />
+    )
+  }
+
+  const onSubmit = async (data: FormValues) => {
+    if (!trip) return
     const anreiseLink = googleMapsUrl(
-      tripData.location_name,
-      tripData.land,
-      tripData.street,
-      tripData.street_number || 0,
-      tripData.plz,
-      tripData.ort,
+      data.location_name,
+      data.land,
+      data.street,
+      data.street_number,
+      data.plz,
+      data.ort,
     )
     try {
-      await updateTrip({ ...tripData, anreise_link: anreiseLink } as GroupTripType)
-      await getTrip(trip?.id || '')
+      await updateTrip({ ...data, anreise_link: anreiseLink, id: trip.id } as GroupTripType)
+      await getTrip(trip.id)
       router.push('/protected/trips')
     } catch (error) {
       console.error('Fehler beim Aktualisieren der Reise:', error)
     }
-  }
-
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
   }
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -166,294 +132,302 @@ const EditTrip = () => {
       }
 
       const data = await response.json()
-      setTripData((prevData) => ({
-        ...prevData,
-        image: data.imageUrl,
-      }))
+      form.setValue('image', data.imageUrl)
     } catch (error) {
       console.error('Fehler beim Hochladen des Bildes:', error)
     }
   }
 
-  const formatDate = (dateString: string) => {
-    if (!dateString) return ''
-    const date = new Date(dateString)
-    return date.toISOString().split('T')[0]
+  const isFieldRequired = (fieldName: keyof FormValues) => {
+    const fieldSchema = formSchema.shape[fieldName]
+    return (
+      (fieldSchema instanceof z.ZodString || fieldSchema instanceof z.ZodNumber) &&
+      !fieldSchema.isOptional()
+    )
   }
 
   if (!groupId) {
-    return <div>Keine Gruppe gefunden</div>
+    return (
+      <InfoCard
+        title="Keine Gruppe gefunden"
+        description="Bitte erstelle eine Gruppe, bevor du eine Reise erstellst."
+        variant="warning"
+      />
+    )
   }
 
   return (
-    <div className="flex flex-col gap-4 w-full max-w-7xl mx-auto">
-      <BackButtonClient className="static" />
-      <form className="flex flex-col gap-4 w-full items-center" onSubmit={handleSubmit}>
-        <div className="flex flex-col gap-4 w-full max-w-lg">
-          <Label>
-            <CardTitle className="text-xl">Reise bearbeiten</CardTitle>
-          </Label>
-          <div className="flex flex-col gap-2 w-full">
-            <RequiredLabel htmlFor="image">Bild der Reise</RequiredLabel>
-            <Input
-              type="file"
-              id="image"
-              name="image"
-              accept="image/*"
-              onChange={handleImageUpload}
-              className="w-full"
-            />
-            {tripData.image && (
-              <div className="relative flex w-full h-64">
-                <Image
-                  src={tripData.image}
-                  alt="Vorschau des hochgeladenen Bildes"
-                  fill
-                  className="object-contain"
-                  loading="lazy"
+    <CardBackPlate className="flex flex-col max-w-7xl w-full gap-8">
+      <CardHeader>
+        <BackButtonClient className="static" />
+        <CardTitle>Reise bearbeiten</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="flex flex-col gap-4 w-full items-center"
+          >
+            <div className="flex flex-col gap-4 w-full max-w-lg">
+              <div className="flex flex-col gap-2 w-full">
+                <FormLabel htmlFor="image">
+                  Bild der Reise{' '}
+                  {isFieldRequired('image') && <span className="text-red-500">*</span>}
+                </FormLabel>
+                <Input
+                  type="file"
+                  id="image"
+                  name="image"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="w-full"
+                />
+                <div className="relative flex w-full max-w-[350px] h-[350px] p-4 rounded-lg border self-center">
+                  {form.watch('image') ? (
+                    <div className="relative w-full h-full">
+                      <Image
+                        src={form.watch('image') ?? ''}
+                        alt="Vorschau des hochgeladenen Bildes"
+                        fill
+                        sizes="(max-width: 350px) (max-height: 450px)"
+                        className="object-cover"
+                        priority
+                      />
+                    </div>
+                  ) : (
+                    <div className="relative flex w-full h-full items-center justify-center overflow-hidden">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="100%"
+                        height="100%"
+                        viewBox="0 0 100 100"
+                        preserveAspectRatio="none"
+                      >
+                        <polygon points="0,0 100,0 0,100" fill="rgba(255,255,255,0.2)" />
+                        <polygon points="100,0 100,100 0,100" fill="rgba(255,255,255,0.3)" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Reisename {isFieldRequired('name') && <span className="text-red-500">*</span>}
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="Reisename eingeben" {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <div className="flex gap-2 w-full">
+                <FormField
+                  control={form.control}
+                  name="date_from"
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormLabel>
+                        Startdatum{' '}
+                        {isFieldRequired('date_from') && <span className="text-red-500">*</span>}
+                      </FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="date_to"
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormLabel>
+                        Enddatum{' '}
+                        {isFieldRequired('date_to') && <span className="text-red-500">*</span>}
+                      </FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} />
+                      </FormControl>
+                    </FormItem>
+                  )}
                 />
               </div>
-            )}
-          </div>
-          <div className="flex flex-col gap-2 w-full">
-            <RequiredLabel htmlFor="name">Reisename</RequiredLabel>
-            <Input
-              type="text"
-              id="name"
-              name="name"
-              placeholder="Reisename eingeben"
-              autoComplete="off"
-              required
-              value={tripData.name}
-              onChange={handleInputChange}
-              className="w-full"
-            />
-          </div>
-          <div className="flex gap-2 w-full">
-            <div className="flex flex-col gap-2 w-full">
-              <RequiredLabel htmlFor="date_from">Startdatum</RequiredLabel>
-              <Input
-                type="date"
-                id="date_from"
-                name="date_from"
-                placeholder="Startdatum eingeben"
-                autoComplete="off"
-                required
-                value={formatDate(tripData.date_from)}
-                onChange={handleInputChange}
-                className="w-full"
+              <FormField
+                control={form.control}
+                name="land"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Land {isFieldRequired('land') && <span className="text-red-500">*</span>}
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="Land eingeben" {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
               />
-            </div>
-            <div className="flex flex-col gap-2 w-full">
-              <RequiredLabel htmlFor="date_to">Enddatum</RequiredLabel>
-              <Input
-                type="date"
-                id="date_to"
-                name="date_to"
-                placeholder="Enddatum eingeben"
-                autoComplete="off"
-                required
-                value={formatDate(tripData.date_to)}
-                onChange={handleInputChange}
-                className="w-full"
+              <FormField
+                control={form.control}
+                name="area"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Gebiet</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Gebiet eingeben" {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
               />
-            </div>
-          </div>
-          <div className="flex flex-col gap-2 w-full">
-            <RequiredLabel htmlFor="land">Land</RequiredLabel>
-            <Input
-              type="text"
-              id="land"
-              name="land"
-              placeholder="Land eingeben"
-              autoComplete="off"
-              required
-              value={tripData.land}
-              onChange={handleInputChange}
-              className="w-full"
-            />
-            <Label htmlFor="area">Gebiet</Label>
-            <Input
-              type="text"
-              id="area"
-              name="area"
-              placeholder="Gebiet eingeben"
-              autoComplete="off"
-              value={tripData.area || ''}
-              onChange={handleInputChange}
-              className="w-full"
-            />
-          </div>
-          <div className="flex flex-col gap-2 w-full">
-            <RequiredLabel htmlFor="location_name">Location</RequiredLabel>
-            <Input
-              type="text"
-              id="location_name"
-              name="location_name"
-              placeholder="Location eingeben"
-              autoComplete="off"
-              required
-              value={tripData.location_name}
-              onChange={handleInputChange}
-              className="w-full"
-            />
-          </div>
-          <div className="flex gap-2 w-full">
-            <div className="flex flex-col gap-2 w-full">
-              <RequiredLabel htmlFor="plz">PLZ</RequiredLabel>
-              <Input
-                type="text"
-                id="plz"
-                name="plz"
-                placeholder="PLZ eingeben"
-                autoComplete="off"
-                required
-                value={tripData.plz}
-                onChange={handleInputChange}
-                className="w-full"
+              <FormField
+                control={form.control}
+                name="location_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Location{' '}
+                      {isFieldRequired('location_name') && <span className="text-red-500">*</span>}
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="Location eingeben" {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
               />
+              <div className="flex gap-2 w-full">
+                <FormField
+                  control={form.control}
+                  name="plz"
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormLabel>
+                        PLZ {isFieldRequired('plz') && <span className="text-red-500">*</span>}
+                      </FormLabel>
+                      <FormControl>
+                        <Input placeholder="PLZ eingeben" {...field} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="ort"
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormLabel>
+                        Ort {isFieldRequired('ort') && <span className="text-red-500">*</span>}
+                      </FormLabel>
+                      <FormControl>
+                        <Input placeholder="Ort eingeben" {...field} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="flex gap-2 w-full">
+                <FormField
+                  control={form.control}
+                  name="street"
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormLabel>
+                        Straße{' '}
+                        {isFieldRequired('street') && <span className="text-red-500">*</span>}
+                      </FormLabel>
+                      <FormControl>
+                        <Input placeholder="Straße eingeben" {...field} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="street_number"
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormLabel>
+                        Hausnummer{' '}
+                        {isFieldRequired('street_number') && (
+                          <span className="text-red-500">*</span>
+                        )}
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="Hausnummer eingeben"
+                          {...field}
+                          onChange={(e) => field.onChange(Number(e.target.value))}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="flex gap-2 w-full">
+                <FormField
+                  control={form.control}
+                  name="rooms"
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormLabel>
+                        Zimmer {isFieldRequired('rooms') && <span className="text-red-500">*</span>}
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="Zimmer eingeben"
+                          {...field}
+                          onChange={(e) => field.onChange(Number(e.target.value))}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="beds"
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormLabel>
+                        Betten {isFieldRequired('beds') && <span className="text-red-500">*</span>}
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="Bettplätze eingeben"
+                          {...field}
+                          onChange={(e) => field.onChange(Number(e.target.value))}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <ResponsiveDialog
+                title="Trip aktualisieren"
+                message={`Bist du sicher, dass du die Änderungen speichern möchtest?`}
+                confirmText="Änderungen speichern"
+                onConfirm={form.handleSubmit(onSubmit)}
+              >
+                <Button
+                  type="button"
+                  aria-label="Reise aktualisieren"
+                  className="flex text-xs pl-10 w-full"
+                  disabled={!form.formState.isValid}
+                >
+                  <span className="xs:inline truncate">
+                    {form.formState.isSubmitting ? 'Aktualisiere Reise...' : 'Reise aktualisieren'}
+                  </span>
+                </Button>
+              </ResponsiveDialog>
             </div>
-            <div className="flex flex-col gap-2 w-full">
-              <RequiredLabel htmlFor="ort">Ort</RequiredLabel>
-              <Input
-                type="text"
-                id="ort"
-                name="ort"
-                placeholder="Ort eingeben"
-                autoComplete="off"
-                required
-                value={tripData.ort}
-                onChange={handleInputChange}
-                className="w-full"
-              />
-            </div>
-          </div>
-          <div className="flex gap-2 w-full">
-            <div className="flex flex-col gap-2 w-full">
-              <RequiredLabel htmlFor="street">Straße</RequiredLabel>
-              <Input
-                type="text"
-                id="street"
-                name="street"
-                placeholder="Straße eingeben"
-                autoComplete="off"
-                required
-                value={tripData.street}
-                onChange={handleInputChange}
-                className="w-full"
-              />
-            </div>
-            <div className="flex flex-col gap-2 w-full">
-              <RequiredLabel htmlFor="street_number">Hausnummer</RequiredLabel>
-              <Input
-                type="text"
-                id="street_number"
-                name="street_number"
-                placeholder="Hausnummer eingeben"
-                autoComplete="off"
-                required
-                value={tripData.street_number}
-                onChange={handleInputChange}
-                className="w-full"
-              />
-            </div>
-          </div>
-          <div className="flex gap-2 w-full">
-            <div className="flex flex-col gap-2 w-full">
-              <RequiredLabel htmlFor="rooms">Zimmer</RequiredLabel>
-              <Input
-                type="number"
-                id="rooms"
-                name="rooms"
-                placeholder="Zimmer eingeben"
-                autoComplete="off"
-                required
-                value={tripData.rooms}
-                onChange={handleInputChange}
-                className="w-full"
-              />
-            </div>
-            <div className="flex flex-col gap-2 w-full">
-              <RequiredLabel htmlFor="beds">Betten</RequiredLabel>
-              <Input
-                type="number"
-                id="beds"
-                name="beds"
-                placeholder="Bettplätze eingeben"
-                autoComplete="off"
-                required
-                value={tripData.beds}
-                onChange={handleInputChange}
-                className="w-full"
-              />
-            </div>
-          </div>
-          <div className="flex flex-col gap-2 w-full">
-            <Label htmlFor="down_payment">Anzahlung</Label>
-            <div className="relative">
-              <Input
-                type="number"
-                id="down_payment"
-                name="down_payment"
-                placeholder="Anzahlung eingeben"
-                autoComplete="off"
-                value={tripData.down_payment ?? ''}
-                onChange={handleInputChange}
-                className="w-full pl-6"
-              />
-              <span className="absolute left-2 top-1/2 transform -translate-y-1/2">€</span>
-            </div>
-          </div>
-          <div className="flex flex-col gap-2 w-full">
-            <Label htmlFor="full_payment">Hauptzahlung</Label>
-            <div className="relative">
-              <Input
-                type="number"
-                id="full_payment"
-                name="full_payment"
-                placeholder="Hauptzahlung eingeben"
-                autoComplete="off"
-                value={tripData.full_payment ?? ''}
-                onChange={handleInputChange}
-                className="w-full pl-6"
-              />
-              <span className="absolute left-2 top-1/2 transform -translate-y-1/2">€</span>
-            </div>
-          </div>
-          <div className="flex flex-col gap-2 w-full">
-            <Label htmlFor="final_payment">Abschlussbetrag</Label>
-            <div className="relative">
-              <Input
-                type="number"
-                id="final_payment"
-                name="final_payment"
-                placeholder="Abschlussbetrag eingeben"
-                autoComplete="off"
-                value={tripData.final_payment ?? ''}
-                onChange={handleInputChange}
-                className="w-full pl-6"
-              />
-              <span className="absolute left-2 top-1/2 transform -translate-y-1/2">€</span>
-            </div>
-          </div>
-          <ResponsiveDialog
-            title="Trip aktualisieren"
-            message={`Bist du sicher, dass du die Änderungen speichern möchtest?`}
-            confirmText="Änderungen speichern"
-            onConfirm={handleUpdateTrip}
-          >
-            <SubmitButton
-              aria-label="Reise aktualisieren"
-              pendingText="Aktualisiere Reise..."
-              className="flex text-xs pl-10 w-full"
-              disabled={!isFormValid}
-            >
-              <span className="xs:inline truncate">Reise aktualisieren</span>
-            </SubmitButton>
-          </ResponsiveDialog>
-        </div>
-      </form>
-    </div>
+          </form>
+        </Form>
+      </CardContent>
+    </CardBackPlate>
   )
 }
 

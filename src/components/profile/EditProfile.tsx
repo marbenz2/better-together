@@ -1,48 +1,51 @@
 'use client'
 
-import { Input } from '@/components/forms/input'
-import { Label } from '@/components/forms/label'
-import { SubmitButton } from '@/components/forms/submit-button'
-import { ResponsiveDialog } from '@/components/ResponsiveDialog'
-import { CardTitle } from '@/components/ui/card'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useForm } from 'react-hook-form'
+import * as z from 'zod'
 import { useUserStore } from '@/stores/userStore'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { BackButtonClient } from '@/components/ui/back-button-client'
 import InfoCard from '@/components/ui/info-card'
 import { PublicProfileType } from '@/types/user'
+import { Button } from '@/components/ui/button'
+import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
+import { CardBackPlate, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { ResponsiveDialog } from '@/components/ResponsiveDialog'
 
-type PublicProfileState = Omit<PublicProfileType, 'id' | 'created_at' | 'email'>
+const formSchema = z.object({
+  first_name: z.string().min(1, 'Vorname ist erforderlich'),
+  last_name: z.string().min(1, 'Nachname ist erforderlich'),
+  profile_picture: z.string().optional(),
+})
+
+type FormValues = z.infer<typeof formSchema>
 
 const EditProfile = () => {
   const { publicProfile, updatePublicProfile, getPublicProfile } = useUserStore()
   const router = useRouter()
-  const [userData, setUserData] = useState(publicProfile)
-  const [isFormValid, setIsFormValid] = useState(false)
 
-  const handleInputChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = event.target
-    setUserData((prevData) => {
-      if (!prevData) return null
-      return {
-        ...prevData,
-        [name]: value,
-      }
-    })
-  }, [])
-
-  const validateForm = useCallback(() => {
-    const requiredFields: (keyof PublicProfileState)[] = ['first_name', 'last_name' /* , 'email' */]
-    const isValid =
-      userData && requiredFields.every((field: keyof PublicProfileState) => userData[field] !== '')
-    setIsFormValid(!!isValid)
-    return isValid
-  }, [userData])
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      first_name: publicProfile?.first_name || '',
+      last_name: publicProfile?.last_name || '',
+      profile_picture: publicProfile?.profile_picture || '',
+    },
+  })
 
   useEffect(() => {
-    validateForm()
-  }, [userData, validateForm])
+    if (publicProfile) {
+      form.reset({
+        first_name: publicProfile.first_name,
+        last_name: publicProfile.last_name,
+        profile_picture: publicProfile.profile_picture ?? undefined,
+      })
+    }
+  }, [publicProfile, form])
 
   if (!publicProfile) {
     return (
@@ -54,29 +57,23 @@ const EditProfile = () => {
     )
   }
 
-  const handleUpdateProfile = async () => {
+  const onSubmit = async (data: FormValues) => {
     try {
-      if (userData) {
-        const { ...updatedUserData } = userData
-        await updatePublicProfile(updatedUserData as PublicProfileType)
-        await getPublicProfile(userData.id)
-        router.push('/protected/profile')
-      } else {
-        throw new Error('Benutzerdaten sind nicht verfügbar')
+      const updatedData = {
+        ...data,
+        id: publicProfile.id,
       }
+      await updatePublicProfile(updatedData as PublicProfileType)
+      await getPublicProfile(publicProfile.id)
+      router.push('/protected/profile')
     } catch (error) {
       console.error('Fehler beim Aktualisieren des Profils:', error)
     }
   }
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-  }
-
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
-
     const formData = new FormData()
     formData.append('file', file)
     formData.append('id', publicProfile.id ?? '')
@@ -86,136 +83,131 @@ const EditProfile = () => {
         method: 'POST',
         body: formData,
       })
-
       if (!response.ok) {
         throw new Error('Fehler beim Hochladen des Bildes')
       }
-
       const data = await response.json()
-      setUserData((prevData) =>
-        prevData
-          ? {
-              ...prevData,
-              profile_picture: data.imageUrl,
-            }
-          : null,
-      )
+      form.setValue('profile_picture', data.imageUrl)
     } catch (error) {
       console.error('Fehler beim Hochladen des Bildes:', error)
     }
   }
 
-  if (!publicProfile && !userData) {
-    return <InfoCard title="Test" description="test" variant="warning" />
+  const isFieldRequired = (fieldName: keyof FormValues) => {
+    const fieldSchema = formSchema.shape[fieldName]
+    return (
+      (fieldSchema instanceof z.ZodString || fieldSchema instanceof z.ZodNumber) &&
+      !fieldSchema.isOptional()
+    )
   }
 
   return (
-    <div className="flex flex-col gap-4 w-full max-w-7xl mx-auto">
-      <BackButtonClient className="static" />
-      <form className="flex flex-col gap-4 w-full items-center" onSubmit={handleSubmit}>
-        <div className="flex flex-col gap-4 w-full max-w-lg">
-          <Label>
-            <CardTitle className="text-xl">Profil bearbeiten</CardTitle>
-          </Label>
-          <div className="flex flex-col gap-2 w-full">
-            <Label htmlFor="image">Profilbild</Label>
-            <Input
-              type="file"
-              id="image"
-              name="image"
-              accept="image/*"
-              onChange={handleImageUpload}
-              className="w-full"
-            />
-            <div className="relative flex w-full max-w-[350px] h-[350px] p-4 rounded-lg border self-center">
-              {userData?.profile_picture ? (
-                <div className="relative w-full h-full">
-                  <Image
-                    src={userData?.profile_picture}
-                    alt="Vorschau des hochgeladenen Bildes"
-                    fill
-                    sizes="(max-width: 350px) (max-height: 450px)"
-                    className="object-cover"
-                    priority
-                  />
-                </div>
-              ) : (
-                <div className="relative flex w-full h-full items-center justify-center overflow-hidden">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="100%"
-                    height="100%"
-                    viewBox="0 0 100 100"
-                    preserveAspectRatio="none"
-                  >
-                    <polygon points="0,0 100,0 0,100" fill="rgba(255,255,255,0.2)" />
-                    <polygon points="100,0 100,100 0,100" fill="rgba(255,255,255,0.3)" />
-                  </svg>
-                </div>
-              )}
-            </div>
-          </div>
-          <div className="flex gap-2 w-full">
-            <div className="flex flex-col gap-2 w-full">
-              <Label htmlFor="first_name">Vorname</Label>
-              <Input
-                type="text"
-                id="first_name"
-                name="first_name"
-                placeholder="Vorname eingeben"
-                autoComplete="off"
-                value={userData?.first_name || ''}
-                onChange={handleInputChange}
-                className="w-full"
-              />
-            </div>
-            <div className="flex flex-col gap-2 w-full">
-              <Label htmlFor="last_name">Nachname</Label>
-              <Input
-                type="text"
-                id="last_name"
-                name="last_name"
-                placeholder="Nachname eingeben"
-                autoComplete="off"
-                value={userData?.last_name || ''}
-                onChange={handleInputChange}
-                className="w-full"
-              />
-            </div>
-          </div>
-          {/* <div className="flex gap-2 w-full">
-            <div className="flex flex-col gap-2 w-full">
-              <Label htmlFor="email">E-Mail</Label>
-              <Input
-                type="email"
-                id="email"
-                name="email"
-                placeholder="E-Mail eingeben"
-                autoComplete="off"
-                value={userData?.email || ''}
-                onChange={handleInputChange}
-                className="w-full"
-              />
-            </div>
-          </div> */}
-          <ResponsiveDialog
-            title="Profil aktualisieren"
-            message={`Bist du sicher, dass du die Änderungen speichern möchtest?`}
-            confirmText="Änderungen speichern"
-            onConfirm={handleUpdateProfile}
+    <CardBackPlate className="flex flex-col max-w-7xl w-full gap-8">
+      <CardHeader>
+        <BackButtonClient className="static" />
+        <CardTitle className="text-xl">Profil bearbeiten</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="flex flex-col gap-4 w-full items-center"
           >
-            <SubmitButton
-              aria-label="Profil aktualisieren"
-              pendingText="Aktualisiere Profil..."
-              className="flex text-xs pl-10 w-full"
-              disabled={!isFormValid}
-            >
-              <span className="xs:inline truncate">Profil aktualisieren</span>
-            </SubmitButton>
-          </ResponsiveDialog>
-        </div>
-      </form>
-    </div>
+            <div className="flex flex-col gap-4 w-full max-w-lg">
+              <div className="flex flex-col gap-2 w-full">
+                <FormLabel htmlFor="image">Profilbild</FormLabel>
+                <Input
+                  type="file"
+                  id="image"
+                  name="image"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="w-full"
+                />
+                <div className="relative flex w-full max-w-[350px] h-[350px] p-4 rounded-lg border self-center">
+                  {form.watch('profile_picture') ? (
+                    <div className="relative w-full h-full">
+                      <Image
+                        src={form.watch('profile_picture') ?? ''}
+                        alt="Vorschau des hochgeladenen Bildes"
+                        fill
+                        sizes="(max-width: 350px) (max-height: 450px)"
+                        className="object-cover"
+                        priority
+                      />
+                    </div>
+                  ) : (
+                    <div className="relative flex w-full h-full items-center justify-center overflow-hidden">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="100%"
+                        height="100%"
+                        viewBox="0 0 100 100"
+                        preserveAspectRatio="none"
+                      >
+                        <polygon points="0,0 100,0 0,100" fill="rgba(255,255,255,0.2)" />
+                        <polygon points="100,0 100,100 0,100" fill="rgba(255,255,255,0.3)" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="flex flex-col md:flex-row gap-2 w-full">
+                <FormField
+                  control={form.control}
+                  name="first_name"
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormLabel>
+                        Vorname{' '}
+                        {isFieldRequired('first_name') && <span className="text-red-500">*</span>}
+                      </FormLabel>
+                      <FormControl>
+                        <Input placeholder="Vorname eingeben" {...field} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="last_name"
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormLabel>
+                        Nachname{' '}
+                        {isFieldRequired('last_name') && <span className="text-red-500">*</span>}
+                      </FormLabel>
+                      <FormControl>
+                        <Input placeholder="Nachname eingeben" {...field} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <ResponsiveDialog
+                title="Profil aktualisieren"
+                message={`Bist du sicher, dass du die Änderungen speichern möchtest?`}
+                confirmText="Änderungen speichern"
+                onConfirm={form.handleSubmit(onSubmit)}
+              >
+                <Button
+                  type="button"
+                  aria-label="Profil aktualisieren"
+                  className="flex text-xs pl-10 w-full"
+                  disabled={!form.formState.isValid}
+                >
+                  <span className="xs:inline truncate">
+                    {form.formState.isSubmitting
+                      ? 'Aktualisiere Profil...'
+                      : 'Profil aktualisieren'}
+                  </span>
+                </Button>
+              </ResponsiveDialog>
+            </div>
+          </form>
+        </Form>
+      </CardContent>
+    </CardBackPlate>
   )
 }
 
