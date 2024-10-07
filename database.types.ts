@@ -87,25 +87,25 @@ export type Database = {
         Row: {
           created_at: string
           email: string | null
-          first_name: string | null
+          first_name: string
           id: string
-          last_name: string | null
+          last_name: string
           profile_picture: string | null
         }
         Insert: {
           created_at?: string
           email?: string | null
-          first_name?: string | null
+          first_name: string
           id: string
-          last_name?: string | null
+          last_name: string
           profile_picture?: string | null
         }
         Update: {
           created_at?: string
           email?: string | null
-          first_name?: string | null
+          first_name?: string
           id?: string
-          last_name?: string | null
+          last_name?: string
           profile_picture?: string | null
         }
         Relationships: [
@@ -121,12 +121,12 @@ export type Database = {
       trip_members: {
         Row: {
           created_at: string
-          down_payment: boolean | null
-          down_payment_paypal_id: string | null
-          final_payment: boolean | null
-          final_payment_paypal_id: string | null
-          full_payment: boolean | null
-          full_payment_paypal_id: string | null
+          down_payment: boolean
+          down_payment_amount: number | null
+          final_payment: boolean
+          final_payment_amount: number | null
+          full_payment: boolean
+          full_payment_amount: number | null
           id: string
           role: Database["public"]["Enums"]["enum_trip_members_role"]
           subscribed_at: string
@@ -135,12 +135,12 @@ export type Database = {
         }
         Insert: {
           created_at?: string
-          down_payment?: boolean | null
-          down_payment_paypal_id?: string | null
-          final_payment?: boolean | null
-          final_payment_paypal_id?: string | null
-          full_payment?: boolean | null
-          full_payment_paypal_id?: string | null
+          down_payment?: boolean
+          down_payment_amount?: number | null
+          final_payment?: boolean
+          final_payment_amount?: number | null
+          full_payment?: boolean
+          full_payment_amount?: number | null
           id?: string
           role?: Database["public"]["Enums"]["enum_trip_members_role"]
           subscribed_at?: string
@@ -149,12 +149,12 @@ export type Database = {
         }
         Update: {
           created_at?: string
-          down_payment?: boolean | null
-          down_payment_paypal_id?: string | null
-          final_payment?: boolean | null
-          final_payment_paypal_id?: string | null
-          full_payment?: boolean | null
-          full_payment_paypal_id?: string | null
+          down_payment?: boolean
+          down_payment_amount?: number | null
+          final_payment?: boolean
+          final_payment_amount?: number | null
+          full_payment?: boolean
+          full_payment_amount?: number | null
           id?: string
           role?: Database["public"]["Enums"]["enum_trip_members_role"]
           subscribed_at?: string
@@ -187,9 +187,6 @@ export type Database = {
           created_by: string
           date_from: string
           date_to: string
-          down_payment: number | null
-          final_payment: number | null
-          full_payment: number | null
           group_id: string
           id: string
           image: string
@@ -212,9 +209,6 @@ export type Database = {
           created_by: string
           date_from: string
           date_to: string
-          down_payment?: number | null
-          final_payment?: number | null
-          full_payment?: number | null
           group_id: string
           id?: string
           image: string
@@ -237,9 +231,6 @@ export type Database = {
           created_by?: string
           date_from?: string
           date_to?: string
-          down_payment?: number | null
-          final_payment?: number | null
-          full_payment?: number | null
           group_id?: string
           id?: string
           image?: string
