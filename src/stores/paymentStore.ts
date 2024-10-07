@@ -1,17 +1,11 @@
 import { createClient } from '@/utils/supabase/client'
 import { create } from 'zustand'
-import { getPaymentDetails, getPayments, getPaymentStatus } from '@/utils/supabase/queries'
-import { PaymentDetailsType, PaymentStatusType, PaymentsType } from '@/types/payment'
+import { getPaymentStatus } from '@/utils/supabase/queries'
+import { PaymentStatusType } from '@/types/payment'
 
 interface PaymentState {
   paymentStatus: PaymentStatusType | null
   getPaymentStatus: (userId: string, tripId: string) => Promise<void>
-
-  paymentDetails: PaymentDetailsType[] | null
-  getPaymentDetails: (userId: string) => Promise<void>
-
-  payments: PaymentsType[] | null
-  getPayments: (groupId: string) => Promise<void>
 }
 
 export const usePaymentStore = create<PaymentState>((set) => {
@@ -26,26 +20,6 @@ export const usePaymentStore = create<PaymentState>((set) => {
         return
       }
       set({ paymentStatus: data })
-    },
-
-    paymentDetails: [],
-    getPaymentDetails: async (userId: string) => {
-      const { data, error } = await getPaymentDetails(supabase, userId)
-      if (error) {
-        console.error('Fehler beim Abrufen der Zahlungsdetails:', error)
-        return
-      }
-      set({ paymentDetails: data || [] })
-    },
-
-    payments: [],
-    getPayments: async (groupId: string) => {
-      const { data, error } = await getPayments(supabase, groupId)
-      if (error) {
-        console.error('Fehler beim Abrufen der Zahlungen:', error)
-        return
-      }
-      set({ payments: data })
     },
   }
 })
