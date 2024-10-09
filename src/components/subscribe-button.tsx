@@ -5,7 +5,7 @@ import { Button } from './ui/button'
 import { useTripStore } from '@/stores/tripStores'
 import { useUserStore } from '@/stores/userStore'
 import { usePaymentStore } from '@/stores/paymentStore'
-import { addAdditionalMembers, addSubscription, removeSubscription } from '@/utils/supabase/queries'
+import { addSubscription, removeSubscription } from '@/utils/supabase/queries'
 import { showNotification } from '@/lib/utils'
 import Spinner from './ui/Spinner'
 import { ResponsiveDialog } from './ResponsiveDialog'
@@ -42,6 +42,7 @@ export function TripSubscription() {
       ])
       await getTripMembers(trip.id)
       await getAvailableSpots(trip.id)
+      setAdditionalMembers([])
       showNotification(
         'Anmeldung erfolgt',
         `Du hast dich erfolgreich für die Reise angemeldet.`,
@@ -65,6 +66,7 @@ export function TripSubscription() {
       )
       getTripMembers(trip.id)
       getAvailableSpots(trip.id)
+      setAdditionalMembers([])
       showNotification(
         'Abmeldung erfolgt',
         'Du hast dich erfolgreich von der Reise abgemeldet',
