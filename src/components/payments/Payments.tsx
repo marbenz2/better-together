@@ -1,224 +1,224 @@
-/* 'use client'
+'use client'
 
-import { useMemo, useCallback } from 'react'
+import { useGroupStore } from '@/stores/groupStores'
+import { usePaymentStore } from '@/stores/paymentStore'
+import { useUserStore } from '@/stores/userStore'
 import {
   Card,
   CardBackPlate,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import Paypal from './Paypal'
-import { CheckCircleIcon } from 'lucide-react'
-import { Separator } from '@/components/ui/separator'
-import Link from 'next/link'
-import { usePaymentStore } from '@/stores/paymentStore'
-import { Trips } from '@/types/supabase'
-import { useUserStore } from '@/stores/userStore'
-import { useGroupStore } from '@/stores/groupStores'
-import Spinner from '@/components/ui/Spinner'
+import {
+  ArrowLeftRightIcon,
+  CheckCircleIcon,
+  CoinsIcon,
+  CopyIcon,
+  HourglassIcon,
+  QrCode,
+} from 'lucide-react'
 import InfoCard from '@/components/ui/info-card'
-
-type PaymentStatus = {
-  down_payment: boolean
-  full_payment: boolean
-  final_payment: boolean
-}
-
-type TransactionsId = {
-  [key: string]: string
-}
+import { Trips } from '@/types/supabase'
+import { User } from 'payload'
+import PaymentQr from './PaymentQr'
+import { Separator } from '@/components/ui/separator'
+import { ResponsiveDialog } from '@/components/ResponsiveDialog'
+import { Button } from '@/components/ui/button'
+import { copyToClipboard, showNotification } from '@/lib/utils'
 
 export default function Payments() {
   const { groupId } = useGroupStore()
-  const { paymentDetails, getPaymentDetails } = usePaymentStore()
-  const { user, subscribedTrips } = useUserStore()
+  const { subscribedTrips } = useUserStore()
+  const { userPayments } = usePaymentStore()
 
-  const filteredTrips = useMemo(
-    () => subscribedTrips?.filter((trip) => trip.trips.group_id === groupId),
-    [subscribedTrips, groupId],
+  const filteredTrips = subscribedTrips?.filter((trip) => trip.trips.group_id === groupId)
+  const filteredPayments = userPayments?.filter((payment) =>
+    filteredTrips?.some((trip) => trip.trips.id === payment.trip_id),
   )
 
-  const handlePaymentSuccess = useCallback(() => {
-    getPaymentDetails(user.id)
-  }, [getPaymentDetails, user.id])
-
-  if (!paymentDetails) return <Spinner />
-
-  const PaymentSection = ({
-    title,
-    paymentType,
-    paymentAmount,
-    paymentStatus,
-    userId,
-    tripId,
-    transactionsId,
-  }: {
-    title: string
-    paymentType: string
-    paymentAmount: number | null
-    paymentStatus: boolean
-    userId: string
-    tripId: string
-    transactionsId: TransactionsId
-  }) => {
-    if (paymentStatus === false && paymentAmount) {
-      return (
-        <div className="flex flex-col gap-4 w-full md:max-w-md">
-          <div className="flex flex-col">
-            <CardDescription className="text-balance text-lg">
-              {title}: <span className="font-bold">{paymentAmount}€</span>
-            </CardDescription>
-          </div>
-          <Paypal
-            price={paymentAmount}
-            user_id={userId}
-            trip_id={tripId}
-            payment_type={paymentType}
-            onPaymentSuccess={handlePaymentSuccess}
-          />
-        </div>
-      )
-    } else if (paymentStatus === true) {
-      return (
-        <div className="flex flex-col gap-4 w-full items-center md:max-w-md">
-          <div className="flex flex-col text-center">
-            <CardTitle>{title}:</CardTitle>
-            <CardDescription>{paymentAmount}€</CardDescription>
-          </div>
-          <div className="relative flex flex-col w-full h-full gap-4 items-center justify-center text-center">
-            <CheckCircleIcon className="w-12 h-12 text-green-400" />
-            <p>Bereits bezahlt</p>
-            <CardDescription>
-              Zahlungs ID: {transactionsId[`${paymentType}_paypal_id`]}
-            </CardDescription>
-          </div>
-        </div>
-      )
-    }
-    return null
-  }
-
-  const PaymentCard = ({
-    trip,
-    paymentStatus,
-    userId,
-    transactionsId,
-  }: {
-    trip: Trips
-    paymentStatus: PaymentStatus
-    userId: string
-    transactionsId: TransactionsId
-  }) => {
+  if (
+    !filteredTrips ||
+    filteredTrips.length === 0 ||
+    !filteredPayments ||
+    filteredPayments.length === 0
+  )
     return (
-      <Card key={trip.id}>
-        <CardHeader className="w-full">
-          <CardTitle>{trip.name}</CardTitle>
-          <CardDescription className="text-balance">
-            {formatDate(trip.date_from)} - {formatDate(trip.date_to)}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col md:flex-row gap-8 md:gap-4 xl:gap-8 w-full py-8">
-          {!trip.down_payment && !trip.full_payment && !trip.final_payment && (
-            <InfoCard description="Bisher keine Zahlungen eingetragen." />
-          )}
-          {trip.down_payment && (
-            <PaymentSection
-              title="Vorauszahlung"
-              paymentType="down_payment"
-              paymentAmount={trip.down_payment}
-              paymentStatus={paymentStatus.down_payment}
-              userId={userId}
-              tripId={trip.id}
-              transactionsId={transactionsId}
-            />
-          )}
-          {trip.full_payment && (
-            <>
-              <Separator className="md:hidden block" />
-              <PaymentSection
-                title="Hauptzahlung"
-                paymentType="full_payment"
-                paymentAmount={trip.full_payment}
-                paymentStatus={paymentStatus.full_payment}
-                userId={userId}
-                tripId={trip.id}
-                transactionsId={transactionsId}
-              />
-            </>
-          )}
-
-          {trip.final_payment && (
-            <>
-              <Separator className="md:hidden block" />
-              <PaymentSection
-                title="Schlusszahlung"
-                paymentType="final_payment"
-                paymentAmount={trip.final_payment}
-                paymentStatus={paymentStatus.final_payment}
-                userId={userId}
-                tripId={trip.id}
-                transactionsId={transactionsId}
-              />
-            </>
-          )}
-        </CardContent>
-        <CardFooter className="justify-center">
-          <CardDescription>
-            Falls es Fragen zu einer oder mehrer Zahlungen gibt,{' '}
-            <Link href={generateEmailLink(trip, user)} className="underline decoration-dashed">
-              kontaktiere
-            </Link>{' '}
-            uns.
-          </CardDescription>
-        </CardFooter>
-      </Card>
+      <InfoCard
+        title="Keine anstehende Reisen gefunden"
+        description="Du bist zu keiner Reise angemeldet"
+        variant="info"
+      />
     )
-  }
 
   return (
-    <CardBackPlate className="w-full max-w-7xl">
+    <CardBackPlate className="flex flex-col max-w-7xl w-full">
       <CardHeader>
-        <CardTitle>Bezahlung</CardTitle>
-        <CardDescription>Hier werden alle ausstehenden Zahlungen angezeigt</CardDescription>
+        <CardTitle>Zahlungen</CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-col gap-4">
-        {paymentDetails && filteredTrips && filteredTrips.length > 0 ? (
-          filteredTrips.map((trip) => {
-            const paymentStatus = paymentDetails.find((sub) => sub.trip_id === trip.trips.id)
-            const transactionsId = paymentDetails.reduce((acc, sub) => {
-              if (sub.trip_id === trip.trips.id) {
-                acc['down_payment_paypal_id'] = sub.down_payment_paypal_id ?? ''
-                acc['full_payment_paypal_id'] = sub.full_payment_paypal_id ?? ''
-                acc['final_payment_paypal_id'] = sub.final_payment_paypal_id ?? ''
-              }
-              return acc
-            }, {} as TransactionsId)
-            if (paymentStatus) {
-              return (
-                <CardBackPlate key={trip.trips.id}>
-                  <PaymentCard
-                    trip={trip.trips}
-                    paymentStatus={{
-                      down_payment: !!paymentStatus.down_payment,
-                      full_payment: !!paymentStatus.full_payment,
-                      final_payment: !!paymentStatus.final_payment,
-                    }}
-                    userId={user.id}
-                    transactionsId={transactionsId}
-                  />
-                </CardBackPlate>
-              )
-            }
-            return null
-          })
-        ) : (
-          <div className="flex flex-col gap-4 items-center w-full md:max-w-md">
-            <CardTitle>Keine Zahlungen vorhanden.</CardTitle>
-          </div>
-        )}
+      <CardContent className="flex flex-col gap-12">
+        {filteredPayments &&
+          filteredPayments.map((payment) => (
+            <div key={payment.trip_id} className="flex flex-col gap-4">
+              <div className="flex flex-col gap-1">
+                <CardTitle>
+                  {filteredTrips.find((trip) => trip.trips.id === payment.trip_id)?.trips.name ||
+                    'Unbekannte Reise'}
+                </CardTitle>
+                <CardDescription>
+                  {new Date(
+                    filteredTrips.find((trip) => trip.trips.id === payment.trip_id)?.trips
+                      .date_from || 'Unbekanntes Datum',
+                  ).toLocaleDateString('de-DE', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                  })}{' '}
+                  -{' '}
+                  {new Date(
+                    filteredTrips.find((trip) => trip.trips.id === payment.trip_id)?.trips
+                      .date_to || 'Unbekanntes Datum',
+                  ).toLocaleDateString('de-DE', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                  })}
+                </CardDescription>
+              </div>
+              <div className="flex flex-col gap-4">
+                <Card className="w-full">
+                  <CardHeader>
+                    <CardTitle>Anzahlung:</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {!payment.down_payment && payment.down_payment_amount !== null && (
+                      <div className="flex flex-col justify-center items-center gap-4">
+                        <CoinsIcon className="w-12 h-12 text-yellow-400" />
+                        <CardDescription>
+                          Ausstehende Zahlung:{' '}
+                          {Intl.NumberFormat('de-DE', {
+                            style: 'currency',
+                            currency: 'EUR',
+                          }).format(payment.down_payment_amount)}
+                        </CardDescription>
+                        <PaymentMethods
+                          amount={payment.down_payment_amount}
+                          trip={
+                            filteredTrips.find((trip) => trip.trips.id === payment.trip_id)?.trips
+                          }
+                        />
+                      </div>
+                    )}
+                    {!payment.down_payment && payment.down_payment_amount === null && (
+                      <div className="flex flex-col justify-center items-center gap-4">
+                        <HourglassIcon className="w-12 h-12 text-sky-400" />
+                        <CardDescription>Noch keine Zahlung eingetragen.</CardDescription>
+                      </div>
+                    )}
+                    {payment.down_payment && payment.down_payment_amount !== null && (
+                      <div className="flex flex-col justify-center items-center gap-4">
+                        <CheckCircleIcon className="w-12 h-12 text-green-400" />
+                        <CardDescription>
+                          {Intl.NumberFormat('de-DE', {
+                            style: 'currency',
+                            currency: 'EUR',
+                          }).format(payment.down_payment_amount)}{' '}
+                          bereits bezahlt
+                        </CardDescription>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+                <Card className="w-full">
+                  <CardHeader>
+                    <CardTitle>Hauptzahlung:</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {!payment.full_payment && payment.full_payment_amount !== null && (
+                      <div className="flex flex-col justify-center items-center gap-4">
+                        <CoinsIcon className="w-12 h-12 text-yellow-400" />
+                        <CardDescription>
+                          Ausstehende Zahlung:{' '}
+                          {Intl.NumberFormat('de-DE', {
+                            style: 'currency',
+                            currency: 'EUR',
+                          }).format(payment.full_payment_amount)}
+                        </CardDescription>
+                        <PaymentMethods
+                          amount={payment.full_payment_amount}
+                          trip={
+                            filteredTrips.find((trip) => trip.trips.id === payment.trip_id)?.trips
+                          }
+                        />
+                      </div>
+                    )}
+                    {!payment.full_payment && payment.full_payment_amount === null && (
+                      <div className="flex flex-col justify-center items-center gap-4">
+                        <HourglassIcon className="w-12 h-12 text-sky-400" />
+                        <CardDescription>Noch keine Zahlung eingetragen.</CardDescription>
+                      </div>
+                    )}
+                    {payment.full_payment && payment.full_payment_amount !== null && (
+                      <div className="flex flex-col justify-center items-center gap-4">
+                        <CheckCircleIcon className="w-12 h-12 text-green-400" />
+                        <CardDescription>
+                          {Intl.NumberFormat('de-DE', {
+                            style: 'currency',
+                            currency: 'EUR',
+                          }).format(payment.full_payment_amount)}{' '}
+                          bereits bezahlt
+                        </CardDescription>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+                <Card className="w-full">
+                  <CardHeader>
+                    <CardTitle>Endzahlung:</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {!payment.final_payment && payment.final_payment_amount !== null && (
+                      <div className="flex flex-col justify-center items-center gap-4">
+                        <CoinsIcon className="w-12 h-12 text-yellow-400" />
+                        <CardDescription>
+                          Ausstehende Zahlung:{' '}
+                          {Intl.NumberFormat('de-DE', {
+                            style: 'currency',
+                            currency: 'EUR',
+                          }).format(payment.final_payment_amount)}
+                        </CardDescription>
+                        <PaymentMethods
+                          amount={payment.final_payment_amount}
+                          trip={
+                            filteredTrips.find((trip) => trip.trips.id === payment.trip_id)?.trips
+                          }
+                        />
+                      </div>
+                    )}
+                    {!payment.final_payment && payment.final_payment_amount === null && (
+                      <div className="flex flex-col justify-center items-center gap-4">
+                        <HourglassIcon className="w-12 h-12 text-sky-400" />
+                        <CardDescription>Noch keine Zahlung eingetragen.</CardDescription>
+                      </div>
+                    )}
+                    {payment.final_payment && payment.final_payment_amount !== null && (
+                      <div className="flex flex-col justify-center items-center gap-4">
+                        <CheckCircleIcon className="w-12 h-12 text-green-400" />
+                        <CardDescription>
+                          {Intl.NumberFormat('de-DE', {
+                            style: 'currency',
+                            currency: 'EUR',
+                          }).format(payment.final_payment_amount)}{' '}
+                          bereits bezahlt
+                        </CardDescription>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          ))}
       </CardContent>
     </CardBackPlate>
   )
@@ -233,7 +233,7 @@ function formatDate(date: string): string {
   })
 }
 
-function generateEmailLink(trip: Trips, user: any): string {
+function generateEmailLink(trip: Trips, user: User) {
   return `mailto:benzinger.maxi@gmail.com?subject=Zahlungsanfrage%20${
     user?.user_metadata.first_name
   }%20${user?.user_metadata.last_name}?body=Resiedaten:%20${
@@ -242,4 +242,106 @@ function generateEmailLink(trip: Trips, user: any): string {
     user?.user_metadata.first_name
   }%20${user?.user_metadata.last_name}%0AE-Mail:%20${user?.email}%0A%0AFrage:%20`
 }
- */
+
+function PaymentMethods({ trip, amount }: { trip: Trips | undefined; amount: number }) {
+  if (!trip) return null
+
+  const formatIBAN = (iban: string) => {
+    return iban.replace(/(.{4})/g, '$1 ').trim()
+  }
+
+  const handleCopyClick = (iban: string) => {
+    if (!iban || iban === '') {
+      showNotification(
+        'Fehler beim Kopieren des IBAN',
+        'IBAN ist leer. Bitte gib einen gültigen IBAN ein.',
+        'destructive',
+      )
+    }
+    copyToClipboard(iban)
+    showNotification('IBAN kopiert', `"${iban}" wurde in die Zwischenablage kopiert.`, 'success')
+  }
+
+  return (
+    <>
+      <Separator className="w-full my-4" orientation="horizontal" />
+      <div className="flex flex-col lg:flex-row gap-4 mt-4 w-full justify-between">
+        {trip.iban && trip.recipient && (
+          <div className="flex flex-col gap-2 w-full lg:w-fit items-center lg:items-start">
+            <p>Bezahlen per Überweisung:</p>
+            <CardDescription>Empfänger: {trip.recipient}</CardDescription>
+            <CardDescription className="flex items-center gap-4">
+              IBAN: {formatIBAN(trip.iban)}{' '}
+              <CopyIcon
+                className="w-4 h-4 cursor-pointer"
+                onClick={() => handleCopyClick(trip.iban || '')}
+              />
+            </CardDescription>
+            <CardDescription>Zahlungszweck: {trip.name}</CardDescription>
+            <CardDescription>
+              Betrag:{' '}
+              {Intl.NumberFormat('de-DE', {
+                style: 'currency',
+                currency: 'EUR',
+              }).format(amount)}
+            </CardDescription>
+            {/* <PaymentQr
+              type="iban"
+              iban={trip.iban}
+              recipient={trip.recipient}
+              amount={amount}
+              purpose={trip.name}
+            /> */}
+          </div>
+        )}
+        {trip?.iban && trip?.paypal && (
+          <div className="flex flex-col items-center justify-center py-8 lg:py-0">
+            <ArrowLeftRightIcon className="w-8 h-8 lg:w-16 lg:h-16 -rotate-90 lg:rotate-0" />
+          </div>
+        )}
+        {trip?.paypal && (
+          <div className="flex flex-col gap-2 w-full lg:w-fit items-center lg:items-start">
+            <p>Bezahlen per PayPal:</p>
+            <CardDescription>Empfänger: {trip.paypal}</CardDescription>
+            <CardDescription>Zahlungszweck: {trip.name}</CardDescription>
+            <CardDescription>
+              Betrag:{' '}
+              {Intl.NumberFormat('de-DE', {
+                style: 'currency',
+                currency: 'EUR',
+              }).format(amount)}
+            </CardDescription>
+            <div className="mt-4">
+              <ResponsiveDialog
+                title="QR-Code"
+                confirmText=""
+                onConfirm={() => {}}
+                message="Scanen Sie den QR-Code, um die Zahlung zu erstellen."
+                messageComponent={
+                  <PaymentQr
+                    type="paypal"
+                    email={trip.paypal}
+                    amount={amount}
+                    purpose={trip.name}
+                  />
+                }
+              >
+                <Button className="w-full flex items-center justify-center gap-4">
+                  <QrCode className="w-4 h-4" />
+                  <span className="truncate xs:inline">QR-Code</span>
+                </Button>
+              </ResponsiveDialog>
+            </div>
+          </div>
+        )}
+        {!trip?.iban && !trip?.paypal && (
+          <div className="flex w-full items-center justify-center">
+            <CardDescription>
+              Noch keine Zahlungsmethode eingetragen. Bitte wende dich an den Reiseleiter.
+            </CardDescription>
+          </div>
+        )}
+      </div>
+    </>
+  )
+}
