@@ -63,6 +63,16 @@ export default function Profile() {
                     </TableCell>
                   </TableRow>
                   <TableRow>
+                    <TableCell>Geburtstag</TableCell>
+                    <TableCell>
+                      {new Date(publicProfile.birthday).toLocaleDateString('de-DE', {
+                        day: '2-digit',
+                        month: 'long',
+                        year: 'numeric',
+                      })}
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
                     <TableCell>E-Mail</TableCell>
                     <TableCell>{publicProfile.email}</TableCell>
                   </TableRow>
