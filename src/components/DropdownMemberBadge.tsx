@@ -28,12 +28,13 @@ export default function DropdownMemberBadge({
   role,
   ...props
 }: DropdownBadgeProps) {
-  const { paymentStatus } = usePaymentStore()
+  const { userPayments } = usePaymentStore()
   const { removeUserFromGroup, makeUserAdmin, removeUserAdmin, groupMembers } = useGroupStore()
   const [isOpen, setIsOpen] = React.useState(false)
 
-  const hasPaid =
-    paymentStatus?.down_payment || paymentStatus?.full_payment || paymentStatus?.final_payment
+  const hasPaid = userPayments?.some(
+    (payment) => payment.down_payment || payment.full_payment || payment.final_payment,
+  )
 
   const isChosenUserAdmin =
     groupMembers.find((member) => member.user_id === userId)?.role === 'admin'
@@ -78,7 +79,6 @@ export default function DropdownMemberBadge({
     if (isChosenUserAdmin) {
       showNotification('Info', 'Der Benutzer ist ein Admin', 'info')
     } else {
-      // hier muss geprüft werden ob der User schon für trips bezahlt hat, wenn ja, kann er nicht entfernt weden
       if (hasPaid) {
         showNotification('Info', 'Der Benutzer hat bereits für Reisen bezahlt', 'info')
       } else {
