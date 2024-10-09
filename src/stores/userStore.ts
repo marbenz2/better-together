@@ -8,7 +8,6 @@ import {
 import { createClient } from '@/utils/supabase/client'
 import { User } from '@supabase/supabase-js'
 import { PublicProfileType, SubscribedTripsType } from '@/types/user'
-import { NotificationMessage } from '@/types/notification'
 import { showNotification } from '@/lib/utils'
 
 interface UserState {
