@@ -20,11 +20,31 @@ export default function Signup({ searchParams }: { searchParams: Message }) {
     const confirmPassword = formData.get('confirmPassword')?.toString()
     const first_name = formData.get('first_name')?.toString()
     const last_name = formData.get('last_name')?.toString()
+    const birthdayInput = formData.get('birthday')?.toString()
     const group_link = formData.get('group_link')?.toString()
     const supabase = createClient()
     const origin = headers().get('origin')
 
-    if (!email || !password || !confirmPassword || !first_name || !last_name) {
+    let birthday: string | undefined
+
+    if (birthdayInput) {
+      const [day, month, year] = birthdayInput.split('.')
+      if (day && month && year) {
+        const parsedDate = new Date(`${year}-${month}-${day}`)
+        if (
+          isNaN(parsedDate.getTime()) ||
+          parsedDate > new Date() ||
+          parsedDate < new Date('1900-01-01')
+        ) {
+          return encodedRedirect('error', '/signup', 'Ungültiges Geburtsdatum')
+        }
+        birthday = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+      } else {
+        return encodedRedirect('error', '/signup', 'Ungültiges Geburtsdatumsformat')
+      }
+    }
+
+    if (!email || !password || !confirmPassword || !first_name || !last_name || !birthday) {
       encodedRedirect('error', '/signup', 'Alle Felder sind erforderlich')
       return
     }
@@ -38,7 +58,7 @@ export default function Signup({ searchParams }: { searchParams: Message }) {
       email,
       password,
       options: {
-        data: { first_name, last_name, group_link },
+        data: { first_name, last_name, group_link, birthday },
         emailRedirectTo: `${origin}/auth/callback`,
       },
     })
@@ -89,6 +109,17 @@ export default function Signup({ searchParams }: { searchParams: Message }) {
                 <Label htmlFor="last_name">Nachname</Label>
                 <Input name="last_name" placeholder="Doe" autoComplete="family-name" required />
               </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="birthday">Geburtstag</Label>
+              <Input
+                name="birthday"
+                type="text"
+                placeholder="TT.MM.JJJJ"
+                pattern="\d{2}\.\d{2}\.\d{4}"
+                required
+                title="Bitte geben Sie das Datum im Format TT.MM.JJJJ ein"
+              />
             </div>
             <div className="flex flex-col gap-2">
               <Label htmlFor="password">Passwort</Label>
