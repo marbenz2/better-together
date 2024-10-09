@@ -28,8 +28,6 @@ export async function POST(request: NextRequest) {
 
     const { data: urlData } = supabase.storage.from('better-together-media').getPublicUrl(filePath)
 
-    console.log('Bild-URL:', urlData.publicUrl)
-
     return NextResponse.json({ imageUrl: urlData.publicUrl })
   } catch (error) {
     console.error('Fehler beim Hochladen des Bildes:', error)
