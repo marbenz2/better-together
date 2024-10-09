@@ -3,12 +3,20 @@ import { create } from 'zustand'
 import {
   createTrip,
   deleteTrip,
+  getAdditionalMembers,
+  getAvailableSpots,
   getGroupTrips,
   getTrip,
   getTripMembers,
   updateTrip,
 } from '@/utils/supabase/queries'
-import { GroupTripsType, GroupTripType, TripMembersType } from '@/types/trips'
+import {
+  AdditionalMembersType,
+  AvailableSpotsType,
+  GroupTripsType,
+  GroupTripType,
+  TripMembersType,
+} from '@/types/trips'
 import { showNotification } from '@/lib/utils'
 
 interface TripState {
@@ -23,6 +31,12 @@ interface TripState {
   deleteTrip: (tripId: string) => Promise<void>
   tripMembers: TripMembersType
   getTripMembers: (tripId: string) => Promise<void>
+  additionalMembers: AdditionalMembersType
+  setAdditionalMembers: (additionalMembers: AdditionalMembersType) => void
+  getAdditionalMembers: (tripId: string, userId: string) => Promise<void>
+  availableSpots: number
+  setAvailableSpots: (availableSpots: number) => void
+  getAvailableSpots: (tripId: string) => Promise<void>
 }
 
 const handleError = (error: unknown, defaultTitle: string, defaultMessage: string) => {
@@ -143,6 +157,40 @@ export const useTripStore = create<TripState>((set) => {
           'Es ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
         )
         set({ tripMembers: [] })
+      }
+    },
+
+    additionalMembers: [],
+    setAdditionalMembers: (additionalMembers: AdditionalMembersType) => set({ additionalMembers }),
+    getAdditionalMembers: async (tripId: string, userId: string) => {
+      try {
+        const { data, error } = await getAdditionalMembers(supabase, tripId, userId)
+        if (error) throw error
+        set({ additionalMembers: data ?? [] })
+      } catch (error) {
+        handleError(
+          error,
+          'Fehler beim Abrufen der zusätzlichen Mitglieder',
+          'Es ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
+        )
+        set({ additionalMembers: [] })
+      }
+    },
+
+    availableSpots: 0,
+    setAvailableSpots: (availableSpots: AvailableSpotsType) => set({ availableSpots }),
+    getAvailableSpots: async (tripId: string) => {
+      try {
+        const { data, error } = await getAvailableSpots(supabase, tripId)
+        if (error) throw error
+        set({ availableSpots: data ?? 0 })
+      } catch (error) {
+        handleError(
+          error,
+          'Fehler beim Abrufen der verfügbaren Plätze',
+          'Es ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
+        )
+        set({ availableSpots: 0 })
       }
     },
   }
