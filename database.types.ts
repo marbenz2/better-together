@@ -85,6 +85,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          birthday: string
           created_at: string
           email: string | null
           first_name: string
@@ -93,6 +94,7 @@ export type Database = {
           profile_picture: string | null
         }
         Insert: {
+          birthday: string
           created_at?: string
           email?: string | null
           first_name: string
@@ -101,6 +103,7 @@ export type Database = {
           profile_picture?: string | null
         }
         Update: {
+          birthday?: string
           created_at?: string
           email?: string | null
           first_name?: string
@@ -120,6 +123,7 @@ export type Database = {
       }
       trip_members: {
         Row: {
+          additional: string[] | null
           created_at: string
           down_payment: boolean
           down_payment_amount: number | null
@@ -134,6 +138,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          additional?: string[] | null
           created_at?: string
           down_payment?: boolean
           down_payment_amount?: number | null
@@ -148,6 +153,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          additional?: string[] | null
           created_at?: string
           down_payment?: boolean
           down_payment_amount?: number | null
@@ -188,14 +194,18 @@ export type Database = {
           date_from: string
           date_to: string
           group_id: string
+          iban: string | null
           id: string
           image: string
+          initial_down_payment: number | null
           land: string
           location_name: string
           max_spots: number
           name: string
           ort: string
+          paypal: string | null
           plz: string
+          recipient: string | null
           rooms: number
           status: "upcoming" | "current" | "done"
           street: string
@@ -210,14 +220,18 @@ export type Database = {
           date_from: string
           date_to: string
           group_id: string
+          iban?: string | null
           id?: string
           image: string
+          initial_down_payment?: number | null
           land: string
           location_name: string
           max_spots: number
           name: string
           ort: string
+          paypal?: string | null
           plz: string
+          recipient?: string | null
           rooms: number
           status?: "upcoming" | "current" | "done"
           street: string
@@ -232,14 +246,18 @@ export type Database = {
           date_from?: string
           date_to?: string
           group_id?: string
+          iban?: string | null
           id?: string
           image?: string
+          initial_down_payment?: number | null
           land?: string
           location_name?: string
           max_spots?: number
           name?: string
           ort?: string
+          paypal?: string | null
           plz?: string
+          recipient?: string | null
           rooms?: number
           status?: "upcoming" | "current" | "done"
           street?: string
