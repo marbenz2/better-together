@@ -3,6 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
+import { parse, format } from 'date-fns'
 import { useUserStore } from '@/stores/userStore'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
@@ -13,12 +14,19 @@ import { PublicProfileType } from '@/types/user'
 import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { CardBackPlate, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  CardBackPlate,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import { ResponsiveDialog } from '@/components/ResponsiveDialog'
 
 const formSchema = z.object({
   first_name: z.string().min(1, 'Vorname ist erforderlich'),
   last_name: z.string().min(1, 'Nachname ist erforderlich'),
+  birthday: z.string().min(1, 'Geburtstag ist erforderlich'),
   profile_picture: z.string().optional(),
 })
 
@@ -34,6 +42,7 @@ const EditProfile = () => {
       first_name: publicProfile?.first_name || '',
       last_name: publicProfile?.last_name || '',
       profile_picture: publicProfile?.profile_picture || '',
+      birthday: publicProfile?.birthday || '',
     },
   })
 
@@ -43,6 +52,9 @@ const EditProfile = () => {
         first_name: publicProfile.first_name,
         last_name: publicProfile.last_name,
         profile_picture: publicProfile.profile_picture ?? undefined,
+        birthday: publicProfile.birthday
+          ? format(new Date(publicProfile.birthday), 'dd.MM.yyyy')
+          : '',
       })
     }
   }, [publicProfile, form])
@@ -62,6 +74,9 @@ const EditProfile = () => {
       const updatedData = {
         ...data,
         id: publicProfile.id,
+        birthday: data.birthday
+          ? format(parse(data.birthday, 'dd.MM.yyyy', new Date()), 'yyyy-MM-dd')
+          : null,
       }
       await updatePublicProfile(updatedData as PublicProfileType)
       await getPublicProfile(publicProfile.id)
@@ -106,6 +121,9 @@ const EditProfile = () => {
       <CardHeader>
         <BackButtonClient className="static" />
         <CardTitle className="text-xl">Profil bearbeiten</CardTitle>
+        <CardDescription>
+          Felder mit einem <span className="text-red-500">*</span> sind Pflichtfelder.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -184,6 +202,18 @@ const EditProfile = () => {
                   )}
                 />
               </div>
+              <FormField
+                control={form.control}
+                name="birthday"
+                render={({ field }) => (
+                  <FormItem className="flex-1">
+                    <FormLabel>Geburtstag</FormLabel>
+                    <FormControl>
+                      <Input placeholder="TT.MM.JJJJ" {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
               <ResponsiveDialog
                 title="Profil aktualisieren"
                 message={`Bist du sicher, dass du die Änderungen speichern möchtest?`}
