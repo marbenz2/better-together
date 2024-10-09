@@ -9,31 +9,57 @@ import { useUserStore } from '@/stores/userStore'
 import { GroupTripType } from '@/types/trips'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import React, { useEffect } from 'react'
-import { BackButtonClient } from '../ui/back-button-client'
+import React, { useEffect, useMemo } from 'react'
+import { BackButtonClient } from '@/components/ui/back-button-client'
 import { googleMapsUrl } from '@/lib/utils'
-import InfoCard from '../ui/info-card'
+import InfoCard from '@/components/ui/info-card'
 import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { CardBackPlate, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  CardBackPlate,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import { ResponsiveDialog } from '@/components/ResponsiveDialog'
 
-const formSchema = z.object({
-  name: z.string().min(1, 'Reisename ist erforderlich'),
-  date_from: z.string().min(1, 'Startdatum ist erforderlich'),
-  date_to: z.string().min(1, 'Enddatum ist erforderlich'),
-  land: z.string().min(1, 'Land ist erforderlich'),
-  area: z.string().optional(),
-  location_name: z.string().min(1, 'Location ist erforderlich'),
-  plz: z.string().min(1, 'PLZ ist erforderlich'),
-  ort: z.string().min(1, 'Ort ist erforderlich'),
-  street: z.string().min(1, 'Straße ist erforderlich'),
-  street_number: z.number().min(1, 'Hausnummer ist erforderlich'),
-  rooms: z.number().min(1, 'Anzahl der Zimmer ist erforderlich'),
-  beds: z.number().min(1, 'Anzahl der Betten ist erforderlich'),
-  image: z.string().min(1, 'Bild ist erforderlich'),
-})
+const formSchema = z
+  .object({
+    name: z.string().min(1, 'Reisename ist erforderlich'),
+    date_from: z.string().min(1, 'Startdatum ist erforderlich'),
+    date_to: z.string().min(1, 'Enddatum ist erforderlich'),
+    land: z.string().min(1, 'Land ist erforderlich'),
+    area: z.string().optional(),
+    location_name: z.string().min(1, 'Location ist erforderlich'),
+    plz: z.string().min(1, 'PLZ ist erforderlich'),
+    ort: z.string().min(1, 'Ort ist erforderlich'),
+    street: z.string().min(1, 'Straße ist erforderlich'),
+    street_number: z.number().min(1, 'Hausnummer ist erforderlich'),
+    rooms: z.number().min(1, 'Anzahl der Zimmer ist erforderlich'),
+    beds: z.number().min(1, 'Anzahl der Betten ist erforderlich'),
+    image: z.string().min(1, 'Bild ist erforderlich'),
+    recipient: z.string().optional(),
+    iban: z.string().optional(),
+    paypal: z.string().optional(),
+    initial_down_payment: z.number().optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.iban && !data.recipient) {
+        return false
+      }
+      if (data.recipient && !data.iban) {
+        return false
+      }
+      return true
+    },
+    {
+      message: 'Bitte geben Sie sowohl den Empfänger als auch die IBAN an.',
+      path: ['recipient', 'iban'],
+    },
+  )
 
 type FormValues = z.infer<typeof formSchema>
 
@@ -55,10 +81,16 @@ const EditTrip = () => {
       plz: trip?.plz || '',
       ort: trip?.ort || '',
       street: trip?.street || '',
-      street_number: trip?.street_number || 0,
-      rooms: trip?.rooms || 0,
-      beds: trip?.beds || 0,
+      street_number: trip?.street_number ? Number(trip.street_number) : undefined,
+      rooms: trip?.rooms ? Number(trip.rooms) : undefined,
+      beds: trip?.beds ? Number(trip.beds) : undefined,
       image: trip?.image || '',
+      recipient: trip?.recipient || '',
+      iban: trip?.iban || '',
+      paypal: trip?.paypal || '',
+      initial_down_payment: trip?.initial_down_payment
+        ? Number(trip.initial_down_payment)
+        : undefined,
     },
   })
 
@@ -74,13 +106,29 @@ const EditTrip = () => {
         plz: trip.plz,
         ort: trip.ort,
         street: trip.street,
-        street_number: trip.street_number,
-        rooms: trip.rooms,
-        beds: trip.beds,
+        street_number: trip?.street_number ? Number(trip.street_number) : undefined,
+        rooms: trip.rooms ? Number(trip.rooms) : undefined,
+        beds: trip.beds ? Number(trip.beds) : undefined,
         image: trip.image,
+        recipient: trip.recipient || '',
+        iban: trip.iban || '',
+        paypal: trip.paypal || '',
+        initial_down_payment: trip.initial_down_payment
+          ? Number(trip.initial_down_payment)
+          : undefined,
       })
     }
   }, [trip, form])
+
+  const isFieldRequired = useMemo(() => {
+    return (fieldName: keyof FormValues) => {
+      const fieldSchema = formSchema._def.schema.shape[fieldName]
+      return (
+        (fieldSchema instanceof z.ZodString || fieldSchema instanceof z.ZodNumber) &&
+        !fieldSchema.isOptional()
+      )
+    }
+  }, [])
 
   const isCreator = trip?.created_by === user?.id
 
@@ -89,6 +137,16 @@ const EditTrip = () => {
       <InfoCard
         title="Keine Berechtigung"
         description="Du hast keine Berechtigung, diese Reise zu bearbeiten."
+        variant="warning"
+      />
+    )
+  }
+
+  if (!groupId) {
+    return (
+      <InfoCard
+        title="Keine Gruppe gefunden"
+        description="Bitte erstelle eine Gruppe, bevor du eine Reise erstellst."
         variant="warning"
       />
     )
@@ -138,29 +196,14 @@ const EditTrip = () => {
     }
   }
 
-  const isFieldRequired = (fieldName: keyof FormValues) => {
-    const fieldSchema = formSchema.shape[fieldName]
-    return (
-      (fieldSchema instanceof z.ZodString || fieldSchema instanceof z.ZodNumber) &&
-      !fieldSchema.isOptional()
-    )
-  }
-
-  if (!groupId) {
-    return (
-      <InfoCard
-        title="Keine Gruppe gefunden"
-        description="Bitte erstelle eine Gruppe, bevor du eine Reise erstellst."
-        variant="warning"
-      />
-    )
-  }
-
   return (
     <CardBackPlate className="flex flex-col max-w-7xl w-full gap-8">
       <CardHeader>
         <BackButtonClient className="static" />
         <CardTitle>Reise bearbeiten</CardTitle>
+        <CardDescription>
+          Felder mit einem <span className="text-red-500">*</span> sind Pflichtfelder.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -169,6 +212,7 @@ const EditTrip = () => {
             className="flex flex-col gap-4 w-full items-center"
           >
             <div className="flex flex-col gap-4 w-full max-w-lg">
+              <CardTitle>Reiseinformationen</CardTitle>
               <div className="flex flex-col gap-2 w-full">
                 <FormLabel htmlFor="image">
                   Bild der Reise{' '}
@@ -219,7 +263,7 @@ const EditTrip = () => {
                       Reisename {isFieldRequired('name') && <span className="text-red-500">*</span>}
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="Reisename eingeben" {...field} />
+                      <Input placeholder="Reisename" {...field} />
                     </FormControl>
                   </FormItem>
                 )}
@@ -265,7 +309,7 @@ const EditTrip = () => {
                       Land {isFieldRequired('land') && <span className="text-red-500">*</span>}
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="Land eingeben" {...field} />
+                      <Input placeholder="Land" {...field} />
                     </FormControl>
                   </FormItem>
                 )}
@@ -277,7 +321,7 @@ const EditTrip = () => {
                   <FormItem>
                     <FormLabel>Gebiet</FormLabel>
                     <FormControl>
-                      <Input placeholder="Gebiet eingeben" {...field} />
+                      <Input placeholder="Gebiet" {...field} />
                     </FormControl>
                   </FormItem>
                 )}
@@ -288,11 +332,11 @@ const EditTrip = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Location{' '}
+                      Unterkunft / Location{' '}
                       {isFieldRequired('location_name') && <span className="text-red-500">*</span>}
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="Location eingeben" {...field} />
+                      <Input placeholder="Name der Location" {...field} />
                     </FormControl>
                   </FormItem>
                 )}
@@ -307,7 +351,7 @@ const EditTrip = () => {
                         PLZ {isFieldRequired('plz') && <span className="text-red-500">*</span>}
                       </FormLabel>
                       <FormControl>
-                        <Input placeholder="PLZ eingeben" {...field} />
+                        <Input placeholder="PLZ" {...field} />
                       </FormControl>
                     </FormItem>
                   )}
@@ -321,7 +365,7 @@ const EditTrip = () => {
                         Ort {isFieldRequired('ort') && <span className="text-red-500">*</span>}
                       </FormLabel>
                       <FormControl>
-                        <Input placeholder="Ort eingeben" {...field} />
+                        <Input placeholder="Ort" {...field} />
                       </FormControl>
                     </FormItem>
                   )}
@@ -338,7 +382,7 @@ const EditTrip = () => {
                         {isFieldRequired('street') && <span className="text-red-500">*</span>}
                       </FormLabel>
                       <FormControl>
-                        <Input placeholder="Straße eingeben" {...field} />
+                        <Input placeholder="Straße" {...field} />
                       </FormControl>
                     </FormItem>
                   )}
@@ -357,9 +401,14 @@ const EditTrip = () => {
                       <FormControl>
                         <Input
                           type="number"
-                          placeholder="Hausnummer eingeben"
+                          placeholder="Hausnummer"
                           {...field}
-                          onChange={(e) => field.onChange(Number(e.target.value))}
+                          value={field.value === undefined ? '' : field.value}
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value === '' ? undefined : Number(e.target.value),
+                            )
+                          }
                         />
                       </FormControl>
                     </FormItem>
@@ -378,9 +427,14 @@ const EditTrip = () => {
                       <FormControl>
                         <Input
                           type="number"
-                          placeholder="Zimmer eingeben"
+                          placeholder="Zimmeranzahl"
                           {...field}
-                          onChange={(e) => field.onChange(Number(e.target.value))}
+                          value={field.value === undefined ? '' : field.value}
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value === '' ? undefined : Number(e.target.value),
+                            )
+                          }
                         />
                       </FormControl>
                     </FormItem>
@@ -397,9 +451,99 @@ const EditTrip = () => {
                       <FormControl>
                         <Input
                           type="number"
-                          placeholder="Bettplätze eingeben"
+                          placeholder="Bettenanzahl"
                           {...field}
-                          onChange={(e) => field.onChange(Number(e.target.value))}
+                          value={field.value === undefined ? '' : field.value}
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value === '' ? undefined : Number(e.target.value),
+                            )
+                          }
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="flex flex-col gap-12 w-full my-12">
+                <CardTitle>Zahlungsinformationen</CardTitle>
+                <div className="flex flex-col gap-2">
+                  <CardTitle>Überweisung</CardTitle>
+                  <div className="flex flex-col md:flex-row gap-2 w-full">
+                    <FormField
+                      control={form.control}
+                      name="recipient"
+                      render={({ field }) => (
+                        <FormItem className="w-full">
+                          <FormLabel>
+                            Empfänger{' '}
+                            {form.watch('iban') && <span className="text-red-500">*</span>}
+                          </FormLabel>
+                          <FormControl>
+                            <Input type="text" placeholder="Vor- und Nachname" {...field} />
+                          </FormControl>
+                          {form.formState.errors.recipient && (
+                            <p className="text-red-500 text-sm">
+                              {form.formState.errors.recipient.message}
+                            </p>
+                          )}
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="iban"
+                      render={({ field }) => (
+                        <FormItem className="w-full">
+                          <FormLabel>
+                            IBAN{' '}
+                            {form.watch('recipient') && <span className="text-red-500">*</span>}
+                          </FormLabel>
+                          <FormControl>
+                            <Input type="text" placeholder="IBAN" {...field} />
+                          </FormControl>
+                          {form.formState.errors.iban && (
+                            <p className="text-red-500 text-sm">
+                              {form.formState.errors.iban.message}
+                            </p>
+                          )}
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <CardTitle>Paypal</CardTitle>
+                  <FormField
+                    control={form.control}
+                    name="paypal"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Empfänger</FormLabel>
+                        <FormControl>
+                          <Input type="email" placeholder="Paypal E-Mail" {...field} />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <FormField
+                  control={form.control}
+                  name="initial_down_payment"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Initiale Anzahlung</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="Anzahlung"
+                          {...field}
+                          value={field.value === undefined ? '' : field.value}
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value === '' ? undefined : Number(e.target.value),
+                            )
+                          }
                         />
                       </FormControl>
                     </FormItem>
@@ -416,7 +560,7 @@ const EditTrip = () => {
                   type="button"
                   aria-label="Reise aktualisieren"
                   className="flex text-xs pl-10 w-full"
-                  disabled={!form.formState.isValid}
+                  disabled={!form.formState.isValid || form.formState.isSubmitting}
                 >
                   <span className="xs:inline truncate">
                     {form.formState.isSubmitting ? 'Aktualisiere Reise...' : 'Reise aktualisieren'}
