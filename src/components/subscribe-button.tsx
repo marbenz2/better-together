@@ -5,28 +5,32 @@ import { Button } from './ui/button'
 import { useTripStore } from '@/stores/tripStores'
 import { useUserStore } from '@/stores/userStore'
 import { usePaymentStore } from '@/stores/paymentStore'
-import { addSubscription, removeSubscription } from '@/utils/supabase/queries'
+import { addAdditionalMembers, addSubscription, removeSubscription } from '@/utils/supabase/queries'
 import { showNotification } from '@/lib/utils'
 import Spinner from './ui/Spinner'
 import { ResponsiveDialog } from './ResponsiveDialog'
-import { createClient } from '@/utils/supabase/client'
+import AddAdditional from './trip/AddAdditional'
 
 export function TripSubscription() {
   const { user } = useUserStore()
-  const { trip, getTripMembers } = useTripStore()
+  const { trip, getTripMembers, additionalMembers, setAdditionalMembers, getAvailableSpots } =
+    useTripStore()
   const { isSubscribed, setIsSubscribed, setSubscribedTrips } = useUserStore()
-  const { paymentStatus } = usePaymentStore()
+  const { userPayments } = usePaymentStore()
 
   if (!trip) return null
 
-  const hasPaid =
-    paymentStatus?.down_payment || paymentStatus?.full_payment || paymentStatus?.final_payment
+  const filteredUserPayments = userPayments?.filter((payment) => payment.trip_id === trip.id)
+
+  const hasPaid = filteredUserPayments?.some(
+    (payment) => payment.down_payment || payment.full_payment || payment.final_payment,
+  )
   const currentDate = new Date().toISOString()
   const allowSubscription = trip?.date_from > currentDate
 
   const handleSubscribe = async () => {
     try {
-      const { error } = await addSubscription(trip.id, user.id)
+      const { error } = await addSubscription(trip.id, user.id, additionalMembers)
       if (error) {
         console.error('Fehler beim Anmelden:', error)
         return
@@ -36,7 +40,8 @@ export function TripSubscription() {
         ...(prevTrips || []),
         { trips: trip, subscribed_at: new Date().toISOString() },
       ])
-      getTripMembers(trip.id)
+      await getTripMembers(trip.id)
+      await getAvailableSpots(trip.id)
       showNotification(
         'Anmeldung erfolgt',
         `Du hast dich erfolgreich für die Reise angemeldet.`,
@@ -59,6 +64,7 @@ export function TripSubscription() {
         prevTrips ? prevTrips.filter((t) => t.trips.id !== trip.id) : [],
       )
       getTripMembers(trip.id)
+      getAvailableSpots(trip.id)
       showNotification(
         'Abmeldung erfolgt',
         'Du hast dich erfolgreich von der Reise abgemeldet',
@@ -104,6 +110,7 @@ function SubscriptionButton({
   disabled,
   children,
 }: SubscriptionButtonProps) {
+  const { setAdditionalMembers } = useTripStore()
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
 
@@ -121,13 +128,19 @@ function SubscriptionButton({
     })
   }
 
+  const handleCancel = () => {
+    setAdditionalMembers([])
+  }
+
   return (
     <>
       <ResponsiveDialog
         title={`${isSubscribed ? 'Abmelden' : 'Anmelden'}`}
         message={`Möchtest du dich wirklich für die Reise ${isSubscribed ? 'abmelden' : 'anmelden'}?`}
+        messageComponent={!isSubscribed && <AddAdditional />}
         confirmText={isSubscribed ? 'Abmelden' : 'Anmelden'}
         onConfirm={handleClick}
+        onCancel={handleCancel}
         disabled={disabled || isPending}
       >
         <Button disabled={disabled || isPending}>{isPending ? <Spinner /> : children}</Button>
