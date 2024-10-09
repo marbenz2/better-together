@@ -13,8 +13,8 @@ import Spinner from '@/components/ui/Spinner'
 export default function TripPage({ params }: { params: { id: string } }) {
   const { user } = useUserStore()
   const { getAllUserGroups } = useGroupStore()
-  const { getTrip } = useTripStore()
-  const { getPaymentStatus } = usePaymentStore()
+  const { getTrip, getAvailableSpots } = useTripStore()
+  const { getUserPayments } = usePaymentStore()
   const { toast } = useToast()
   const { title, message, variant } = useToastStore()
   const [isLoading, setIsLoading] = useState(true)
@@ -35,14 +35,15 @@ export default function TripPage({ params }: { params: { id: string } }) {
         setIsLoading(true)
         await Promise.all([
           getTrip(params.id),
-          getPaymentStatus(user.id, params.id),
+          getUserPayments(user.id),
           getAllUserGroups(user.id),
+          getAvailableSpots(params.id),
         ])
         setIsLoading(false)
       }
     }
     loadData()
-  }, [params.id, getTrip, getPaymentStatus, getAllUserGroups, user.id])
+  }, [params.id, getTrip, getUserPayments, getAllUserGroups, user.id])
 
   if (isLoading) return <Spinner />
 
