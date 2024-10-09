@@ -43,7 +43,7 @@ export default function TripPage({ params }: { params: { id: string } }) {
       }
     }
     loadData()
-  }, [params.id, getTrip, getUserPayments, getAllUserGroups, user.id])
+  }, [params.id, getTrip, getUserPayments, getAllUserGroups, user.id, getAvailableSpots])
 
   if (isLoading) return <Spinner />
 
