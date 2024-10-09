@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
@@ -8,13 +8,15 @@ import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
-import InfoCard from '../ui/info-card'
-import Spinner from '../ui/Spinner'
+import InfoCard from '@/components/ui/info-card'
+import Spinner from '@/components/ui/Spinner'
 import { createClient } from '@/utils/supabase/client'
 import { setUserPayments } from '@/utils/supabase/queries'
 import { showNotification } from '@/lib/utils'
-import { Separator } from '../ui/separator'
-import { CardBackPlate, CardContent, CardHeader, CardTitle } from '../ui/card'
+import { Separator } from '@/components/ui/separator'
+import { CardBackPlate, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { BackButtonClient } from '@/components/ui/back-button-client'
+import AdditionalMembersButton from '@/components/userlist/AdditionalMembersButton'
 
 const formSchema = z.record(
   z.object({
@@ -52,8 +54,7 @@ export default function UserList() {
     ),
   })
 
-  React.useEffect(() => {
-    // Sortiere die Profile alphabetisch nach Nachnamen und dann Vornamen
+  useEffect(() => {
     const sorted = [...tripPublicProfiles].sort((a, b) => {
       if (a.last_name !== b.last_name) {
         return a.last_name.localeCompare(b.last_name)
@@ -116,7 +117,8 @@ export default function UserList() {
   return (
     <CardBackPlate className="flex flex-col max-w-7xl w-full gap-8">
       <CardHeader>
-        <CardTitle className="text-2xl">Teilnehmerliste</CardTitle>
+        <BackButtonClient className="static" />
+        <CardTitle>Reise Teilnehmerliste</CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -124,10 +126,11 @@ export default function UserList() {
             {sortedProfiles.map((profile) => (
               <div key={profile.id} className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
                 {sortedProfiles.indexOf(profile) !== 0 && (
-                  <Separator className="col-span-1 md:col-span-3" />
+                  <Separator className="col-span-1 md:col-span-3 w-full my-8" />
                 )}
-                <div className="col-span-1 md:col-span-3 font-bold text-xl">
+                <div className="col-span-1 md:col-span-3 font-bold text-xl flex items-center gap-4">
                   {profile.last_name}, {profile.first_name}
+                  <AdditionalMembersButton userId={profile.id} />
                 </div>
                 <div className="flex flex-col space-y-2">
                   <FormField
@@ -135,7 +138,12 @@ export default function UserList() {
                     name={`${profile.id}.down_payment_amount`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Anzahlung</FormLabel>
+                        <FormLabel>
+                          Anzahlung{' '}
+                          {trip?.initial_down_payment && trip?.initial_down_payment > 0
+                            ? '(initiale Anzahlung)'
+                            : null}
+                        </FormLabel>
                         <FormControl>
                           <div className="relative">
                             <Input
@@ -144,7 +152,9 @@ export default function UserList() {
                               {...field}
                               value={field.value ?? ''}
                               disabled={
-                                tripMembers.find((m) => m.user_id === profile.id)?.down_payment
+                                Boolean(
+                                  tripMembers.find((m) => m.user_id === profile.id)?.down_payment,
+                                ) || Boolean(trip?.initial_down_payment)
                               }
                               onChange={(e) => {
                                 const value = e.target.value ? Number(e.target.value) : null
