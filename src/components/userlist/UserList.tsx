@@ -64,6 +64,11 @@ export default function UserList() {
     setSortedProfiles(sorted)
   }, [tripPublicProfiles])
 
+  const handleFieldChange = (fieldName: string, value: any) => {
+    setChangedFields((prev) => ({ ...prev, [fieldName]: true }))
+    return value
+  }
+
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!trip) return
 
@@ -71,21 +76,21 @@ export default function UserList() {
       .map(([userId, userPayments]) => ({
         userId,
         tripId: trip.id,
-        down_payment_amount: userPayments.down_payment_amount ?? null,
-        full_payment_amount: userPayments.full_payment_amount ?? null,
-        final_payment_amount: userPayments.final_payment_amount ?? null,
+        down_payment_amount: userPayments.down_payment_amount,
+        full_payment_amount: userPayments.full_payment_amount,
+        final_payment_amount: userPayments.final_payment_amount,
         down_payment: userPayments.down_payment,
         full_payment: userPayments.full_payment,
         final_payment: userPayments.final_payment,
       }))
       .filter(
         (payment) =>
-          payment.down_payment_amount !== null ||
-          payment.full_payment_amount !== null ||
-          payment.final_payment_amount !== null ||
-          payment.down_payment ||
-          payment.full_payment ||
-          payment.final_payment,
+          changedFields[`${payment.userId}.down_payment`] ||
+          changedFields[`${payment.userId}.full_payment`] ||
+          changedFields[`${payment.userId}.final_payment`] ||
+          changedFields[`${payment.userId}.down_payment_amount`] ||
+          changedFields[`${payment.userId}.full_payment_amount`] ||
+          changedFields[`${payment.userId}.final_payment_amount`],
       )
 
     if (payments.length > 0) {
@@ -99,11 +104,6 @@ export default function UserList() {
         getTripMembers(trip.id)
       }
     }
-  }
-
-  const handleFieldChange = (fieldName: string, value: any) => {
-    setChangedFields((prev) => ({ ...prev, [fieldName]: true }))
-    return value
   }
 
   if (tripMembers.length === 0)
@@ -180,6 +180,7 @@ export default function UserList() {
                           <Checkbox
                             checked={field.value}
                             onCheckedChange={(checked) => {
+                              console.log('trigger')
                               field.onChange(
                                 handleFieldChange(`${profile.id}.down_payment`, checked),
                               )
