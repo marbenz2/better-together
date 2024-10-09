@@ -25,9 +25,9 @@ export default async function ProtectedLayout({ children }: { children: React.Re
 
   if (!user) {
     redirect('/login')
-  } else {
-    await setUserIdInDatabase(supabase, user.id)
   }
+
+  await setUserIdInDatabase(supabase, user.id)
 
   return (
     <div className="flex-1 w-full flex flex-col gap-8 items-center">
