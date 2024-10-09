@@ -30,8 +30,10 @@ interface ResponsiveDialogProps {
   disabled?: boolean
   title: string
   message: string
-  confirmText: string
-  onConfirm: () => void
+  messageComponent?: React.ReactNode
+  confirmText?: string
+  onConfirm?: () => void
+  onCancel?: () => void
   disabledDescription?: string
   info?: string
   infoType?: 'warning' | 'info' | 'success'
@@ -43,8 +45,10 @@ export function ResponsiveDialog({
   disabled,
   title,
   message,
+  messageComponent,
   confirmText,
   onConfirm,
+  onCancel,
   disabledDescription,
   info,
   infoType,
@@ -55,7 +59,12 @@ export function ResponsiveDialog({
   const isDesktop = useMediaQuery('(min-width: 768px)')
 
   const handleConfirm = () => {
-    onConfirm()
+    onConfirm?.()
+    setOpen(false)
+  }
+
+  const handleCancel = () => {
+    onCancel?.()
     setOpen(false)
   }
 
@@ -68,17 +77,26 @@ export function ResponsiveDialog({
             <DialogTitle>{title}</DialogTitle>
             <DialogDescription>{message}</DialogDescription>
           </DialogHeader>
-          {disabled && disabledDescription && (
-            <InfoCard description={disabledDescription} variant="info" />
-          )}
-          {info && <InfoCard description={info} variant={infoType} />}
+          <div className="flex flex-col items-center justify-center p-4">
+            {messageComponent && messageComponent}
+            {disabled && disabledDescription && (
+              <InfoCard description={disabledDescription} variant="info" />
+            )}
+            {info && <InfoCard description={info} variant={infoType} />}
+          </div>
           <DialogFooter>
-            <div className="flex w-full justify-between gap-4">
-              <Button disabled={disabled} variant={buttonVariant} onClick={handleConfirm}>
-                {confirmText}
-              </Button>
+            <div
+              className={`flex w-full gap-4 ${confirmText && onConfirm ? 'justify-between' : 'justify-end'}`}
+            >
+              {confirmText && onConfirm && (
+                <Button disabled={disabled} variant={buttonVariant} onClick={handleConfirm}>
+                  {confirmText}
+                </Button>
+              )}
               <DialogClose asChild>
-                <Button variant="outline">Abbrechen</Button>
+                <Button variant="outline" onClick={handleCancel}>
+                  {confirmText && onConfirm ? 'Abbrechen' : 'Schließen'}
+                </Button>
               </DialogClose>
             </div>
           </DialogFooter>
@@ -95,7 +113,8 @@ export function ResponsiveDialog({
           <DrawerTitle>{title}</DrawerTitle>
           <DrawerDescription>{message}</DrawerDescription>
         </DrawerHeader>
-        <div className="p-4">
+        <div className="flex flex-col items-center justify-center p-4">
+          {messageComponent && messageComponent}
           {disabled && disabledDescription && (
             <InfoCard description={disabledDescription} variant="info" />
           )}
@@ -103,17 +122,21 @@ export function ResponsiveDialog({
         </div>
         <DrawerFooter className="pt-2">
           <div className="flex flex-col w-full gap-4">
-            <Button
-              className="w-full"
-              disabled={disabled}
-              variant={buttonVariant}
-              onClick={handleConfirm}
-            >
-              {confirmText}
-            </Button>
+            {confirmText && onConfirm && (
+              <Button
+                className="w-full"
+                disabled={disabled}
+                variant={buttonVariant}
+                onClick={handleConfirm}
+              >
+                {confirmText}
+              </Button>
+            )}
 
             <DrawerClose asChild>
-              <Button variant="outline">Abbrechen</Button>
+              <Button variant="outline" onClick={handleCancel}>
+                {confirmText && onConfirm ? 'Abbrechen' : 'Schließen'}
+              </Button>
             </DrawerClose>
           </div>
         </DrawerFooter>
