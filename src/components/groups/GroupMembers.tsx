@@ -3,7 +3,7 @@
 import { Badge } from '@/components/ui/badge'
 import { CardTitle } from '@/components/ui/card'
 import { useGroupStore } from '@/stores/groupStores'
-import { useEffect, useMemo } from 'react'
+import { useEffect } from 'react'
 import { useUserStore } from '@/stores/userStore'
 import DropdownMemberBadge from '@/components/DropdownMemberBadge'
 import { CrownIcon } from 'lucide-react'
@@ -36,27 +36,33 @@ export default function GroupMembers() {
     }
   }, [groupId, getAllGroupMembers])
 
-  const memberIds = useMemo(
-    () => groupMembers?.map((member) => member.user_id) || [],
-    [groupMembers],
-  )
-
   useEffect(() => {
+    const memberIds = groupMembers?.map((member) => member.user_id) || []
     if (memberIds.length > 0) {
       getAllGroupPublicProfiles(memberIds).catch((error) =>
         console.error('Fehler beim Abrufen der öffentlichen Profile:', error),
       )
+    } else {
+      useGroupStore.getState().setGroupPublicProfiles([])
     }
-  }, [memberIds, getAllGroupPublicProfiles])
+  }, [groupMembers, getAllGroupPublicProfiles])
 
   const isAdmin = groupMembers?.find((gm) => gm.user_id === user?.id)?.role === 'admin'
+
+  if (!groupMembers || groupMembers.length === 0) {
+    return (
+      <div className="flex flex-col gap-4 w-full justify-center">
+        <CardTitle className="text-xl">Gruppenmitglieder</CardTitle>
+        <p>Keine Gruppenmitglieder vorhanden.</p>
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col gap-4 w-full justify-center">
       <CardTitle className="text-xl">Gruppenmitglieder</CardTitle>
       <div className="flex flex-wrap gap-4">
         {groupPublicProfiles &&
-          groupPublicProfiles.length > 1 &&
           groupPublicProfiles.map((member) => {
             const groupMember = groupMembers.find((gm) => gm.user_id === member.id)
             const badgeColor = getBadgeColor(groupMember?.role || 'member')
@@ -90,17 +96,6 @@ export default function GroupMembers() {
               )
             }
           })}
-        {groupPublicProfiles && groupPublicProfiles.length === 1 && (
-          <Badge
-            key={groupPublicProfiles[0].id}
-            className={`bg-primary text-white ${getBadgeColor(groupMembers[0]?.role)} ring-2 ring-info-foreground`}
-          >
-            {groupMembers[0]?.role === 'admin' && (
-              <CrownIcon className="w-4 h-4 mr-2" strokeWidth={1.5} fill="yellow" />
-            )}
-            {groupPublicProfiles[0].first_name} {groupPublicProfiles[0].last_name}
-          </Badge>
-        )}
       </div>
     </div>
   )
