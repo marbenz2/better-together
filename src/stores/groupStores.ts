@@ -30,6 +30,7 @@ interface GroupState {
   setUserGroups: (userGroups: UserGroupsType[]) => void
   setGroupId: (groupId: string | null) => void
   setSelectedGroupName: (name: string | null) => void
+  setGroupPublicProfiles: (groupPublicProfiles: PublicProfilesType[]) => void
   handleOnValueChange: (value: string) => void
   createGroup: (groupName: string, userId: string) => Promise<void>
   joinGroup: (inviteCode: string, userId: string) => Promise<void>
@@ -118,6 +119,8 @@ export const useGroupStore = create<GroupState>((set, get) => {
     setGroupId: (groupId) => set({ groupId }),
     setSelectedGroupName: (name) => set({ selectedGroupName: name }),
     setUserGroups: (userGroups) => set({ userGroups }),
+    setGroupPublicProfiles: (groupPublicProfiles) =>
+      set({ groupPublicProfiles: groupPublicProfiles }),
 
     handleOnValueChange: (value) => {
       const { userGroups } = get()
