@@ -57,8 +57,6 @@ export default function Signup({ searchParams }: { searchParams: Message }) {
       },
     })
 
-    console.log(error)
-
     if (error) {
       console.error(error.code + ' ' + error.message)
       return encodedRedirect('error', '/signup', 'Fehler bei der Registrierung')
