@@ -138,7 +138,7 @@ export default function Trip() {
         </div>
         <div className="relative flex w-full h-64 md:h-full">
           <Image
-            loading="lazy"
+            priority
             src={trip.image}
             alt={trip.name}
             fill

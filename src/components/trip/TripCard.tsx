@@ -39,7 +39,7 @@ const TripCard = ({
           </CardDescription>
           <div className="flex w-full h-full overflow-clip">
             <Image
-              loading="lazy"
+              priority
               src={trip.image}
               alt={trip.name}
               width={600}
