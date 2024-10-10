@@ -20,48 +20,44 @@ export default function Signup({ searchParams }: { searchParams: Message }) {
     const confirmPassword = formData.get('confirmPassword')?.toString()
     const first_name = formData.get('first_name')?.toString()
     const last_name = formData.get('last_name')?.toString()
-    const birthdayInput = formData.get('birthday')?.toString()
+    const birthday = formData.get('birthday') as string
     const group_link = formData.get('group_link')?.toString()
     const supabase = createClient()
     const origin = headers().get('origin')
 
-    let birthday: string | undefined
-
-    if (birthdayInput) {
-      const [day, month, year] = birthdayInput.split('.')
-      if (day && month && year) {
-        const parsedDate = new Date(`${year}-${month}-${day}`)
-        if (
-          isNaN(parsedDate.getTime()) ||
-          parsedDate > new Date() ||
-          parsedDate < new Date('1900-01-01')
-        ) {
-          return encodedRedirect('error', '/signup', 'Ungültiges Geburtsdatum')
-        }
-        birthday = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
-      } else {
-        return encodedRedirect('error', '/signup', 'Ungültiges Geburtsdatumsformat')
-      }
-    }
-
     if (!email || !password || !confirmPassword || !first_name || !last_name || !birthday) {
-      encodedRedirect('error', '/signup', 'Alle Felder sind erforderlich')
-      return
+      return encodedRedirect('error', '/signup', 'Alle Felder sind erforderlich')
     }
+
+    const birthdayDate = new Date(birthday)
+    const today = new Date()
+    const minDate = new Date(today.getFullYear() - 120, today.getMonth(), today.getDate())
+    const maxDate = new Date(today.getFullYear() - 13, today.getMonth(), today.getDate())
+
+    if (isNaN(birthdayDate.getTime()) || birthdayDate < minDate || birthdayDate > maxDate) {
+      return encodedRedirect(
+        'error',
+        '/signup',
+        'Ungültiges Geburtsdatum. Sie müssen mindestens 13 Jahre alt sein.',
+      )
+    }
+
+    const formattedBirthday = birthdayDate.toISOString().split('T')[0]
 
     if (password !== confirmPassword) {
-      encodedRedirect('error', '/signup', 'Die Passwörter stimmen nicht überein')
-      return
+      return encodedRedirect('error', '/signup', 'Die Passwörter stimmen nicht überein')
     }
 
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { first_name, last_name, group_link, birthday },
+        data: { first_name, last_name, group_link, birthday: formattedBirthday },
         emailRedirectTo: `${origin}/auth/callback`,
       },
     })
+
+    console.log(error)
 
     if (error) {
       console.error(error.code + ' ' + error.message)
@@ -112,14 +108,7 @@ export default function Signup({ searchParams }: { searchParams: Message }) {
             </div>
             <div className="flex flex-col gap-2">
               <Label htmlFor="birthday">Geburtstag</Label>
-              <Input
-                name="birthday"
-                type="text"
-                placeholder="TT.MM.JJJJ"
-                pattern="\d{2}\.\d{2}\.\d{4}"
-                required
-                title="Bitte geben Sie das Datum im Format TT.MM.JJJJ ein"
-              />
+              <Input name="birthday" type="date" required />
             </div>
             <div className="flex flex-col gap-2">
               <Label htmlFor="password">Passwort</Label>
