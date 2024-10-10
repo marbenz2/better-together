@@ -8,7 +8,6 @@ interface InitializationState {
 export const useInitializationStore = create<InitializationState>((set) => ({
   isInitialized: false,
   setInitialized: (value) => {
-    console.log('Setting isInitialized to:', value)
     set({ isInitialized: value })
   },
 }))

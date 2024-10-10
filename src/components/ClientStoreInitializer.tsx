@@ -19,7 +19,6 @@ export default function ClientStoreInitializer({ children, userId }: ClientStore
 
   const initializeStores = useCallback(async () => {
     if (userId && !isInitialized) {
-      console.log('Starting initialization')
       try {
         await Promise.all([
           getPublicProfile(userId),
@@ -27,7 +26,6 @@ export default function ClientStoreInitializer({ children, userId }: ClientStore
           getAllUserGroups(userId),
           getUser(),
         ])
-        console.log('Initialization complete')
         setInitialized(true)
       } catch (err) {
         console.error('Initialization error:', err)
