@@ -48,6 +48,8 @@ export default function Signup({ searchParams }: { searchParams: Message }) {
       return encodedRedirect('error', '/signup', 'Die Passwörter stimmen nicht überein')
     }
 
+    console.log('GROUPLINK: ', group_link)
+
     const { error } = await supabase.auth.signUp({
       email,
       password,
