@@ -285,12 +285,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      set_current_user_id: {
-        Args: {
-          user_id: string
-        }
-        Returns: undefined
-      }
+      [_ in never]: never
     }
     Enums: {
       enum_group_members_role: "admin" | "member"
