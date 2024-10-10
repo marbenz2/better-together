@@ -32,9 +32,9 @@ export default function Login({ searchParams }: { searchParams: Message }) {
       return { error: 'User not found' }
     }
 
-    const group_link = userData.user.user_metadata.group_link
+    /* const group_link = userData.user.user_metadata.group_link */
 
-    if (group_link) {
+    /*  if (group_link) {
       const { error: groupError } = await supabase
         .from('group_members')
         .insert([{ group_id: group_link, user_id: userData.user.id, role: 'member' }])
@@ -52,7 +52,7 @@ export default function Login({ searchParams }: { searchParams: Message }) {
         console.error(userUpdateError.message)
         return { error: 'Error trying to update user' }
       }
-    }
+    } */
 
     return redirect('/protected')
   }
