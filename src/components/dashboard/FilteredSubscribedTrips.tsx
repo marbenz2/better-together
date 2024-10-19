@@ -12,8 +12,17 @@ export default function FilteredSubscribedTrips() {
   const { subscribedTrips } = useUserStore()
 
   const filteredSubscribedTrips = useMemo(() => {
+    const now = new Date()
     return (
-      subscribedTrips?.filter((subscribedTrip) => subscribedTrip.trips.group_id === groupId) ?? []
+      subscribedTrips
+        ?.filter(
+          (subscribedTrip) =>
+            subscribedTrip.trips.group_id === groupId &&
+            new Date(subscribedTrip.trips.date_to) >= now,
+        )
+        .sort(
+          (a, b) => new Date(a.trips.date_from).getTime() - new Date(b.trips.date_from).getTime(),
+        ) ?? []
     )
   }, [subscribedTrips, groupId])
 

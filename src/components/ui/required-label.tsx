@@ -1,10 +1,12 @@
 import { Label } from '@/components/forms/label'
+import { cn } from '@/lib/utils'
 
-export const RequiredLabel: React.FC<{ htmlFor: string; children: React.ReactNode }> = ({
-  htmlFor,
-  children,
-}) => (
-  <Label htmlFor={htmlFor}>
+export const RequiredLabel: React.FC<{
+  htmlFor: string
+  children: React.ReactNode
+  className?: string
+}> = ({ htmlFor, children, className }) => (
+  <Label htmlFor={htmlFor} className={className}>
     {children} <span className="text-sm text-info">*</span>
   </Label>
 )
