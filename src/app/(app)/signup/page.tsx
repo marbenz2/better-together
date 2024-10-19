@@ -8,6 +8,7 @@ import { FormMessage, Message } from '@/components/forms/form-message'
 import { encodedRedirect } from '@/utils/utils'
 import { InfoIcon } from 'lucide-react'
 import { BackButtonServer } from '@/components/ui/back-button-server'
+import { RequiredLabel } from '@/components/ui/required-label'
 
 export default function Signup({ searchParams }: { searchParams: Message }) {
   const queryId =
@@ -91,27 +92,30 @@ export default function Signup({ searchParams }: { searchParams: Message }) {
               Anmelden
             </Link>
           </p>
+          <p className="text-sm text-foreground/60">
+            Felder mit <span className="text-sm text-info">*</span> sind Pflichtfelder.
+          </p>
           <div className="mt-8 flex flex-col gap-8 [&>input]:mb-3">
             <div className="flex flex-col gap-2">
-              <Label htmlFor="email">Email</Label>
+              <RequiredLabel htmlFor="email">Email</RequiredLabel>
               <Input name="email" placeholder="you@example.com" autoComplete="email" required />
             </div>
             <div className="flex flex-col sm:flex-row justify-between gap-2">
               <div className="flex flex-col gap-2">
-                <Label htmlFor="first_name">Vorname</Label>
+                <RequiredLabel htmlFor="first_name">Vorname</RequiredLabel>
                 <Input name="first_name" placeholder="John" autoComplete="given-name" required />
               </div>
               <div className="flex flex-col gap-2">
-                <Label htmlFor="last_name">Nachname</Label>
+                <RequiredLabel htmlFor="last_name">Nachname</RequiredLabel>
                 <Input name="last_name" placeholder="Doe" autoComplete="family-name" required />
               </div>
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="birthday">Geburtstag</Label>
+              <RequiredLabel htmlFor="birthday">Geburtstag</RequiredLabel>
               <Input name="birthday" type="date" required />
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="password">Passwort</Label>
+              <RequiredLabel htmlFor="password">Passwort</RequiredLabel>
               <Input
                 type="password"
                 name="password"
@@ -122,7 +126,7 @@ export default function Signup({ searchParams }: { searchParams: Message }) {
               />
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="confirmPassword">Passwort bestätigen</Label>
+              <RequiredLabel htmlFor="confirmPassword">Passwort bestätigen</RequiredLabel>
               <Input
                 type="password"
                 name="confirmPassword"
