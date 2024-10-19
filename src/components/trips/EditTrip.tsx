@@ -534,17 +534,23 @@ const EditTrip = () => {
                     <FormItem>
                       <FormLabel>Initiale Anzahlung</FormLabel>
                       <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="Anzahlung"
-                          {...field}
-                          value={field.value === undefined ? '' : field.value}
-                          onChange={(e) =>
-                            field.onChange(
-                              e.target.value === '' ? undefined : Number(e.target.value),
-                            )
-                          }
-                        />
+                        <div className="relative">
+                          <Input
+                            type="number"
+                            className="pl-6"
+                            placeholder="Anzahlung"
+                            {...field}
+                            value={field.value === undefined ? '' : field.value}
+                            onChange={(e) =>
+                              field.onChange(
+                                e.target.value === '' ? undefined : Number(e.target.value),
+                              )
+                            }
+                          />
+                          <span className="absolute left-2 top-1/2 transform -translate-y-1/2">
+                            €
+                          </span>
+                        </div>
                       </FormControl>
                     </FormItem>
                   )}
