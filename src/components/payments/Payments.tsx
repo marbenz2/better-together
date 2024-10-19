@@ -21,7 +21,6 @@ import {
 } from 'lucide-react'
 import InfoCard from '@/components/ui/info-card'
 import { Trips } from '@/types/supabase'
-import { User } from 'payload'
 import PaymentQr from './PaymentQr'
 import { Separator } from '@/components/ui/separator'
 import { ResponsiveDialog } from '@/components/ResponsiveDialog'
@@ -231,16 +230,6 @@ function formatDate(date: string): string {
     month: 'long',
     day: 'numeric',
   })
-}
-
-function generateEmailLink(trip: Trips, user: User) {
-  return `mailto:benzinger.maxi@gmail.com?subject=Zahlungsanfrage%20${
-    user?.user_metadata.first_name
-  }%20${user?.user_metadata.last_name}?body=Resiedaten:%20${
-    trip.name
-  }%20von%20${formatDate(trip.date_from)}%20-%20${formatDate(trip.date_to)}%0ANutzer:%20${
-    user?.user_metadata.first_name
-  }%20${user?.user_metadata.last_name}%0AE-Mail:%20${user?.email}%0A%0AFrage:%20`
 }
 
 function PaymentMethods({ trip, amount }: { trip: Trips | undefined; amount: number }) {
