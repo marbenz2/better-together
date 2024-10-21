@@ -37,21 +37,18 @@ export default function UserList() {
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: tripPublicProfiles.reduce(
-      (acc, profile) => {
-        const member = tripMembers.find((m) => m.user_id === profile.id)
-        acc[profile.id] = {
-          down_payment_amount: member?.down_payment_amount ?? null,
-          full_payment_amount: member?.full_payment_amount ?? null,
-          final_payment_amount: member?.final_payment_amount ?? null,
-          down_payment: member?.down_payment ?? false,
-          full_payment: member?.full_payment ?? false,
-          final_payment: member?.final_payment ?? false,
-        }
-        return acc
-      },
-      {} as z.infer<typeof formSchema>,
-    ),
+    defaultValues: tripPublicProfiles.reduce((acc, profile) => {
+      const member = tripMembers.find((m) => m.user_id === profile.id)
+      acc[profile.id] = {
+        down_payment_amount: member?.down_payment_amount ?? null,
+        full_payment_amount: member?.full_payment_amount ?? null,
+        final_payment_amount: member?.final_payment_amount ?? null,
+        down_payment: member?.down_payment ?? false,
+        full_payment: member?.full_payment ?? false,
+        final_payment: member?.final_payment ?? false,
+      }
+      return acc
+    }, {} as z.infer<typeof formSchema>),
   })
 
   useEffect(() => {
@@ -97,9 +94,9 @@ export default function UserList() {
       const supabase = createClient()
       const { error } = await setUserPayments(supabase, payments)
       if (error) {
-        showNotification('Fehler', 'Fehler beim Speichern der Zahlungen', 'destructive')
+        showNotification('Fehler beim Speichern der Zahlungen', 'destructive')
       } else {
-        showNotification('Erfolgreich', 'Zahlungen erfolgreich gespeichert', 'success')
+        showNotification('Zahlungen erfolgreich gespeichert', 'success')
         setChangedFields({})
         getTripMembers(trip.id)
       }
@@ -148,7 +145,11 @@ export default function UserList() {
                           <div className="relative">
                             <Input
                               type="number"
-                              className={`w-full max-w-md pl-6 ${changedFields[`${profile.id}.down_payment_amount`] ? 'border-yellow-500' : ''}`}
+                              className={`w-full max-w-md pl-6 ${
+                                changedFields[`${profile.id}.down_payment_amount`]
+                                  ? 'border-yellow-500'
+                                  : ''
+                              }`}
                               {...field}
                               value={field.value ?? ''}
                               disabled={
@@ -206,7 +207,11 @@ export default function UserList() {
                           <div className="relative">
                             <Input
                               type="number"
-                              className={`w-full max-w-md pl-6 ${changedFields[`${profile.id}.full_payment_amount`] ? 'border-yellow-500' : ''}`}
+                              className={`w-full max-w-md pl-6 ${
+                                changedFields[`${profile.id}.full_payment_amount`]
+                                  ? 'border-yellow-500'
+                                  : ''
+                              }`}
                               {...field}
                               value={field.value ?? ''}
                               disabled={
@@ -261,7 +266,11 @@ export default function UserList() {
                           <div className="relative">
                             <Input
                               type="number"
-                              className={`w-full max-w-md pl-6 ${changedFields[`${profile.id}.final_payment_amount`] ? 'border-yellow-500' : ''}`}
+                              className={`w-full max-w-md pl-6 ${
+                                changedFields[`${profile.id}.final_payment_amount`]
+                                  ? 'border-yellow-500'
+                                  : ''
+                              }`}
                               {...field}
                               value={field.value ?? ''}
                               disabled={

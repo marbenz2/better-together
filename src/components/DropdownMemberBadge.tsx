@@ -53,7 +53,7 @@ export default function DropdownMemberBadge({
       return
     }
     if (isChosenUserAdmin) {
-      showNotification('Info', 'Der Benutzer ist bereits ein Admin', 'info')
+      showNotification('Der Benutzer ist bereits ein Admin', 'info')
     } else {
       makeUserAdmin(userId, groupId)
     }
@@ -65,7 +65,7 @@ export default function DropdownMemberBadge({
       return
     }
     if (!isChosenUserAdmin) {
-      showNotification('Info', 'Der Benutzer ist kein Admin', 'info')
+      showNotification('Der Benutzer ist kein Admin', 'info')
     } else {
       removeUserAdmin(userId, groupId)
     }
@@ -77,10 +77,10 @@ export default function DropdownMemberBadge({
       return
     }
     if (isChosenUserAdmin) {
-      showNotification('Info', 'Der Benutzer ist ein Admin', 'info')
+      showNotification('Der Benutzer ist ein Admin', 'info')
     } else {
       if (hasPaid) {
-        showNotification('Info', 'Der Benutzer hat bereits für Reisen bezahlt', 'info')
+        showNotification('Der Benutzer hat bereits für Reisen bezahlt', 'info')
       } else {
         removeUserFromGroup(userId, groupId)
       }

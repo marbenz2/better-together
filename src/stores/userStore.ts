@@ -29,12 +29,12 @@ interface UserState {
   setIsSubscribed: (isSubscribed: boolean) => void
 }
 
-const handleError = (error: unknown, defaultTitle: string, defaultMessage: string) => {
+const handleError = (error: unknown, defaultTitle: string, defaultMessage?: string) => {
   console.error(error)
 
   const errorMessage = error instanceof Error ? error.message : defaultMessage
 
-  showNotification(defaultTitle, errorMessage, 'destructive')
+  showNotification(defaultTitle, 'destructive', errorMessage)
 }
 
 export const useUserStore = create<UserState>((set) => {
@@ -52,11 +52,7 @@ export const useUserStore = create<UserState>((set) => {
         set({ user: data ?? ({} as User) })
       } catch (error) {
         console.error('Fehler beim Abrufen des Benutzers:', error)
-        handleError(
-          error,
-          'Fehler beim Abrufen des Benutzers',
-          'Die Benutzerdaten konnten nicht abgerufen werden.',
-        )
+        handleError(error, 'Fehler beim Abrufen des Benutzers')
         set({ user: {} as User })
       }
     },
@@ -75,11 +71,7 @@ export const useUserStore = create<UserState>((set) => {
         }
       } catch (error) {
         console.error('Fehler beim Abrufen des öffentlichen Profils:', error)
-        handleError(
-          error,
-          'Fehler beim Abrufen des öffentlichen Profils',
-          'Das öffentliche Profil konnte nicht abgerufen werden.',
-        )
+        handleError(error, 'Fehler beim Abrufen des öffentlichen Profils')
       }
     },
 
@@ -94,18 +86,10 @@ export const useUserStore = create<UserState>((set) => {
         if (error) throw error
         if (data) {
           set({ publicProfile: data as PublicProfileType })
-          showNotification(
-            'Profil aktualisiert',
-            `Dein Profil wurde erfolgreich aktualisiert.`,
-            'success',
-          )
+          showNotification('Profil aktualisiert', 'success')
         }
       } catch (error) {
-        handleError(
-          error,
-          'Fehler beim Aktualisieren des Profils',
-          'Es ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
-        )
+        handleError(error, 'Fehler beim Aktualisieren des Profils')
       }
     },
 

@@ -20,11 +20,11 @@ export default function TripPage({ params }: { params: { id: string } }) {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    if (title && message && variant) {
+    if (title && variant) {
       toast({
         title,
-        description: message,
         variant,
+        description: message,
       })
     }
   }, [title, message, variant, toast])

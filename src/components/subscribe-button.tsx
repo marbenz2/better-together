@@ -33,7 +33,7 @@ export function TripSubscription() {
       const { error } = await addSubscription(trip.id, user.id, additionalMembers)
       if (error) {
         console.error('Fehler beim Anmelden:', error)
-        return
+        throw new Error(error.message)
       }
       setIsSubscribed(true)
       setSubscribedTrips((prevTrips) => [
@@ -43,13 +43,14 @@ export function TripSubscription() {
       await getTripMembers(trip.id)
       await getAvailableSpots(trip.id)
       setAdditionalMembers([])
-      showNotification(
-        'Anmeldung erfolgt',
-        `Du hast dich erfolgreich für die Reise angemeldet.`,
-        'success',
-      )
-    } catch (error) {
-      console.error('Fehler beim Anmelden:', error)
+      showNotification('Anmeldung erfolgt', 'success')
+    } catch (error: unknown) {
+      if (error instanceof Error && error.message.includes('Nicht genügend Plätze')) {
+        console.log('HOER')
+        showNotification('Keine Plätze mehr verfügbar', 'destructive')
+      } else {
+        showNotification('Fehler beim Anmelden', 'destructive')
+      }
     }
   }
 
@@ -67,11 +68,7 @@ export function TripSubscription() {
       getTripMembers(trip.id)
       getAvailableSpots(trip.id)
       setAdditionalMembers([])
-      showNotification(
-        'Abmeldung erfolgt',
-        'Du hast dich erfolgreich von der Reise abgemeldet',
-        'success',
-      )
+      showNotification('Abmeldung erfolgt', 'success')
     } catch (error) {
       console.error('Fehler beim Abmelden:', error)
     }
@@ -138,7 +135,9 @@ function SubscriptionButton({
     <>
       <ResponsiveDialog
         title={`${isSubscribed ? 'Abmelden' : 'Anmelden'}`}
-        message={`Möchtest du dich wirklich für die Reise ${isSubscribed ? 'abmelden' : 'anmelden'}?`}
+        message={`Möchtest du dich wirklich für die Reise ${
+          isSubscribed ? 'abmelden' : 'anmelden'
+        }?`}
         messageComponent={!isSubscribed && <AddAdditional />}
         confirmText={isSubscribed ? 'Abmelden' : 'Anmelden'}
         onConfirm={handleClick}

@@ -39,12 +39,12 @@ interface TripState {
   getAvailableSpots: (tripId: string) => Promise<void>
 }
 
-const handleError = (error: unknown, defaultTitle: string, defaultMessage: string) => {
+const handleError = (error: unknown, defaultTitle: string, defaultMessage?: string) => {
   console.error(error)
 
   const errorMessage = error instanceof Error ? error.message : defaultMessage
 
-  showNotification(defaultTitle, errorMessage, 'destructive')
+  showNotification(defaultTitle, 'destructive', errorMessage)
 }
 
 export const useTripStore = create<TripState>((set) => {
@@ -60,11 +60,7 @@ export const useTripStore = create<TripState>((set) => {
         set({ trip: data ?? null })
       } catch (error) {
         console.error('Fehler beim Abrufen der Reise:', error)
-        handleError(
-          error,
-          'Fehler beim Abrufen der Reise',
-          'Die Reise konnte nicht abgerufen werden.',
-        )
+        handleError(error, 'Fehler beim Abrufen der Reise')
         set({ trip: null })
       }
     },
@@ -78,11 +74,7 @@ export const useTripStore = create<TripState>((set) => {
         set({ groupTrips: data ?? [] })
       } catch (error) {
         console.error('Fehler beim Abrufen der Gruppenreisen:', error)
-        handleError(
-          error,
-          'Fehler beim Abrufen der Gruppenreisen',
-          'Die Gruppenreisen konnten nicht abgerufen werden.',
-        )
+        handleError(error, 'Fehler beim Abrufen der Gruppenreisen')
         set({ groupTrips: [] })
       }
     },
@@ -93,18 +85,10 @@ export const useTripStore = create<TripState>((set) => {
         if (error) throw error
         set({ trip: data ?? null })
         if (data) {
-          showNotification(
-            'Reise erstellt',
-            `Die Reise "${trip.name}" wurde erfolgreich erstellt.`,
-            'success',
-          )
+          showNotification('Reise erstellt', 'success')
         }
       } catch (error) {
-        handleError(
-          error,
-          'Fehler beim Erstellen der Reise',
-          'Es ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
-        )
+        handleError(error, 'Fehler beim Erstellen der Reise')
       }
     },
 
@@ -114,18 +98,10 @@ export const useTripStore = create<TripState>((set) => {
         if (error) throw error
         set({ trip: data ?? null })
         if (data) {
-          showNotification(
-            'Reise aktualisiert',
-            `Die Reise "${trip.name}" wurde erfolgreich aktualisiert.`,
-            'success',
-          )
+          showNotification('Reise aktualisiert', 'success')
         }
       } catch (error) {
-        handleError(
-          error,
-          'Fehler beim Aktualisieren der Reise',
-          'Es ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
-        )
+        handleError(error, 'Fehler beim Aktualisieren der Reise')
       }
     },
 
@@ -134,13 +110,9 @@ export const useTripStore = create<TripState>((set) => {
         const { error } = await deleteTrip(supabase, tripId)
         if (error) throw error
         set({ trip: null })
-        showNotification('Reise gelöscht', 'Die Reise wurde erfolgreich gelöscht.', 'success')
+        showNotification('Reise gelöscht', 'success')
       } catch (error) {
-        handleError(
-          error,
-          'Fehler beim Löschen der Reise',
-          'Es ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
-        )
+        handleError(error, 'Fehler beim Löschen der Reise')
       }
     },
 
@@ -151,11 +123,7 @@ export const useTripStore = create<TripState>((set) => {
         if (error) throw error
         set({ tripMembers: data ?? [] })
       } catch (error) {
-        handleError(
-          error,
-          'Fehler beim Abrufen der Reise-Mitglieder',
-          'Es ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
-        )
+        handleError(error, 'Fehler beim Abrufen der Reise-Mitglieder')
         set({ tripMembers: [] })
       }
     },
@@ -168,11 +136,7 @@ export const useTripStore = create<TripState>((set) => {
         if (error) throw error
         set({ additionalMembers: data ?? [] })
       } catch (error) {
-        handleError(
-          error,
-          'Fehler beim Abrufen der zusätzlichen Mitglieder',
-          'Es ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
-        )
+        handleError(error, 'Fehler beim Abrufen der zusätzlichen Mitglieder')
         set({ additionalMembers: [] })
       }
     },
@@ -185,11 +149,7 @@ export const useTripStore = create<TripState>((set) => {
         if (error) throw error
         set({ availableSpots: data ?? 0 })
       } catch (error) {
-        handleError(
-          error,
-          'Fehler beim Abrufen der verfügbaren Plätze',
-          'Es ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
-        )
+        handleError(error, 'Fehler beim Abrufen der verfügbaren Plätze')
         set({ availableSpots: 0 })
       }
     },

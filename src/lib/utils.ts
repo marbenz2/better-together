@@ -13,12 +13,13 @@ export function copyToClipboard(text: string | number | null | undefined) {
 
 export const showNotification = (
   title: string,
-  message: string,
   variant: NotificationVariant,
+  message?: string,
 ): void => {
+  console.log('showNotification', title, variant, message)
   const toastStore = useToastStore.getState()
   toastStore.clearToast()
-  toastStore.showToast(title, message, variant)
+  toastStore.showToast(title, variant, message)
   setTimeout(() => {
     toastStore.clearToast()
   }, 50)

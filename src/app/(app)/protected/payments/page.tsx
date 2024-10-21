@@ -14,11 +14,11 @@ export default function PaymentPage() {
   const { title, message, variant } = useToastStore()
 
   useEffect(() => {
-    if (title && message && variant) {
+    if (title && variant) {
       toast({
         title,
-        description: message,
         variant,
+        description: message,
       })
     }
   }, [title, message, variant, toast])

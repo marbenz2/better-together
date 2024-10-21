@@ -51,44 +51,44 @@ interface GroupState {
 const handleError = (
   error: any,
   defaultTitle: string,
-  defaultMessage: string,
+  defaultMessage?: string,
   context?: string,
 ) => {
   const errorMessages: { [key: string]: { [context: string]: NotificationMessage } } = {
     '23505': {
       default: {
         title: 'Fehler',
-        message: 'Ein Eintrag mit diesem Namen existiert bereits.',
         variant: 'destructive',
+        message: 'Ein Eintrag mit diesem Namen existiert bereits.',
       },
       createGroup: {
         title: 'Fehler',
-        message: 'Eine Gruppe mit diesem Namen existiert bereits.',
         variant: 'destructive',
+        message: 'Eine Gruppe mit diesem Namen existiert bereits.',
       },
       renameGroup: {
         title: 'Fehler',
-        message: 'Eine Gruppe mit diesem Namen existiert bereits.',
         variant: 'destructive',
+        message: 'Eine Gruppe mit diesem Namen existiert bereits.',
       },
       joinGroup: {
         title: 'Fehler',
-        message: 'Du bist bereits Mitglied dieser Gruppe.',
         variant: 'destructive',
+        message: 'Du bist bereits Mitglied dieser Gruppe.',
       },
     },
     '22P02': {
       default: {
         title: 'Fehler',
-        message: 'Das war kein korrektes Format eines Einladungslinks.',
         variant: 'destructive',
+        message: 'Das war kein korrektes Format eines Einladungslinks.',
       },
     },
     '23503': {
       default: {
         title: 'Fehler',
-        message: 'Falscher Einladungslink.',
         variant: 'destructive',
+        message: 'Falscher Einladungslink.',
       },
     },
   }
@@ -98,11 +98,11 @@ const handleError = (
   const errorMessage = errorMessages[errorCode]?.[errorContext] ||
     errorMessages[errorCode]?.default || {
       title: defaultTitle,
-      message: defaultMessage,
       variant: 'destructive',
+      message: defaultMessage,
     }
 
-  showNotification(errorMessage.title, errorMessage.message, errorMessage.variant)
+  showNotification(errorMessage.title, errorMessage.variant, errorMessage.message)
 }
 
 export const useGroupStore = create<GroupState>((set, get) => {
@@ -159,19 +159,10 @@ export const useGroupStore = create<GroupState>((set, get) => {
             selectedGroupName: group.name,
             groupMembers: [],
           }))
-          showNotification(
-            'Gruppe erstellt',
-            `Die Gruppe "${group.name}" wurde erfolgreich erstellt.`,
-            'success',
-          )
+          showNotification('Gruppe erstellt', 'success')
         }
       } catch (error) {
-        handleError(
-          error,
-          'Fehler beim Erstellen der Gruppe',
-          'Es ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
-          'createGroup',
-        )
+        handleError(error, 'Fehler beim Erstellen der Gruppe', 'createGroup')
       }
     },
 
@@ -200,11 +191,7 @@ export const useGroupStore = create<GroupState>((set, get) => {
             selectedGroupName: group.name,
             groupMembers: [],
           }))
-          showNotification(
-            'Gruppe beigetreten',
-            `Du hast erfolgreich der Gruppe "${group.name}" beigetreten.`,
-            'success',
-          )
+          showNotification('Gruppe beigetreten', 'success')
         }
       } catch (error) {
         handleError(
@@ -231,11 +218,7 @@ export const useGroupStore = create<GroupState>((set, get) => {
 
         await useUserStore.getState().getSubscribedTrips()
 
-        showNotification(
-          'Gruppe verlassen',
-          `Du hast erfolgreich die Gruppe und alle zugehörigen Reisen verlassen.`,
-          'success',
-        )
+        showNotification('Gruppe verlassen', 'success')
       } catch (error) {
         handleError(
           error,
@@ -261,16 +244,11 @@ export const useGroupStore = create<GroupState>((set, get) => {
             const nextGroup = updatedGroups.find((group) => group.favourite) || updatedGroups[0]
             newGroupId = nextGroup.group_id
             newSelectedGroupName = nextGroup.groups.name
-            showNotification(
-              'Gruppe gelöscht',
-              `Die Gruppe wurde gelöscht. Sie sind jetzt in der Gruppe "${nextGroup.groups.name}".`,
-              'success',
-            )
+            showNotification('Gruppe gelöscht', 'success')
           } else {
             newGroupId = null
             newSelectedGroupName = null
             showNotification(
-              'Gruppe gelöscht',
               'Die letzte Gruppe wurde gelöscht. Sie sind jetzt in keiner Gruppe mehr.',
               'success',
             )
@@ -304,11 +282,7 @@ export const useGroupStore = create<GroupState>((set, get) => {
           ),
           selectedGroupName: newName,
         }))
-        showNotification(
-          'Gruppe umbenannt',
-          `Die Gruppe wurde erfolgreich in "${newName}" umbenannt.`,
-          'success',
-        )
+        showNotification('Gruppe umbenannt', 'success')
       } catch (error) {
         handleError(
           error,
@@ -329,11 +303,7 @@ export const useGroupStore = create<GroupState>((set, get) => {
           ),
         }))
 
-        showNotification(
-          'Favoriten gesetzt',
-          `Die Gruppe wurde erfolgreich als Favorit ${isFavourite ? 'gesetzt' : 'entfernt'}.`,
-          'success',
-        )
+        showNotification('Favoriten gesetzt', 'success')
       } catch (error) {
         handleError(
           error,
@@ -433,11 +403,7 @@ export const useGroupStore = create<GroupState>((set, get) => {
           await useUserStore.getState().getSubscribedTrips()
         }
 
-        showNotification(
-          'Benutzer entfernt',
-          'Der Benutzer wurde erfolgreich aus der Gruppe und allen zugehörigen Reisen entfernt.',
-          'success',
-        )
+        showNotification('Benutzer entfernt', 'success')
       } catch (error) {
         handleError(
           error,
@@ -456,11 +422,7 @@ export const useGroupStore = create<GroupState>((set, get) => {
             member.user_id === userId ? { ...member, role: 'admin' } : member,
           ),
         }))
-        showNotification(
-          'Admin gesetzt',
-          'Der Benutzer wurde erfolgreich zum Admin ernannt.',
-          'success',
-        )
+        showNotification('Admin-Rechte hinzugefügt', 'success')
       } catch (error) {
         handleError(
           error,
@@ -479,11 +441,7 @@ export const useGroupStore = create<GroupState>((set, get) => {
             member.user_id === userId ? { ...member, role: 'member' } : member,
           ),
         }))
-        showNotification(
-          'Admin-Rechte entfernt',
-          'Die Admin-Rechte des Benutzers wurden erfolgreich entfernt.',
-          'success',
-        )
+        showNotification('Admin-Rechte entfernt', 'success')
       } catch (error) {
         handleError(
           error,

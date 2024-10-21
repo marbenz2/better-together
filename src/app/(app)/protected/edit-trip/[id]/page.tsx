@@ -12,11 +12,11 @@ export default function EditTripPage({ params }: { params: { id: string } }) {
   const { title, message, variant } = useToastStore()
 
   useEffect(() => {
-    if (title && message && variant) {
+    if (title && variant) {
       toast({
         title,
-        description: message,
         variant,
+        description: message,
       })
     }
   }, [title, message, variant, toast])

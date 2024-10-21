@@ -241,14 +241,10 @@ function PaymentMethods({ trip, amount }: { trip: Trips | undefined; amount: num
 
   const handleCopyClick = (iban: string) => {
     if (!iban || iban === '') {
-      showNotification(
-        'Fehler beim Kopieren des IBAN',
-        'IBAN ist leer. Bitte gib einen gültigen IBAN ein.',
-        'destructive',
-      )
+      showNotification('Fehler beim Kopieren des IBAN', 'destructive')
     }
     copyToClipboard(iban)
-    showNotification('IBAN kopiert', `"${iban}" wurde in die Zwischenablage kopiert.`, 'success')
+    showNotification(`"${iban}" wurde in die Zwischenablage kopiert.`, 'success')
   }
 
   return (

@@ -21,11 +21,11 @@ export default function UserListPage({ params }: { params: { id: string } }) {
   const isTripFromSelectedGroup = trip?.group_id === groupId
 
   useEffect(() => {
-    if (title && message && variant) {
+    if (title && variant) {
       toast({
         title,
-        description: message,
         variant,
+        description: message,
       })
     }
   }, [title, message, variant, toast])

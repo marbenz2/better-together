@@ -16,16 +16,12 @@ export default function GroupCode({ userGroups, groupId }: GroupCodeProps) {
     if (!groupId || groupId === '') {
       showNotification(
         'Fehler beim Kopieren des Einladungscodes',
-        'Der Einladungscode ist leer. Bitte gib einen gültigen Einladungscode ein.',
         'destructive',
+        'Der Einladungscode ist leer. Bitte gib einen gültigen Einladungscode ein.',
       )
     }
     copyToClipboard(groupId)
-    showNotification(
-      'Einladungscode kopiert',
-      `Der Einladungscode "${groupId}" wurde in die Zwischenablage kopiert.`,
-      'success',
-    )
+    showNotification('Einladungscode kopiert', 'success')
   }
   return (
     <div className="flex flex-col gap-4 w-full justify-center">
