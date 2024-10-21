@@ -22,6 +22,7 @@ import { useGroupStore } from '@/stores/groupStores'
 import InfoCard from '../ui/info-card'
 import { ButtonLink } from '../ui/button-link'
 import { Button } from '../ui/button'
+import AdditionalMembers from '../userlist/AdditionalMembers'
 
 export default function Trip() {
   const router = useRouter()
@@ -246,12 +247,12 @@ export default function Trip() {
             {tripMembers && (
               <TableRow>
                 <TableHead>Teilnehmer</TableHead>
-                <TableCell>
+                <TableCell className="flex flex-col">
                   {tripPublicProfiles.length === 0 && '-'}
                   {tripPublicProfiles.map((profile, index) => (
                     <span key={profile.id}>
                       {profile.first_name} {profile.last_name}
-                      {index < tripPublicProfiles.length - 1 && ', '}
+                      <AdditionalMembers userId={profile.id} variant="text" />
                     </span>
                   ))}
                 </TableCell>
