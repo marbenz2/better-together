@@ -3,20 +3,35 @@ import { Button } from '@/components/ui/button'
 import { PlusIcon } from 'lucide-react'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
 
-export default function AdditionalMembersButton({ userId }: { userId: string }) {
+interface AdditionalMembersProps {
+  userId: string
+  variant?: 'button' | 'text'
+}
+
+export default function AdditionalMembers({ userId, variant = 'button' }: AdditionalMembersProps) {
   const { tripMembers } = useTripStore()
   const additionalLength = tripMembers.find((m) => m.user_id === userId)?.additional?.length || 0
   const additionalMembers = tripMembers.find((m) => m.user_id === userId)?.additional || []
 
   if (additionalLength === 0) return null
 
+  const content = (
+    <>
+      {variant === 'button' && <PlusIcon className="w-4 h-4" />}
+      <span className={variant === 'button' ? 'truncate xs:inline' : ''}>{additionalLength}</span>
+    </>
+  )
+
   return (
     <HoverCard>
       <HoverCardTrigger asChild>
-        <Button className="w-fit flex items-center justify-center cursor-default">
-          <PlusIcon className="w-4 h-4" />
-          <span className="truncate xs:inline">{additionalLength}</span>
-        </Button>
+        {variant === 'button' ? (
+          <Button className="w-fit flex items-center justify-center cursor-default">
+            {content}
+          </Button>
+        ) : (
+          <span className="text-muted-foreground"> (+{content})</span>
+        )}
       </HoverCardTrigger>
       <HoverCardContent className="w-80">
         <div className="flex flex-col gap-2">
