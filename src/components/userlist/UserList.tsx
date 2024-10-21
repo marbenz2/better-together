@@ -16,7 +16,7 @@ import { showNotification } from '@/lib/utils'
 import { Separator } from '@/components/ui/separator'
 import { CardBackPlate, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { BackButtonClient } from '@/components/ui/back-button-client'
-import AdditionalMembersButton from '@/components/userlist/AdditionalMembersButton'
+import AdditionalMembers from '@/components/userlist/AdditionalMembers'
 
 const formSchema = z.record(
   z.object({
@@ -127,7 +127,7 @@ export default function UserList() {
                 )}
                 <div className="col-span-1 md:col-span-3 font-bold text-xl flex items-center gap-4">
                   {profile.last_name}, {profile.first_name}
-                  <AdditionalMembersButton userId={profile.id} />
+                  <AdditionalMembers userId={profile.id} />
                 </div>
                 <div className="flex flex-col space-y-2">
                   <FormField
