@@ -51,6 +51,7 @@ export function TripSubscription() {
       } else {
         showNotification('Fehler beim Anmelden', 'destructive')
       }
+      setAdditionalMembers([])
     }
   }
 
@@ -65,12 +66,13 @@ export function TripSubscription() {
       setSubscribedTrips((prevTrips) =>
         prevTrips ? prevTrips.filter((t) => t.trips.id !== trip.id) : [],
       )
-      getTripMembers(trip.id)
-      getAvailableSpots(trip.id)
+      await getTripMembers(trip.id)
+      await getAvailableSpots(trip.id)
       setAdditionalMembers([])
       showNotification('Abmeldung erfolgt', 'success')
     } catch (error) {
       console.error('Fehler beim Abmelden:', error)
+      setAdditionalMembers([])
     }
   }
 
