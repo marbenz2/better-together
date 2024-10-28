@@ -33,13 +33,18 @@ export default function Payments() {
   const { userPayments } = usePaymentStore()
 
   const filteredTrips = subscribedTrips?.filter((trip) => trip.trips.group_id === groupId)
+
+  const sortedFilteredTrips = filteredTrips?.sort(
+    (a, b) => new Date(a.trips.date_from).getTime() - new Date(b.trips.date_from).getTime(),
+  )
+
   const filteredPayments = userPayments?.filter((payment) =>
-    filteredTrips?.some((trip) => trip.trips.id === payment.trip_id),
+    sortedFilteredTrips?.some((trip) => trip.trips.id === payment.trip_id),
   )
 
   if (
-    !filteredTrips ||
-    filteredTrips.length === 0 ||
+    !sortedFilteredTrips ||
+    sortedFilteredTrips.length === 0 ||
     !filteredPayments ||
     filteredPayments.length === 0
   )
@@ -62,12 +67,12 @@ export default function Payments() {
             <div key={payment.trip_id} className="flex flex-col gap-4">
               <div className="flex flex-col gap-1">
                 <CardTitle>
-                  {filteredTrips.find((trip) => trip.trips.id === payment.trip_id)?.trips.name ||
-                    'Unbekannte Reise'}
+                  {sortedFilteredTrips.find((trip) => trip.trips.id === payment.trip_id)?.trips
+                    .name || 'Unbekannte Reise'}
                 </CardTitle>
                 <CardDescription>
                   {new Date(
-                    filteredTrips.find((trip) => trip.trips.id === payment.trip_id)?.trips
+                    sortedFilteredTrips.find((trip) => trip.trips.id === payment.trip_id)?.trips
                       .date_from || 'Unbekanntes Datum',
                   ).toLocaleDateString('de-DE', {
                     day: '2-digit',
@@ -76,7 +81,7 @@ export default function Payments() {
                   })}{' '}
                   -{' '}
                   {new Date(
-                    filteredTrips.find((trip) => trip.trips.id === payment.trip_id)?.trips
+                    sortedFilteredTrips.find((trip) => trip.trips.id === payment.trip_id)?.trips
                       .date_to || 'Unbekanntes Datum',
                   ).toLocaleDateString('de-DE', {
                     day: '2-digit',
@@ -104,7 +109,8 @@ export default function Payments() {
                         <PaymentMethods
                           amount={payment.down_payment_amount}
                           trip={
-                            filteredTrips.find((trip) => trip.trips.id === payment.trip_id)?.trips
+                            sortedFilteredTrips.find((trip) => trip.trips.id === payment.trip_id)
+                              ?.trips
                           }
                         />
                       </div>
@@ -147,7 +153,8 @@ export default function Payments() {
                         <PaymentMethods
                           amount={payment.full_payment_amount}
                           trip={
-                            filteredTrips.find((trip) => trip.trips.id === payment.trip_id)?.trips
+                            sortedFilteredTrips.find((trip) => trip.trips.id === payment.trip_id)
+                              ?.trips
                           }
                         />
                       </div>
@@ -190,7 +197,8 @@ export default function Payments() {
                         <PaymentMethods
                           amount={payment.final_payment_amount}
                           trip={
-                            filteredTrips.find((trip) => trip.trips.id === payment.trip_id)?.trips
+                            sortedFilteredTrips.find((trip) => trip.trips.id === payment.trip_id)
+                              ?.trips
                           }
                         />
                       </div>
