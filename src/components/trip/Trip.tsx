@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import Image from 'next/image'
-import { PencilIcon, SquareArrowOutUpRight, Trash2Icon, UsersIcon } from 'lucide-react'
+import { InfoIcon, PencilIcon, SquareArrowOutUpRight, Trash2Icon, UsersIcon } from 'lucide-react'
 import { Table, TableBody, TableCell, TableHead, TableRow } from '@/components/ui/table'
 import { TripSubscription } from '@/components/subscribe-button'
 import { BackButtonClient } from '@/components/ui/back-button-client'
@@ -23,6 +23,7 @@ import InfoCard from '../ui/info-card'
 import { ButtonLink } from '../ui/button-link'
 import { Button } from '../ui/button'
 import AdditionalMembers from '../userlist/AdditionalMembers'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip'
 
 export default function Trip() {
   const router = useRouter()
@@ -185,14 +186,6 @@ export default function Trip() {
             entspannender Momente! Um eure Anreise so einfach wie möglich zu gestalten, könnt ihr
             euch hier direkt die Route anzeigen lassen: <br />
             <br />
-            {/*               <Link
-                href={trip.anreise_link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex gap-2 items-center w-fit"
-              >
-                Google Maps <SquareArrowOutUpRight className="w-4 h-4" />
-              </Link> */}
             <ButtonLink
               href={trip.anreise_link}
               label="Google Maps"
@@ -214,10 +207,12 @@ export default function Trip() {
               <TableHead>Land:</TableHead>
               <TableCell>{trip.land}</TableCell>
             </TableRow>
-            <TableRow>
-              <TableHead>Gebiet:</TableHead>
-              <TableCell>{trip.area || '-'}</TableCell>
-            </TableRow>
+            {trip.area && (
+              <TableRow>
+                <TableHead>Gebiet:</TableHead>
+                <TableCell>{trip.area || '-'}</TableCell>
+              </TableRow>
+            )}
             <TableRow>
               <TableHead>Ort:</TableHead>
               <TableCell>
@@ -238,6 +233,34 @@ export default function Trip() {
               <TableHead>Betten</TableHead>
               <TableCell>{trip.beds}</TableCell>
             </TableRow>
+            {trip.price_per_night && (
+              <TableRow>
+                <TableHead>
+                  <span className="flex items-center gap-2">
+                    Gesamtpreis pro Nacht{' '}
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <InfoIcon size={14} />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>
+                            Gesamtpreis pro Nacht der kompletten Unterkunft. Preise pro Person
+                            stehen erst nach Abschluss der Anmeldefrist fest.
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </span>
+                </TableHead>
+                <TableCell>
+                  {new Intl.NumberFormat('de-DE', {
+                    style: 'currency',
+                    currency: 'EUR',
+                  }).format(trip.price_per_night)}
+                </TableCell>
+              </TableRow>
+            )}
             <TableRow>
               <TableHead>Verfügbare Plätze</TableHead>
               <TableCell>
