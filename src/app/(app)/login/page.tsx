@@ -8,7 +8,8 @@ import { FormMessage, Message } from '@/components/forms/form-message'
 import { encodedRedirect } from '@/utils/utils'
 import { BackButtonServer } from '@/components/ui/back-button-server'
 
-export default function Login({ searchParams }: { searchParams: Message }) {
+export default async function Login(props: { searchParams: Promise<Message> }) {
+  const searchParams = await props.searchParams;
   const signIn = async (formData: FormData) => {
     'use server'
 

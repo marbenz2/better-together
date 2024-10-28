@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, use } from 'react';
 import { useTripStore } from '@/stores/tripStores'
 import { useToast } from '@/components/ui/use-toast'
 import { useToastStore } from '@/stores/toastStore'
@@ -9,7 +9,8 @@ import InfoCard from '@/components/ui/info-card'
 import { useGroupStore } from '@/stores/groupStores'
 import UserList from '@/components/userlist/UserList'
 
-export default function UserListPage({ params }: { params: { id: string } }) {
+export default function UserListPage(props: { params: Promise<{ id: string }> }) {
+  const params = use(props.params);
   const { trip, getTrip, tripMembers, getTripMembers } = useTripStore()
   const { groupId, getAllTripPublicProfiles } = useGroupStore()
   const { user } = useUserStore()

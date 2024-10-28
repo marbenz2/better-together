@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, use } from 'react';
 import Trip from '@/components/trip/Trip'
 import { useTripStore } from '@/stores/tripStores'
 import { usePaymentStore } from '@/stores/paymentStore'
@@ -10,7 +10,8 @@ import { useUserStore } from '@/stores/userStore'
 import { useGroupStore } from '@/stores/groupStores'
 import Spinner from '@/components/ui/Spinner'
 
-export default function TripPage({ params }: { params: { id: string } }) {
+export default function TripPage(props: { params: Promise<{ id: string }> }) {
+  const params = use(props.params);
   const { user } = useUserStore()
   const { getAllUserGroups } = useGroupStore()
   const { getTrip, getAvailableSpots } = useTripStore()

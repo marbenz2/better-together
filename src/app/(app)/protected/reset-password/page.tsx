@@ -5,11 +5,12 @@ import { SubmitButton } from "@/components/forms/submit-button";
 import { createClient } from "@/utils/supabase/server";
 import { encodedRedirect } from "@/utils/utils";
 
-export default async function ResetPassword({
-  searchParams,
-}: {
-  searchParams: Message;
-}) {
+export default async function ResetPassword(
+  props: {
+    searchParams: Promise<Message>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const resetPassword = async (formData: FormData) => {
     "use server";
     const supabase = createClient();

@@ -9,13 +9,14 @@ import { headers } from 'next/headers'
 import { encodedRedirect } from '@/utils/utils'
 import { BackButtonServer } from '@/components/ui/back-button-server'
 
-export default function ForgotPassword({ searchParams }: { searchParams: Message }) {
+export default async function ForgotPassword(props: { searchParams: Promise<Message> }) {
+  const searchParams = await props.searchParams;
   const forgotPassword = async (formData: FormData) => {
     'use server'
 
     const email = formData.get('email')?.toString()
     const supabase = createClient()
-    const origin = headers().get('origin')
+    const origin = (await headers()).get('origin')
     const callbackUrl = formData.get('callbackUrl')?.toString()
 
     if (!email) {

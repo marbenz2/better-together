@@ -1,12 +1,13 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, use } from 'react';
 import { useToast } from '@/components/ui/use-toast'
 import { useToastStore } from '@/stores/toastStore'
 import { useUserStore } from '@/stores/userStore'
 import EditProfile from '@/components/profile/EditProfile'
 
-export default function EditProfilePage({ params }: { params: { id: string } }) {
+export default function EditProfilePage(props: { params: Promise<{ id: string }> }) {
+  const params = use(props.params);
   const { getPublicProfile } = useUserStore()
   const { toast } = useToast()
   const { title, message, variant } = useToastStore()

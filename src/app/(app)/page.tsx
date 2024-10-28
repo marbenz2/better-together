@@ -4,7 +4,7 @@ import Header from '@/components/Header'
 import Link from 'next/link'
 import Footer from '@/components/Footer'
 import { Button } from '@/components/ui/button'
-import { getPublicProfile, getUser } from '@/utils/supabase/queries'
+import { getUser } from '@/utils/supabase/queries'
 import Spinner from '@/components/ui/Spinner'
 
 export default async function Index() {

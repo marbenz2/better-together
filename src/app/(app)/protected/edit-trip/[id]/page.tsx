@@ -1,12 +1,13 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, use } from 'react';
 import { useTripStore } from '@/stores/tripStores'
 import { useToast } from '@/components/ui/use-toast'
 import { useToastStore } from '@/stores/toastStore'
 import EditTrip from '@/components/trips/EditTrip'
 
-export default function EditTripPage({ params }: { params: { id: string } }) {
+export default function EditTripPage(props: { params: Promise<{ id: string }> }) {
+  const params = use(props.params);
   const { getTrip } = useTripStore()
   const { toast } = useToast()
   const { title, message, variant } = useToastStore()
