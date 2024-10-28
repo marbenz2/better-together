@@ -175,6 +175,7 @@ export type Database = {
           ort: string
           paypal: string | null
           plz: string
+          price_per_night: number | null
           recipient: string | null
           rooms: number
           status: "upcoming" | "current" | "done"
@@ -201,6 +202,7 @@ export type Database = {
           ort: string
           paypal?: string | null
           plz: string
+          price_per_night?: number | null
           recipient?: string | null
           rooms: number
           status?: "upcoming" | "current" | "done"
@@ -227,6 +229,7 @@ export type Database = {
           ort?: string
           paypal?: string | null
           plz?: string
+          price_per_night?: number | null
           recipient?: string | null
           rooms?: number
           status?: "upcoming" | "current" | "done"
@@ -248,7 +251,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_trigger_context: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
     }
     Enums: {
       enum_group_members_role: "admin" | "member"
