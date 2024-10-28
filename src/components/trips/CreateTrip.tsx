@@ -39,6 +39,7 @@ const formSchema = z
     street_number: z.number().min(1, 'Hausnummer ist erforderlich'),
     rooms: z.number().min(1, 'Anzahl der Zimmer ist erforderlich'),
     beds: z.number().min(1, 'Anzahl der Betten ist erforderlich'),
+    price_per_night: z.number().optional(),
     image: z.string().min(1, 'Bild ist erforderlich'),
     recipient: z.string().optional(),
     iban: z.string().optional(),
@@ -84,6 +85,7 @@ export default function CreateTrip() {
       street_number: undefined,
       rooms: undefined,
       beds: undefined,
+      price_per_night: undefined,
       image: '',
       recipient: '',
       iban: '',
@@ -121,7 +123,6 @@ export default function CreateTrip() {
       data.plz,
       data.ort,
     )
-
     try {
       await createTrip({
         ...data,
@@ -427,6 +428,34 @@ export default function CreateTrip() {
                   )}
                 />
               </div>
+              <FormField
+                control={form.control}
+                name="price_per_night"
+                render={({ field }) => (
+                  <FormItem className="flex-1">
+                    <FormLabel>Gesamtpreis pro Nacht</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Input
+                          type="number"
+                          className="pl-6"
+                          placeholder="Preis pro Nacht"
+                          {...field}
+                          value={field.value === undefined ? '' : field.value}
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value === '' ? undefined : Number(e.target.value),
+                            )
+                          }
+                        />
+                        <span className="absolute left-2 top-1/2 transform -translate-y-1/2">
+                          €
+                        </span>
+                      </div>
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
               <div className="flex flex-col gap-12 w-full my-12">
                 <CardTitle>Zahlungsinformationen</CardTitle>
                 <div className="flex flex-col gap-2">
