@@ -9,13 +9,13 @@ import { encodedRedirect } from '@/utils/utils'
 import { BackButtonServer } from '@/components/ui/back-button-server'
 
 export default async function Login(props: { searchParams: Promise<Message> }) {
-  const searchParams = await props.searchParams;
+  const searchParams = await props.searchParams
   const signIn = async (formData: FormData) => {
     'use server'
 
     const email = formData.get('email') as string
     const password = formData.get('password') as string
-    const supabase = createClient()
+    const supabase = await createClient()
 
     const { error } = await supabase.auth.signInWithPassword({
       email,

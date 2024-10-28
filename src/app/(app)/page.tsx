@@ -8,7 +8,7 @@ import { getUser } from '@/utils/supabase/queries'
 import Spinner from '@/components/ui/Spinner'
 
 export default async function Index() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: user } = await getUser(supabase)
 
   return (

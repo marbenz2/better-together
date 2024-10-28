@@ -18,7 +18,7 @@ export default async function Signup(props: { searchParams: Promise<Message> }) 
   const signUp = async (formData: FormData) => {
     'use server'
 
-    const supabase = createClient()
+    const supabase = await createClient()
     const origin = (await headers()).get('origin')
 
     // Validate origin
