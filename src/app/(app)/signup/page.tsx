@@ -10,64 +10,161 @@ import { InfoIcon } from 'lucide-react'
 import { BackButtonServer } from '@/components/ui/back-button-server'
 import { RequiredLabel } from '@/components/ui/required-label'
 
-export default function Signup({ searchParams }: { searchParams: Message }) {
+export default async function Signup(props: { searchParams: Promise<Message> }) {
+  const searchParams = await props.searchParams
   const queryId =
     searchParams.hasOwnProperty('group_code') && searchParams['group_code' as keyof Message]
 
   const signUp = async (formData: FormData) => {
     'use server'
-    const email = formData.get('email')?.toString()
-    const password = formData.get('password')?.toString()
-    const confirmPassword = formData.get('confirmPassword')?.toString()
-    const first_name = formData.get('first_name')?.toString()
-    const last_name = formData.get('last_name')?.toString()
-    const birthday = formData.get('birthday') as string
-    const group_link = formData.get('group_link')?.toString()
+
     const supabase = createClient()
-    const origin = headers().get('origin')
+    const origin = (await headers()).get('origin')
 
-    if (!email || !password || !confirmPassword || !first_name || !last_name || !birthday) {
-      return encodedRedirect('error', '/signup', 'Alle Felder sind erforderlich')
+    // Validate origin
+    if (!origin) {
+      console.error('Origin header missing')
+      return encodedRedirect('error', '/signup', 'Ein Konfigurationsfehler ist aufgetreten')
     }
 
-    const birthdayDate = new Date(birthday)
-    const today = new Date()
-    const minDate = new Date(today.getFullYear() - 120, today.getMonth(), today.getDate())
-    const maxDate = new Date(today.getFullYear() - 13, today.getMonth(), today.getDate())
+    try {
+      // Trim whitespace from inputs
+      const email = formData.get('email')?.toString().trim()
+      const password = formData.get('password')?.toString().trim()
+      const confirmPassword = formData.get('confirmPassword')?.toString().trim()
+      const first_name = formData.get('first_name')?.toString().trim()
+      const last_name = formData.get('last_name')?.toString().trim()
+      const birthday = formData.get('birthday') as string
+      const group_link = formData.get('group_link')?.toString().trim()
 
-    if (isNaN(birthdayDate.getTime()) || birthdayDate < minDate || birthdayDate > maxDate) {
-      return encodedRedirect(
-        'error',
-        '/signup',
-        'Ungültiges Geburtsdatum. Sie müssen mindestens 13 Jahre alt sein.',
-      )
-    }
+      if (!email || !password || !confirmPassword || !first_name || !last_name || !birthday) {
+        return encodedRedirect('error', '/signup', 'Alle Pflichtfelder müssen ausgefüllt werden')
+      }
 
-    const formattedBirthday = birthdayDate.toISOString().split('T')[0]
+      if (password !== confirmPassword) {
+        return encodedRedirect('error', '/signup', 'Die Passwörter stimmen nicht überein')
+      }
 
-    if (password !== confirmPassword) {
-      return encodedRedirect('error', '/signup', 'Die Passwörter stimmen nicht überein')
-    }
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(email)) {
+        return encodedRedirect(
+          'error',
+          '/signup',
+          'Bitte geben Sie eine gültige E-Mail-Adresse ein',
+        )
+      }
 
-    console.log('GROUPLINK: ', group_link)
+      const birthdayDate = new Date(birthday)
+      const today = new Date()
 
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { first_name, last_name, group_link, birthday: formattedBirthday },
-        emailRedirectTo: `${origin}/auth/callback`,
-      },
-    })
+      // Setze die Uhrzeiten auf Mitternacht für konsistenten Vergleich
+      birthdayDate.setHours(0, 0, 0, 0)
+      today.setHours(0, 0, 0, 0)
 
-    if (error) {
-      console.error(error.code + ' ' + error.message)
-      return encodedRedirect('error', '/signup', 'Fehler bei der Registrierung')
-    } else {
+      const minDate = new Date(today)
+      minDate.setFullYear(today.getFullYear() - 120)
+
+      const maxDate = new Date(today)
+      maxDate.setFullYear(today.getFullYear() - 13)
+
+      if (isNaN(birthdayDate.getTime())) {
+        return encodedRedirect('error', '/signup', 'Bitte geben Sie ein gültiges Geburtsdatum ein')
+      }
+
+      if (birthdayDate < minDate || birthdayDate > maxDate) {
+        return encodedRedirect(
+          'error',
+          '/signup',
+          'Ungültiges Geburtsdatum. Sie müssen mindestens 13 Jahre alt sein.',
+        )
+      }
+
+      const formattedBirthday = birthdayDate.toISOString().split('T')[0]
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser(email)
+
+      if (user) {
+        return encodedRedirect('error', '/signup', 'Diese E-Mail-Adresse ist bereits registriert')
+      }
+
+      if (group_link) {
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+        if (!uuidRegex.test(group_link)) {
+          return encodedRedirect('error', '/signup', 'Ungültiges Gruppencode-Format')
+        }
+
+        // Explizitere Fehlerbehandlung
+        const { data: group, error: groupError } = await supabase
+          .from('groups')
+          .select('id')
+          .eq('id', group_link)
+          .single()
+
+        if (groupError) {
+          console.error('Gruppe Überprüfungsfehler:', groupError)
+          return encodedRedirect('error', '/signup', 'Fehler bei der Überprüfung des Gruppencodes')
+        }
+
+        if (!group) {
+          return encodedRedirect('error', '/signup', 'Die angegebene Gruppe existiert nicht')
+        }
+      }
+
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            first_name,
+            last_name,
+            group_link,
+            birthday: formattedBirthday,
+          },
+          emailRedirectTo: `${origin}/auth/callback`,
+        },
+      })
+
+      if (error) {
+        console.error('Supabase signup error:', error)
+
+        switch (error.message) {
+          case 'User already registered':
+            return encodedRedirect(
+              'error',
+              '/signup',
+              'Diese E-Mail-Adresse ist bereits registriert',
+            )
+          case 'Password should be at least 8 characters':
+            return encodedRedirect(
+              'error',
+              '/signup',
+              'Das Passwort muss mindestens 8 Zeichen lang sein',
+            )
+          default:
+            return encodedRedirect(
+              'error',
+              '/signup',
+              'Fehler bei der Registrierung. Bitte versuchen Sie es später erneut.',
+            )
+        }
+      }
+
       return encodedRedirect(
         'success',
         '/signup',
         'Danke für die Registrierung! Bitte überprüfen Sie Ihre E-Mail für einen Bestätigungslink.',
+      )
+    } catch (error) {
+      if (error instanceof Error && error.message === 'NEXT_REDIRECT') {
+        throw error
+      }
+      console.error('Unexpected signup error:', error)
+      return encodedRedirect(
+        'error',
+        '/signup',
+        'Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.',
       )
     }
   }
@@ -84,7 +181,10 @@ export default function Signup({ searchParams }: { searchParams: Message }) {
     <div className="flex flex-col flex-1 p-4 w-full">
       <BackButtonServer href="/" className="static" />
       <div className="flex flex-1 w-full items-center justify-center">
-        <form className="flex flex-col w-full justify-center gap-2 text-foreground [&>input]:mb-6 max-w-xl">
+        <form
+          className="flex flex-col w-full justify-center gap-2 text-foreground [&>input]:mb-6 max-w-xl"
+          action={signUp}
+        >
           <h1 className="text-2xl font-medium">Registrieren</h1>
           <p className="text-sm text text-foreground/60">
             Du hast schon einen Account?{' '}
@@ -95,11 +195,19 @@ export default function Signup({ searchParams }: { searchParams: Message }) {
           <p className="text-sm text-foreground/60">
             Felder mit <span className="text-sm text-info">*</span> sind Pflichtfelder.
           </p>
+
           <div className="mt-8 flex flex-col gap-8 [&>input]:mb-3">
             <div className="flex flex-col gap-2">
               <RequiredLabel htmlFor="email">Email</RequiredLabel>
-              <Input name="email" placeholder="you@example.com" autoComplete="email" required />
+              <Input
+                type="email"
+                name="email"
+                placeholder="you@example.com"
+                autoComplete="email"
+                required
+              />
             </div>
+
             <div className="flex flex-col sm:flex-row justify-between gap-2">
               <div className="flex flex-col gap-2">
                 <RequiredLabel htmlFor="first_name">Vorname</RequiredLabel>
@@ -110,32 +218,38 @@ export default function Signup({ searchParams }: { searchParams: Message }) {
                 <Input name="last_name" placeholder="Doe" autoComplete="family-name" required />
               </div>
             </div>
+
             <div className="flex flex-col gap-2">
               <RequiredLabel htmlFor="birthday">Geburtstag</RequiredLabel>
               <Input name="birthday" type="date" required />
             </div>
+
             <div className="flex flex-col gap-2">
               <RequiredLabel htmlFor="password">Passwort</RequiredLabel>
               <Input
                 type="password"
                 name="password"
+                minLength={8}
                 placeholder="••••••••"
                 autoComplete="new-password"
                 required
                 showPasswordToggle={true}
               />
             </div>
+
             <div className="flex flex-col gap-2">
               <RequiredLabel htmlFor="confirmPassword">Passwort bestätigen</RequiredLabel>
               <Input
                 type="password"
                 name="confirmPassword"
+                minLength={8}
                 placeholder="••••••••"
                 autoComplete="new-password"
                 required
                 showPasswordToggle={true}
               />
             </div>
+
             <div className="flex flex-col gap-2">
               <Label htmlFor="group_link" className="flex items-center gap-2">
                 Gruppencode{' '}
@@ -149,16 +263,14 @@ export default function Signup({ searchParams }: { searchParams: Message }) {
               <Input
                 type="text"
                 name="group_link"
-                value={queryId ? queryId : undefined}
+                defaultValue={queryId ? queryId : ''}
                 placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
                 autoComplete="off"
-                disabled={queryId ? true : undefined}
+                readOnly={Boolean(queryId)}
               />
-              {queryId && <input type="hidden" name="group_link" value={queryId} />}
             </div>
-            <SubmitButton formAction={signUp} pendingText="Registriere...">
-              Registrieren
-            </SubmitButton>
+
+            <SubmitButton pendingText="Registriere...">Registrieren</SubmitButton>
           </div>
           <FormMessage message={searchParams} />
         </form>
