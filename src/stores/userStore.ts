@@ -31,9 +31,7 @@ interface UserState {
 
 const handleError = (error: unknown, defaultTitle: string, defaultMessage?: string) => {
   console.error(error)
-
   const errorMessage = error instanceof Error ? error.message : defaultMessage
-
   showNotification(defaultTitle, 'destructive', errorMessage)
 }
 
@@ -101,7 +99,6 @@ export const useUserStore = create<UserState>((set) => {
             ? subscribedTrips(state.subscribedTrips)
             : subscribedTrips,
       })),
-
     getSubscribedTrips: async (userId?: string) => {
       const user = userId || useUserStore.getState().user.id
       const { data, error } = await getSubscribedTrips(supabase, user)
