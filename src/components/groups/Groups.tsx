@@ -1,13 +1,12 @@
-'use client'
+"use client";
 
 import {
   CardBackPlate,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card'
-import GroupManagement from '../groups/GroupManagement'
+} from "@/components/ui/card";
+import GroupManagement from "../groups/GroupManagement";
 
 export default function Groups() {
   return (
@@ -19,5 +18,5 @@ export default function Groups() {
         <GroupManagement />
       </CardContent>
     </CardBackPlate>
-  )
+  );
 }

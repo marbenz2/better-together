@@ -1,22 +1,34 @@
-import React, { useEffect } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import * as z from 'zod'
-import { useGroupStore } from '@/stores/groupStores'
-import { useTripStore } from '@/stores/tripStores'
-import { Button } from '@/components/ui/button'
-import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { Checkbox } from '@/components/ui/checkbox'
-import InfoCard from '@/components/ui/info-card'
-import Spinner from '@/components/ui/Spinner'
-import { createClient } from '@/utils/supabase/client'
-import { setUserPayments } from '@/utils/supabase/queries'
-import { showNotification } from '@/lib/utils'
-import { Separator } from '@/components/ui/separator'
-import { CardBackPlate, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { BackButtonClient } from '@/components/ui/back-button-client'
-import AdditionalMembers from '@/components/userlist/AdditionalMembers'
+import React, { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { useGroupStore } from "@/stores/groupStores";
+import { useTripStore } from "@/stores/tripStores";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import InfoCard from "@/components/ui/info-card";
+import Spinner from "@/components/ui/Spinner";
+import { createClient } from "@/utils/supabase/client";
+import { setUserPayments } from "@/utils/supabase/queries";
+import { showNotification } from "@/lib/utils";
+import { Separator } from "@/components/ui/separator";
+import {
+  CardBackPlate,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { BackButtonClient } from "@/components/ui/back-button-client";
+import AdditionalMembers from "@/components/userlist/AdditionalMembers";
+import { CheckedState } from "@radix-ui/react-checkbox";
 
 const formSchema = z.record(
   z.object({
@@ -26,19 +38,23 @@ const formSchema = z.record(
     down_payment: z.boolean(),
     full_payment: z.boolean(),
     final_payment: z.boolean(),
-  }),
-)
+  })
+);
 
 export default function UserList() {
-  const { tripMembers, getTripMembers, trip } = useTripStore()
-  const { tripPublicProfiles } = useGroupStore()
-  const [changedFields, setChangedFields] = React.useState<Record<string, boolean>>({})
-  const [sortedProfiles, setSortedProfiles] = React.useState<typeof tripPublicProfiles>([])
+  const { tripMembers, getTripMembers, trip } = useTripStore();
+  const { tripPublicProfiles } = useGroupStore();
+  const [changedFields, setChangedFields] = React.useState<
+    Record<string, boolean>
+  >({});
+  const [sortedProfiles, setSortedProfiles] = React.useState<
+    typeof tripPublicProfiles
+  >([]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: tripPublicProfiles.reduce((acc, profile) => {
-      const member = tripMembers.find((m) => m.user_id === profile.id)
+      const member = tripMembers.find((m) => m.user_id === profile.id);
       acc[profile.id] = {
         down_payment_amount: member?.down_payment_amount ?? null,
         full_payment_amount: member?.full_payment_amount ?? null,
@@ -46,28 +62,31 @@ export default function UserList() {
         down_payment: member?.down_payment ?? false,
         full_payment: member?.full_payment ?? false,
         final_payment: member?.final_payment ?? false,
-      }
-      return acc
+      };
+      return acc;
     }, {} as z.infer<typeof formSchema>),
-  })
+  });
 
   useEffect(() => {
     const sorted = [...tripPublicProfiles].sort((a, b) => {
       if (a.last_name !== b.last_name) {
-        return a.last_name.localeCompare(b.last_name)
+        return a.last_name.localeCompare(b.last_name);
       }
-      return a.first_name.localeCompare(b.first_name)
-    })
-    setSortedProfiles(sorted)
-  }, [tripPublicProfiles])
+      return a.first_name.localeCompare(b.first_name);
+    });
+    setSortedProfiles(sorted);
+  }, [tripPublicProfiles]);
 
-  const handleFieldChange = (fieldName: string, value: any) => {
-    setChangedFields((prev) => ({ ...prev, [fieldName]: true }))
-    return value
-  }
+  const handleFieldChange = (
+    fieldName: string,
+    value: number | CheckedState | null
+  ) => {
+    setChangedFields((prev) => ({ ...prev, [fieldName]: true }));
+    return value;
+  };
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    if (!trip) return
+    if (!trip) return;
 
     const payments = Object.entries(values)
       .map(([userId, userPayments]) => ({
@@ -87,21 +106,21 @@ export default function UserList() {
           changedFields[`${payment.userId}.final_payment`] ||
           changedFields[`${payment.userId}.down_payment_amount`] ||
           changedFields[`${payment.userId}.full_payment_amount`] ||
-          changedFields[`${payment.userId}.final_payment_amount`],
-      )
+          changedFields[`${payment.userId}.final_payment_amount`]
+      );
 
     if (payments.length > 0) {
-      const supabase = createClient()
-      const { error } = await setUserPayments(supabase, payments)
+      const supabase = createClient();
+      const { error } = await setUserPayments(supabase, payments);
       if (error) {
-        showNotification('Fehler beim Speichern der Zahlungen', 'destructive')
+        showNotification("Fehler beim Speichern der Zahlungen", "destructive");
       } else {
-        showNotification('Zahlungen erfolgreich gespeichert', 'success')
-        setChangedFields({})
-        getTripMembers(trip.id)
+        showNotification("Zahlungen erfolgreich gespeichert", "success");
+        setChangedFields({});
+        getTripMembers(trip.id);
       }
     }
-  }
+  };
 
   if (tripMembers.length === 0)
     return (
@@ -109,7 +128,7 @@ export default function UserList() {
         title="Keine Teilnehmer gefunden"
         description="Bisher haben sich noch keine Teilnehmer für diese Reise angemeldet"
       />
-    )
+    );
 
   return (
     <CardBackPlate className="flex flex-col max-w-7xl w-full gap-8">
@@ -121,7 +140,10 @@ export default function UserList() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             {sortedProfiles.map((profile) => (
-              <div key={profile.id} className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+              <div
+                key={profile.id}
+                className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full"
+              >
                 {sortedProfiles.indexOf(profile) !== 0 && (
                   <Separator className="col-span-1 md:col-span-3 w-full my-8" />
                 )}
@@ -136,9 +158,10 @@ export default function UserList() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>
-                          Anzahlung{' '}
-                          {trip?.initial_down_payment && trip?.initial_down_payment > 0
-                            ? '(initiale Anzahlung)'
+                          Anzahlung{" "}
+                          {trip?.initial_down_payment &&
+                          trip?.initial_down_payment > 0
+                            ? "(initiale Anzahlung)"
                             : null}
                         </FormLabel>
                         <FormControl>
@@ -146,22 +169,31 @@ export default function UserList() {
                             <Input
                               type="number"
                               className={`w-full max-w-md pl-6 ${
-                                changedFields[`${profile.id}.down_payment_amount`]
-                                  ? 'border-yellow-500'
-                                  : ''
+                                changedFields[
+                                  `${profile.id}.down_payment_amount`
+                                ]
+                                  ? "border-yellow-500"
+                                  : ""
                               }`}
                               {...field}
-                              value={field.value ?? ''}
+                              value={field.value ?? ""}
                               disabled={
                                 Boolean(
-                                  tripMembers.find((m) => m.user_id === profile.id)?.down_payment,
+                                  tripMembers.find(
+                                    (m) => m.user_id === profile.id
+                                  )?.down_payment
                                 ) || Boolean(trip?.initial_down_payment)
                               }
                               onChange={(e) => {
-                                const value = e.target.value ? Number(e.target.value) : null
+                                const value = e.target.value
+                                  ? Number(e.target.value)
+                                  : null;
                                 field.onChange(
-                                  handleFieldChange(`${profile.id}.down_payment_amount`, value),
-                                )
+                                  handleFieldChange(
+                                    `${profile.id}.down_payment_amount`,
+                                    value
+                                  )
+                                );
                               }}
                             />
                             <span className="absolute left-2 top-1/2 transform -translate-y-1/2">
@@ -181,13 +213,17 @@ export default function UserList() {
                           <Checkbox
                             checked={field.value}
                             onCheckedChange={(checked) => {
-                              console.log('trigger')
                               field.onChange(
-                                handleFieldChange(`${profile.id}.down_payment`, checked),
-                              )
+                                handleFieldChange(
+                                  `${profile.id}.down_payment`,
+                                  checked
+                                )
+                              );
                             }}
                             className={
-                              changedFields[`${profile.id}.down_payment`] ? 'border-yellow-500' : ''
+                              changedFields[`${profile.id}.down_payment`]
+                                ? "border-yellow-500"
+                                : ""
                             }
                           />
                         </FormControl>
@@ -208,20 +244,29 @@ export default function UserList() {
                             <Input
                               type="number"
                               className={`w-full max-w-md pl-6 ${
-                                changedFields[`${profile.id}.full_payment_amount`]
-                                  ? 'border-yellow-500'
-                                  : ''
+                                changedFields[
+                                  `${profile.id}.full_payment_amount`
+                                ]
+                                  ? "border-yellow-500"
+                                  : ""
                               }`}
                               {...field}
-                              value={field.value ?? ''}
+                              value={field.value ?? ""}
                               disabled={
-                                tripMembers.find((m) => m.user_id === profile.id)?.full_payment
+                                tripMembers.find(
+                                  (m) => m.user_id === profile.id
+                                )?.full_payment
                               }
                               onChange={(e) => {
-                                const value = e.target.value ? Number(e.target.value) : null
+                                const value = e.target.value
+                                  ? Number(e.target.value)
+                                  : null;
                                 field.onChange(
-                                  handleFieldChange(`${profile.id}.full_payment_amount`, value),
-                                )
+                                  handleFieldChange(
+                                    `${profile.id}.full_payment_amount`,
+                                    value
+                                  )
+                                );
                               }}
                             />
                             <span className="absolute left-2 top-1/2 transform -translate-y-1/2">
@@ -242,11 +287,16 @@ export default function UserList() {
                             checked={field.value}
                             onCheckedChange={(checked) => {
                               field.onChange(
-                                handleFieldChange(`${profile.id}.full_payment`, checked),
-                              )
+                                handleFieldChange(
+                                  `${profile.id}.full_payment`,
+                                  checked
+                                )
+                              );
                             }}
                             className={
-                              changedFields[`${profile.id}.full_payment`] ? 'border-yellow-500' : ''
+                              changedFields[`${profile.id}.full_payment`]
+                                ? "border-yellow-500"
+                                : ""
                             }
                           />
                         </FormControl>
@@ -267,20 +317,29 @@ export default function UserList() {
                             <Input
                               type="number"
                               className={`w-full max-w-md pl-6 ${
-                                changedFields[`${profile.id}.final_payment_amount`]
-                                  ? 'border-yellow-500'
-                                  : ''
+                                changedFields[
+                                  `${profile.id}.final_payment_amount`
+                                ]
+                                  ? "border-yellow-500"
+                                  : ""
                               }`}
                               {...field}
-                              value={field.value ?? ''}
+                              value={field.value ?? ""}
                               disabled={
-                                tripMembers.find((m) => m.user_id === profile.id)?.final_payment
+                                tripMembers.find(
+                                  (m) => m.user_id === profile.id
+                                )?.final_payment
                               }
                               onChange={(e) => {
-                                const value = e.target.value ? Number(e.target.value) : null
+                                const value = e.target.value
+                                  ? Number(e.target.value)
+                                  : null;
                                 field.onChange(
-                                  handleFieldChange(`${profile.id}.final_payment_amount`, value),
-                                )
+                                  handleFieldChange(
+                                    `${profile.id}.final_payment_amount`,
+                                    value
+                                  )
+                                );
                               }}
                             />
                             <span className="absolute left-2 top-1/2 transform -translate-y-1/2">
@@ -301,13 +360,16 @@ export default function UserList() {
                             checked={field.value}
                             onCheckedChange={(checked) => {
                               field.onChange(
-                                handleFieldChange(`${profile.id}.final_payment`, checked),
-                              )
+                                handleFieldChange(
+                                  `${profile.id}.final_payment`,
+                                  checked
+                                )
+                              );
                             }}
                             className={
                               changedFields[`${profile.id}.final_payment`]
-                                ? 'border-yellow-500'
-                                : ''
+                                ? "border-yellow-500"
+                                : ""
                             }
                           />
                         </FormControl>
@@ -320,12 +382,16 @@ export default function UserList() {
             ))}
             <div className="pt-12">
               <Button type="submit" className="w-full max-w-md">
-                {form.formState.isSubmitting ? <Spinner /> : 'Zahlungen eintragen'}
+                {form.formState.isSubmitting ? (
+                  <Spinner />
+                ) : (
+                  "Zahlungen eintragen"
+                )}
               </Button>
             </div>
           </form>
         </Form>
       </CardContent>
     </CardBackPlate>
-  )
+  );
 }

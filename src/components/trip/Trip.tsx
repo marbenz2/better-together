@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import {
   CardBackPlate,
@@ -6,61 +6,85 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card'
-import Image from 'next/image'
-import { InfoIcon, PencilIcon, SquareArrowOutUpRight, Trash2Icon, UsersIcon } from 'lucide-react'
-import { Table, TableBody, TableCell, TableHead, TableRow } from '@/components/ui/table'
-import { TripSubscription } from '@/components/subscribe-button'
-import { BackButtonClient } from '@/components/ui/back-button-client'
-import { useUserStore } from '@/stores/userStore'
-import { useTripStore } from '@/stores/tripStores'
-import { useEffect, useState } from 'react'
-import Spinner from '@/components/ui/Spinner'
-import { ResponsiveDialog } from '@/components/ResponsiveDialog'
-import { useRouter } from 'next/navigation'
-import { useGroupStore } from '@/stores/groupStores'
-import InfoCard from '../ui/info-card'
-import { ButtonLink } from '../ui/button-link'
-import { Button } from '../ui/button'
-import AdditionalMembers from '../userlist/AdditionalMembers'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip'
+} from "@/components/ui/card";
+import Image from "next/image";
+import {
+  InfoIcon,
+  PencilIcon,
+  SquareArrowOutUpRight,
+  Trash2Icon,
+  UsersIcon,
+} from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+} from "@/components/ui/table";
+import { TripSubscription } from "@/components/subscribe-button";
+import { BackButtonClient } from "@/components/ui/back-button-client";
+import { useUserStore } from "@/stores/userStore";
+import { useTripStore } from "@/stores/tripStores";
+import { useEffect, useState } from "react";
+import Spinner from "@/components/ui/Spinner";
+import { ResponsiveDialog } from "@/components/ResponsiveDialog";
+import { useRouter } from "next/navigation";
+import { useGroupStore } from "@/stores/groupStores";
+import InfoCard from "../ui/info-card";
+import { ButtonLink } from "../ui/button-link";
+import { Button } from "../ui/button";
+import AdditionalMembers from "../userlist/AdditionalMembers";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../ui/tooltip";
 
 export default function Trip() {
-  const router = useRouter()
-  const { user, subscribedTrips, isSubscribed, setIsSubscribed } = useUserStore()
-  const { tripMembers, trip, deleteTrip, getTripMembers, availableSpots } = useTripStore()
-  const { tripPublicProfiles, userGroups, getAllTripPublicProfiles } = useGroupStore()
+  const router = useRouter();
+  const { user, subscribedTrips, isSubscribed, setIsSubscribed } =
+    useUserStore();
+  const { tripMembers, trip, deleteTrip, getTripMembers, availableSpots } =
+    useTripStore();
+  const { tripPublicProfiles, userGroups, getAllTripPublicProfiles } =
+    useGroupStore();
 
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false);
 
-  const isCreator = trip?.created_by === user?.id
-  const isCurrentUserInGroup = userGroups.some((group) => group.groups.id === trip?.group_id)
+  const isCreator = trip?.created_by === user?.id;
+  const isCurrentUserInGroup = userGroups.some(
+    (group) => group.groups.id === trip?.group_id
+  );
 
   useEffect(() => {
     if (trip) {
-      setIsLoading(true)
-      getTripMembers(trip.id)
-      setIsLoading(false)
+      setIsLoading(true);
+      getTripMembers(trip.id);
+      setIsLoading(false);
     }
-  }, [trip, getTripMembers])
+  }, [trip, getTripMembers]);
 
   useEffect(() => {
     if (tripMembers) {
-      setIsLoading(true)
-      getAllTripPublicProfiles(tripMembers.map((member) => member.user_id))
-      setIsLoading(false)
+      setIsLoading(true);
+      getAllTripPublicProfiles(tripMembers.map((member) => member.user_id));
+      setIsLoading(false);
     }
-  }, [tripMembers, getAllTripPublicProfiles])
+  }, [tripMembers, getAllTripPublicProfiles]);
 
   useEffect(() => {
     if (trip && subscribedTrips) {
-      setIsLoading(true)
+      setIsLoading(true);
       setIsSubscribed(
-        !!subscribedTrips.find((subscribedTrip) => subscribedTrip.trips.id === trip.id),
-      )
-      setIsLoading(false)
+        !!subscribedTrips.find(
+          (subscribedTrip) => subscribedTrip.trips.id === trip.id
+        )
+      );
+      setIsLoading(false);
     }
-  }, [trip, subscribedTrips, setIsSubscribed])
+  }, [trip, subscribedTrips, setIsSubscribed]);
 
   if (!isCurrentUserInGroup) {
     return (
@@ -71,36 +95,39 @@ export default function Trip() {
         />
         <BackButtonClient className="static" />
       </>
-    )
+    );
   }
 
   if (!trip)
     return (
       <>
-        <InfoCard description="Reise konnte nicht geladen werden." variant="info" />
+        <InfoCard
+          description="Reise konnte nicht geladen werden."
+          variant="info"
+        />
         <BackButtonClient className="static" />
       </>
-    )
+    );
 
   const handleDeleteTrip = async () => {
     try {
-      await deleteTrip(trip.id)
-      router.push('/protected/trips')
+      await deleteTrip(trip.id);
+      router.push("/protected/trips");
     } catch (error) {
-      console.error('Fehler beim Löschen der Reise:', error)
+      console.error("Fehler beim Löschen der Reise:", error);
     }
-  }
+  };
   const handleEditTrip = () => {
-    router.push(`/protected/edit-trip/${trip.id}`)
-  }
+    router.push(`/protected/edit-trip/${trip.id}`);
+  };
 
   const subscription = subscribedTrips?.find(
-    (subscribedTrip) => subscribedTrip.trips.id === trip.id,
-  )
-  const timeOfSubscription = subscription?.subscribed_at
-  const tripDone = trip.date_to < new Date().toISOString()
+    (subscribedTrip) => subscribedTrip.trips.id === trip.id
+  );
+  const timeOfSubscription = subscription?.subscribed_at;
+  const tripDone = trip.date_to < new Date().toISOString();
 
-  if (isLoading) return <Spinner />
+  if (isLoading) return <Spinner />;
 
   return (
     <CardBackPlate className="flex flex-col md:flex-row max-w-7xl w-full">
@@ -153,38 +180,40 @@ export default function Trip() {
           <CardHeader className="p-0">
             <CardTitle>{trip.name}</CardTitle>
             <CardDescription>
-              {new Date(trip.date_from).toLocaleDateString('de-DE', {
-                weekday: 'short',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })}{' '}
+              {new Date(trip.date_from).toLocaleDateString("de-DE", {
+                weekday: "short",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}{" "}
               -
               <br />
-              {new Date(trip.date_to).toLocaleDateString('de-DE', {
-                weekday: 'short',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
+              {new Date(trip.date_to).toLocaleDateString("de-DE", {
+                weekday: "short",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
               })}
             </CardDescription>
           </CardHeader>
           <CardContent className="p-0">
-            Euer nächstes Abenteuer erwartet euch in <span className="font-bold">{trip.land}</span>!
-            Diese Reise führt euch nach <span className="font-bold">{trip.ort}</span>
+            Euer nächstes Abenteuer erwartet euch in{" "}
+            <span className="font-bold">{trip.land}</span>! Diese Reise führt
+            euch nach <span className="font-bold">{trip.ort}</span>
             {trip.ort !== trip.area && (
               <>
-                , einem charmanten Ort in der malerischen Region{' '}
+                , einem charmanten Ort in der malerischen Region{" "}
                 <span className="font-bold">{trip.area}</span>
               </>
             )}
-            . Eure Unterkunft findet ihr in der{' '}
+            . Eure Unterkunft findet ihr in der{" "}
             <span className="font-bold">
               {trip.street} {trip.street_number}
             </span>
-            . Bereitet euch auf eine unvergessliche Zeit vor, voller spannender Erlebnisse und
-            entspannender Momente! Um eure Anreise so einfach wie möglich zu gestalten, könnt ihr
-            euch hier direkt die Route anzeigen lassen: <br />
+            . Bereitet euch auf eine unvergessliche Zeit vor, voller spannender
+            Erlebnisse und entspannender Momente! Um eure Anreise so einfach wie
+            möglich zu gestalten, könnt ihr euch hier direkt die Route anzeigen
+            lassen: <br />
             <br />
             <ButtonLink
               href={trip.anreise_link}
@@ -210,7 +239,7 @@ export default function Trip() {
             {trip.area && (
               <TableRow>
                 <TableHead>Gebiet:</TableHead>
-                <TableCell>{trip.area || '-'}</TableCell>
+                <TableCell>{trip.area || "-"}</TableCell>
               </TableRow>
             )}
             <TableRow>
@@ -237,7 +266,7 @@ export default function Trip() {
               <TableRow>
                 <TableHead>
                   <span className="flex items-center gap-2">
-                    Gesamtpreis pro Nacht{' '}
+                    Gesamtpreis pro Nacht{" "}
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger>
@@ -245,8 +274,9 @@ export default function Trip() {
                         </TooltipTrigger>
                         <TooltipContent>
                           <p>
-                            Gesamtpreis pro Nacht der kompletten Unterkunft. Preise pro Person
-                            stehen erst nach Abschluss der Anmeldefrist fest.
+                            Gesamtpreis pro Nacht der kompletten Unterkunft.
+                            Preise pro Person stehen erst nach Abschluss der
+                            Anmeldefrist fest.
                           </p>
                         </TooltipContent>
                       </Tooltip>
@@ -254,9 +284,9 @@ export default function Trip() {
                   </span>
                 </TableHead>
                 <TableCell>
-                  {new Intl.NumberFormat('de-DE', {
-                    style: 'currency',
-                    currency: 'EUR',
+                  {new Intl.NumberFormat("de-DE", {
+                    style: "currency",
+                    currency: "EUR",
                   }).format(trip.price_per_night)}
                 </TableCell>
               </TableRow>
@@ -271,8 +301,8 @@ export default function Trip() {
               <TableRow>
                 <TableHead>Teilnehmer</TableHead>
                 <TableCell className="flex flex-col">
-                  {tripPublicProfiles.length === 0 && '-'}
-                  {tripPublicProfiles.map((profile, index) => (
+                  {tripPublicProfiles.length === 0 && "-"}
+                  {tripPublicProfiles.map((profile) => (
                     <span key={profile.id}>
                       {profile.first_name} {profile.last_name}
                       <AdditionalMembers userId={profile.id} variant="text" />
@@ -285,29 +315,35 @@ export default function Trip() {
               <TableRow>
                 <TableHead>Anzahlung</TableHead>
                 <TableCell>
-                  {Intl.NumberFormat('de-DE', {
-                    style: 'currency',
-                    currency: 'EUR',
+                  {Intl.NumberFormat("de-DE", {
+                    style: "currency",
+                    currency: "EUR",
                   }).format(trip.initial_down_payment)}
                 </TableCell>
               </TableRow>
             ) : null}
           </TableBody>
-        </Table>{' '}
+        </Table>{" "}
         {isSubscribed && timeOfSubscription && (
           <CardDescription className="text-muted-foreground">
-            Angemeldet am:{' '}
-            {new Date(timeOfSubscription).toLocaleDateString('de-DE', {
-              weekday: 'short',
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
+            Angemeldet am:{" "}
+            {new Date(timeOfSubscription).toLocaleDateString("de-DE", {
+              weekday: "short",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
             })}
           </CardDescription>
         )}
-        {!tripDone && isSubscribed && trip.available_spots > 0 && <TripSubscription />}
-        {!tripDone && !isSubscribed && trip.available_spots > 0 && <TripSubscription />}
-        {!tripDone && isSubscribed && trip.available_spots === 0 && <TripSubscription />}
+        {!tripDone && isSubscribed && trip.available_spots > 0 && (
+          <TripSubscription />
+        )}
+        {!tripDone && !isSubscribed && trip.available_spots > 0 && (
+          <TripSubscription />
+        )}
+        {!tripDone && isSubscribed && trip.available_spots === 0 && (
+          <TripSubscription />
+        )}
         {!tripDone && !isSubscribed && trip.available_spots === 0 && (
           <CardDescription className="text-muted-foreground">
             Diese Reise ist bereits ausgebucht.
@@ -315,10 +351,11 @@ export default function Trip() {
         )}
         {tripDone && (
           <CardDescription className="text-muted-foreground">
-            Diese Reise ist bereits vorbei. Wir hoffen, ihr hattet eine tolle Zeit!
+            Diese Reise ist bereits vorbei. Wir hoffen, ihr hattet eine tolle
+            Zeit!
           </CardDescription>
         )}
       </CardContent>
     </CardBackPlate>
-  )
+  );
 }
