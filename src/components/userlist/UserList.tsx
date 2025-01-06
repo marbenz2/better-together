@@ -148,7 +148,7 @@ export default function UserList() {
                   <Separator className="col-span-1 md:col-span-3 w-full my-8" />
                 )}
                 <div className="col-span-1 md:col-span-3 font-bold text-xl flex items-center gap-4">
-                  {profile.last_name}, {profile.first_name}
+                  {profile.last_name}, {profile.first_name} ({profile.birthday})
                   <AdditionalMembers userId={profile.id} />
                 </div>
                 <div className="flex flex-col space-y-2">
