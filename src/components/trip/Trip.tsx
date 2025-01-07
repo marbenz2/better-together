@@ -167,7 +167,7 @@ export default function Trip() {
         </div>
         <div className="relative flex w-full h-64 md:h-full">
           <Image
-            priority
+            loading="lazy"
             src={trip.image}
             alt={trip.name}
             fill
@@ -176,8 +176,8 @@ export default function Trip() {
         </div>
       </CardHeader>
       <CardContent className="flex flex-col md:pt-6 md:pl-0 gap-12 justify-between flex-1">
-        <div className="flex flex-col gap-4">
-          <CardHeader className="p-0">
+        <div className="flex flex-col gap-12">
+          <div className="flex flex-col gap-2">
             <CardTitle>{trip.name}</CardTitle>
             <CardDescription>
               {new Date(trip.date_from).toLocaleDateString("de-DE", {
@@ -195,26 +195,29 @@ export default function Trip() {
                 day: "numeric",
               })}
             </CardDescription>
-          </CardHeader>
-          <CardContent className="p-0">
-            Euer nächstes Abenteuer erwartet euch in{" "}
-            <span className="font-bold">{trip.land}</span>! Diese Reise führt
-            euch nach <span className="font-bold">{trip.ort}</span>
-            {trip.ort !== trip.area && (
-              <>
-                , einem charmanten Ort in der malerischen Region{" "}
-                <span className="font-bold">{trip.area}</span>
-              </>
-            )}
-            . Eure Unterkunft findet ihr in der{" "}
-            <span className="font-bold">
-              {trip.street} {trip.street_number}
-            </span>
-            . Bereitet euch auf eine unvergessliche Zeit vor, voller spannender
-            Erlebnisse und entspannender Momente! Um eure Anreise so einfach wie
-            möglich zu gestalten, könnt ihr euch hier direkt die Route anzeigen
-            lassen: <br />
-            <br />
+          </div>
+          <div className="flex flex-col gap-2">
+            <CardTitle>Nachricht vom Reiseveranstalter</CardTitle>
+            <CardDescription>
+              Euer nächstes Abenteuer erwartet euch in{" "}
+              <span className="font-bold">{trip.land}</span>! Diese Reise führt
+              euch nach <span className="font-bold">{trip.ort}</span>
+              {trip.ort !== trip.area && (
+                <>
+                  , einem charmanten Ort in der malerischen Region{" "}
+                  <span className="font-bold">{trip.area}</span>
+                </>
+              )}
+              . Eure Unterkunft findet ihr in der{" "}
+              <span className="font-bold">
+                {trip.street} {trip.street_number}
+              </span>
+              . Bereitet euch auf eine unvergessliche Zeit vor, voller
+              spannender Erlebnisse und entspannender Momente! Um eure Anreise
+              so einfach wie möglich zu gestalten, könnt ihr euch hier direkt
+              die Route anzeigen lassen: <br />
+              <br />
+            </CardDescription>
             <ButtonLink
               href={trip.anreise_link}
               label="Google Maps"
@@ -224,7 +227,7 @@ export default function Trip() {
             >
               <SquareArrowOutUpRight className="w-4 h-4" />
             </ButtonLink>
-          </CardContent>
+          </div>
         </div>
         <Table>
           <TableBody>

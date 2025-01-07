@@ -16,7 +16,6 @@ export const showNotification = (
   variant: NotificationVariant,
   message?: string
 ): void => {
-  console.log("showNotification", title, variant, message);
   const toastStore = useToastStore.getState();
   toastStore.clearToast();
   toastStore.showToast(title, variant, message);

@@ -1,26 +1,32 @@
-import './globals.css'
-import { Inter } from 'next/font/google'
-import { Toaster } from '@/components/ui/toaster'
+import "./globals.css";
+import { Inter } from "next/font/google";
+import { Toaster } from "@/components/ui/toaster";
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets: ["latin"] });
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
-  : 'http://localhost:3000'
+  : "http://localhost:3000";
 
 export const metadata = {
   metadataBase: new URL(defaultUrl),
-  title: 'Better. Together.',
-  description: 'The fastest way to build apps with Next.js and Supabase',
-}
+  title: "Better. Together.",
+  description: "The fastest way to build apps with Next.js and Supabase",
+};
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en" className={inter.className}>
       <body className="bg-background text-foreground">
-        <main className="min-h-screen flex flex-col items-center">{children}</main>
+        <div className="min-h-screen flex flex-col items-center">
+          {children}
+        </div>
         <Toaster />
       </body>
     </html>
-  )
+  );
 }

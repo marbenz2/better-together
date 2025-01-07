@@ -1,37 +1,34 @@
-'use client'
+"use client";
 
-import { Button } from '@/components/ui/button'
-import { CardTitle } from '@/components/ui/card'
-import { copyToClipboard, showNotification } from '@/lib/utils'
-import { UserGroupsType } from '@/types/dashboard'
-import { CopyIcon } from 'lucide-react'
+import { Button } from "@/components/ui/button";
+import { copyToClipboard, showNotification } from "@/lib/utils";
+import { UserGroupsType } from "@/types/dashboard";
+import { CopyIcon } from "lucide-react";
+import { CardTitle } from "../ui/card";
 
 interface GroupCodeProps {
-  userGroups: UserGroupsType[]
-  groupId: string | null | false
+  userGroups: UserGroupsType[];
+  groupId: string | null | false;
 }
 
-export default function GroupCode({ userGroups, groupId }: GroupCodeProps) {
+export default function GroupCode({ groupId }: GroupCodeProps) {
   const handleOnCopyClick = (groupId: string) => {
-    if (!groupId || groupId === '') {
+    if (!groupId || groupId === "") {
       showNotification(
-        'Fehler beim Kopieren des Einladungscodes',
-        'destructive',
-        'Der Einladungscode ist leer. Bitte gib einen gültigen Einladungscode ein.',
-      )
+        "Fehler beim Kopieren des Einladungscodes",
+        "destructive",
+        "Der Einladungscode ist leer. Bitte gib einen gültigen Einladungscode ein."
+      );
     }
-    copyToClipboard(groupId)
-    showNotification('Einladungscode kopiert', 'success')
-  }
+    copyToClipboard(groupId);
+    showNotification("Einladungscode kopiert", "success");
+  };
   return (
     <div className="flex flex-col gap-4 w-full justify-center">
-      <CardTitle className="text-xl">
-        Einladungscode für Gruppe &quot;
-        {userGroups.find((group) => group.group_id === groupId)?.groups.name}&quot;
-      </CardTitle>
+      <CardTitle className="text-xl">Einladungscode</CardTitle>
       <div className="flex flex-col gap-4 w-full items-center">
         <Button
-          onClick={() => handleOnCopyClick(groupId ? groupId : '')}
+          onClick={() => handleOnCopyClick(groupId ? groupId : "")}
           className="flex gap-4 text-xs relative pl-10 w-full max-w-lg"
           aria-label="Einladungscode kopieren"
           variant="outline"
@@ -41,5 +38,5 @@ export default function GroupCode({ userGroups, groupId }: GroupCodeProps) {
         </Button>
       </div>
     </div>
-  )
+  );
 }

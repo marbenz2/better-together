@@ -1,45 +1,56 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/card'
-import { Table, TableBody, TableCell, TableHead, TableRow } from '../ui/table'
-import Image from 'next/image'
-import { Trips } from '@/types/supabase'
+import Link from "next/link";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "../ui/card";
+import { Table, TableBody, TableCell, TableHead, TableRow } from "../ui/table";
+import Image from "next/image";
+import { Trips } from "@/types/supabase";
 
 const TripCard = ({
   trip,
   subscribed_at,
   children,
 }: {
-  trip: Trips
-  subscribed_at?: string | null
-  children?: React.ReactNode
+  trip: Trips;
+  subscribed_at?: string | null;
+  children?: React.ReactNode;
 }) => {
   return (
-    <Link href={`/protected/trips/${trip.id}`} key={trip.id} className="w-full xs:w-fit">
+    <Link
+      href={`/protected/trips/${trip.id}`}
+      key={trip.id}
+      className="w-full xs:w-fit"
+    >
       <Card className="relative text-sm hover:ring ring-ring">
         {children}
         <CardHeader>
           <CardTitle>{trip.name}</CardTitle>
           <CardDescription>
-            {new Date(trip.date_from).toLocaleDateString('de-DE', {
-              weekday: 'short',
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })}{' '}
+            {new Date(trip.date_from).toLocaleDateString("de-DE", {
+              weekday: "short",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}{" "}
             -
             <br />
-            {new Date(trip.date_to).toLocaleDateString('de-DE', {
-              weekday: 'short',
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
+            {new Date(trip.date_to).toLocaleDateString("de-DE", {
+              weekday: "short",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
             })}
           </CardDescription>
           <div className="flex w-full h-full overflow-clip">
             <Image
-              priority
+              loading="lazy"
               src={trip.image}
               alt={trip.name}
               width={600}
@@ -75,17 +86,17 @@ const TripCard = ({
         {subscribed_at && (
           <CardFooter className="text-muted-foreground">
             Angemeldet am: <br />
-            {new Date(subscribed_at).toLocaleDateString('de-DE', {
-              weekday: 'short',
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
+            {new Date(subscribed_at).toLocaleDateString("de-DE", {
+              weekday: "short",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
             })}
           </CardFooter>
         )}
       </Card>
     </Link>
-  )
-}
+  );
+};
 
-export default TripCard
+export default TripCard;

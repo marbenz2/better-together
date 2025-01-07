@@ -29,6 +29,7 @@ import {
 import { BackButtonClient } from "@/components/ui/back-button-client";
 import AdditionalMembers from "@/components/userlist/AdditionalMembers";
 import { CheckedState } from "@radix-ui/react-checkbox";
+import { Badge } from "@/components/ui/badge";
 
 const formSchema = z.record(
   z.object({
@@ -134,7 +135,7 @@ export default function UserList() {
     <CardBackPlate className="flex flex-col max-w-7xl w-full gap-8">
       <CardHeader>
         <BackButtonClient className="static" />
-        <CardTitle>Reise Teilnehmerliste</CardTitle>
+        <CardTitle>Teilnehmerliste</CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -149,7 +150,13 @@ export default function UserList() {
                 )}
                 <div className="col-span-1 md:col-span-3 font-bold text-xl flex items-center gap-4">
                   {profile.last_name}, {profile.first_name}{" "}
-                  <span className="text-sm">({profile.birthday})</span>
+                  <Badge variant="outline" className="text-xs font-normal">
+                    {new Date(profile.birthday).toLocaleDateString("de-DE", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                    })}
+                  </Badge>
                   <AdditionalMembers userId={profile.id} />
                 </div>
                 <div className="flex flex-col space-y-2">

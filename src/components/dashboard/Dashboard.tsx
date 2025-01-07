@@ -4,7 +4,6 @@ import {
   CardBackPlate,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -12,8 +11,6 @@ import FilteredSubscribedTrips from "./FilteredSubscribedTrips";
 import { useUserStore } from "@/stores/userStore";
 import Spinner from "@/components/ui/Spinner";
 import { useGroupStore } from "@/stores/groupStores";
-import { PalmtreeIcon, WalletIcon } from "lucide-react";
-import { ButtonLink } from "../ui/button-link";
 
 export default function Dashboard() {
   const { publicProfile } = useUserStore();
@@ -35,16 +32,6 @@ export default function Dashboard() {
           <FilteredSubscribedTrips />
         </CardContent>
       )}
-      <CardFooter className="flex w-full pt-12">
-        <div className="flex flex-col xs:flex-row gap-4 w-full max-w-lg">
-          <ButtonLink href={"/protected/trips"} label="Neue Reisen ansehen">
-            <PalmtreeIcon className="w-4 h-4" />
-          </ButtonLink>
-          <ButtonLink href={"/protected/payments"} label="Zahlungen ansehen">
-            <WalletIcon className="w-4 h-4" />
-          </ButtonLink>
-        </div>
-      </CardFooter>
     </CardBackPlate>
   );
 }
