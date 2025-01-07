@@ -1,50 +1,57 @@
-'use client'
+"use client";
 
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
-import * as z from 'zod'
-import { parse, format } from 'date-fns'
-import { useUserStore } from '@/stores/userStore'
-import Image from 'next/image'
-import { useRouter } from 'next/navigation'
-import React, { useEffect } from 'react'
-import { BackButtonClient } from '@/components/ui/back-button-client'
-import InfoCard from '@/components/ui/info-card'
-import { PublicProfileType } from '@/types/user'
-import { Button } from '@/components/ui/button'
-import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { parse, format } from "date-fns";
+import { useUserStore } from "@/stores/userStore";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import React, { useEffect } from "react";
+import { BackButtonClient } from "@/components/ui/back-button-client";
+import InfoCard from "@/components/ui/info-card";
+import { PublicProfileType } from "@/types/user";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import {
   CardBackPlate,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card'
-import { ResponsiveDialog } from '@/components/ResponsiveDialog'
+} from "@/components/ui/card";
+import { ResponsiveDialog } from "@/components/ResponsiveDialog";
 
 const formSchema = z.object({
-  first_name: z.string().min(1, 'Vorname ist erforderlich'),
-  last_name: z.string().min(1, 'Nachname ist erforderlich'),
-  birthday: z.string().min(1, 'Geburtstag ist erforderlich'),
+  first_name: z.string().min(1, "Vorname ist erforderlich"),
+  last_name: z.string().min(1, "Nachname ist erforderlich"),
+  birthday: z.string().min(1, "Geburtstag ist erforderlich"),
   profile_picture: z.string().optional(),
-})
+});
 
-type FormValues = z.infer<typeof formSchema>
+type FormValues = z.infer<typeof formSchema>;
 
 const EditProfile = () => {
-  const { publicProfile, updatePublicProfile, getPublicProfile } = useUserStore()
-  const router = useRouter()
+  const { publicProfile, updatePublicProfile, getPublicProfile } =
+    useUserStore();
+  const router = useRouter();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      first_name: publicProfile?.first_name || '',
-      last_name: publicProfile?.last_name || '',
-      profile_picture: publicProfile?.profile_picture || '',
-      birthday: publicProfile?.birthday || '',
+      first_name: publicProfile?.first_name || "",
+      last_name: publicProfile?.last_name || "",
+      profile_picture: publicProfile?.profile_picture || "",
+      birthday: publicProfile?.birthday || "",
     },
-  })
+  });
 
   useEffect(() => {
     if (publicProfile) {
@@ -53,11 +60,11 @@ const EditProfile = () => {
         last_name: publicProfile.last_name,
         profile_picture: publicProfile.profile_picture ?? undefined,
         birthday: publicProfile.birthday
-          ? format(new Date(publicProfile.birthday), 'dd.MM.yyyy')
-          : '',
-      })
+          ? format(new Date(publicProfile.birthday), "dd.MM.yyyy")
+          : "",
+      });
     }
-  }, [publicProfile, form])
+  }, [publicProfile, form]);
 
   if (!publicProfile) {
     return (
@@ -66,7 +73,7 @@ const EditProfile = () => {
         description="Es konnte kein passendes Profil gefunden werden."
         variant="info"
       />
-    )
+    );
   }
 
   const onSubmit = async (data: FormValues) => {
@@ -75,46 +82,49 @@ const EditProfile = () => {
         ...data,
         id: publicProfile.id,
         birthday: data.birthday
-          ? format(parse(data.birthday, 'dd.MM.yyyy', new Date()), 'yyyy-MM-dd')
+          ? format(parse(data.birthday, "dd.MM.yyyy", new Date()), "yyyy-MM-dd")
           : null,
-      }
-      await updatePublicProfile(updatedData as PublicProfileType)
-      await getPublicProfile(publicProfile.id)
-      router.push('/protected/profile')
+      };
+      await updatePublicProfile(updatedData as PublicProfileType);
+      await getPublicProfile(publicProfile.id);
+      router.push("/protected/profile");
     } catch (error) {
-      console.error('Fehler beim Aktualisieren des Profils:', error)
+      console.error("Fehler beim Aktualisieren des Profils:", error);
     }
-  }
+  };
 
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) return
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('id', publicProfile.id ?? '')
+  const handleImageUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("id", publicProfile.id ?? "");
 
     try {
-      const response = await fetch('/api/image-upload/', {
-        method: 'POST',
+      const response = await fetch("/api/image-upload/", {
+        method: "POST",
         body: formData,
-      })
+      });
       if (!response.ok) {
-        throw new Error('Fehler beim Hochladen des Bildes')
+        throw new Error("Fehler beim Hochladen des Bildes");
       }
-      const data = await response.json()
-      form.setValue('profile_picture', data.imageUrl)
+      const data = await response.json();
+      form.setValue("profile_picture", data.imageUrl);
     } catch (error) {
-      console.error('Fehler beim Hochladen des Bildes:', error)
+      console.error("Fehler beim Hochladen des Bildes:", error);
     }
-  }
+  };
 
   const isFieldRequired = (fieldName: keyof FormValues) => {
-    const fieldSchema = formSchema.shape[fieldName]
+    const fieldSchema = formSchema.shape[fieldName];
     return (
-      (fieldSchema instanceof z.ZodString || fieldSchema instanceof z.ZodNumber) &&
+      (fieldSchema instanceof z.ZodString ||
+        fieldSchema instanceof z.ZodNumber) &&
       !fieldSchema.isOptional()
-    )
-  }
+    );
+  };
 
   return (
     <CardBackPlate className="flex flex-col max-w-7xl w-full gap-8">
@@ -122,7 +132,8 @@ const EditProfile = () => {
         <BackButtonClient className="static" />
         <CardTitle className="text-xl">Profil bearbeiten</CardTitle>
         <CardDescription>
-          Felder mit einem <span className="text-red-500">*</span> sind Pflichtfelder.
+          Felder mit einem <span className="text-red-500">*</span> sind
+          Pflichtfelder.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -143,15 +154,15 @@ const EditProfile = () => {
                   className="w-full"
                 />
                 <div className="relative flex w-full max-w-[350px] h-[350px] p-4 rounded-lg border self-center">
-                  {form.watch('profile_picture') ? (
+                  {form.watch("profile_picture") ? (
                     <div className="relative w-full h-full">
                       <Image
-                        src={form.watch('profile_picture') ?? ''}
+                        src={form.watch("profile_picture") ?? ""}
                         alt="Vorschau des hochgeladenen Bildes"
                         fill
                         sizes="(max-width: 350px) (max-height: 450px)"
                         className="object-cover"
-                        priority
+                        loading="lazy"
                       />
                     </div>
                   ) : (
@@ -163,8 +174,14 @@ const EditProfile = () => {
                         viewBox="0 0 100 100"
                         preserveAspectRatio="none"
                       >
-                        <polygon points="0,0 100,0 0,100" fill="rgba(255,255,255,0.2)" />
-                        <polygon points="100,0 100,100 0,100" fill="rgba(255,255,255,0.3)" />
+                        <polygon
+                          points="0,0 100,0 0,100"
+                          fill="rgba(255,255,255,0.2)"
+                        />
+                        <polygon
+                          points="100,0 100,100 0,100"
+                          fill="rgba(255,255,255,0.3)"
+                        />
                       </svg>
                     </div>
                   )}
@@ -177,8 +194,10 @@ const EditProfile = () => {
                   render={({ field }) => (
                     <FormItem className="flex-1">
                       <FormLabel>
-                        Vorname{' '}
-                        {isFieldRequired('first_name') && <span className="text-red-500">*</span>}
+                        Vorname{" "}
+                        {isFieldRequired("first_name") && (
+                          <span className="text-red-500">*</span>
+                        )}
                       </FormLabel>
                       <FormControl>
                         <Input placeholder="Vorname eingeben" {...field} />
@@ -192,8 +211,10 @@ const EditProfile = () => {
                   render={({ field }) => (
                     <FormItem className="flex-1">
                       <FormLabel>
-                        Nachname{' '}
-                        {isFieldRequired('last_name') && <span className="text-red-500">*</span>}
+                        Nachname{" "}
+                        {isFieldRequired("last_name") && (
+                          <span className="text-red-500">*</span>
+                        )}
                       </FormLabel>
                       <FormControl>
                         <Input placeholder="Nachname eingeben" {...field} />
@@ -228,8 +249,8 @@ const EditProfile = () => {
                 >
                   <span className="xs:inline truncate">
                     {form.formState.isSubmitting
-                      ? 'Aktualisiere Profil...'
-                      : 'Profil aktualisieren'}
+                      ? "Aktualisiere Profil..."
+                      : "Profil aktualisieren"}
                   </span>
                 </Button>
               </ResponsiveDialog>
@@ -238,7 +259,7 @@ const EditProfile = () => {
         </Form>
       </CardContent>
     </CardBackPlate>
-  )
-}
+  );
+};
 
-export default EditProfile
+export default EditProfile;

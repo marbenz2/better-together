@@ -1,9 +1,9 @@
-'use client'
+"use client";
 
-import * as React from 'react'
+import * as React from "react";
 
-import { useMediaQuery } from '@/hooks/use-media-query'
-import { Button } from '@/components/ui/button'
+import { useMediaQuery } from "@/hooks/use-media-query";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog'
+} from "@/components/ui/dialog";
 import {
   Drawer,
   DrawerClose,
@@ -23,22 +23,22 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from '@/components/ui/drawer'
-import InfoCard from '@/components/ui/info-card'
+} from "@/components/ui/drawer";
+import InfoCard from "@/components/ui/info-card";
 
 interface ResponsiveDialogProps {
-  disabled?: boolean
-  title: string
-  message: string
-  messageComponent?: React.ReactNode
-  confirmText?: string
-  onConfirm?: () => void
-  onCancel?: () => void
-  disabledDescription?: string
-  info?: string
-  infoType?: 'warning' | 'info' | 'success'
-  children: React.ReactNode
-  buttonVariant?: 'destructive' | 'outline'
+  disabled?: boolean;
+  title: string;
+  message?: string;
+  messageComponent?: React.ReactNode;
+  confirmText?: string;
+  onConfirm?: () => void;
+  onCancel?: () => void;
+  disabledDescription?: string;
+  info?: string;
+  infoType?: "warning" | "info" | "success";
+  children: React.ReactNode;
+  buttonVariant?: "destructive" | "outline";
 }
 
 export function ResponsiveDialog({
@@ -55,18 +55,18 @@ export function ResponsiveDialog({
   children,
   buttonVariant,
 }: ResponsiveDialogProps) {
-  const [open, setOpen] = React.useState(false)
-  const isDesktop = useMediaQuery('(min-width: 768px)')
+  const [open, setOpen] = React.useState(false);
+  const isDesktop = useMediaQuery("(min-width: 768px)");
 
   const handleConfirm = () => {
-    onConfirm?.()
-    setOpen(false)
-  }
+    onConfirm?.();
+    setOpen(false);
+  };
 
   const handleCancel = () => {
-    onCancel?.()
-    setOpen(false)
-  }
+    onCancel?.();
+    setOpen(false);
+  };
 
   if (isDesktop) {
     return (
@@ -86,23 +86,29 @@ export function ResponsiveDialog({
           </div>
           <DialogFooter>
             <div
-              className={`flex w-full gap-4 ${confirmText && onConfirm ? 'justify-between' : 'justify-end'}`}
+              className={`flex w-full gap-4 ${
+                confirmText && onConfirm ? "justify-between" : "justify-end"
+              }`}
             >
               {confirmText && onConfirm && (
-                <Button disabled={disabled} variant={buttonVariant} onClick={handleConfirm}>
+                <Button
+                  disabled={disabled}
+                  variant={buttonVariant}
+                  onClick={handleConfirm}
+                >
                   {confirmText}
                 </Button>
               )}
               <DialogClose asChild>
                 <Button variant="outline" onClick={handleCancel}>
-                  {confirmText && onConfirm ? 'Abbrechen' : 'Schließen'}
+                  {confirmText && onConfirm ? "Abbrechen" : "Schließen"}
                 </Button>
               </DialogClose>
             </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    )
+    );
   }
 
   return (
@@ -135,12 +141,12 @@ export function ResponsiveDialog({
 
             <DrawerClose asChild>
               <Button variant="outline" onClick={handleCancel}>
-                {confirmText && onConfirm ? 'Abbrechen' : 'Schließen'}
+                {confirmText && onConfirm ? "Abbrechen" : "Schließen"}
               </Button>
             </DrawerClose>
           </div>
         </DrawerFooter>
       </DrawerContent>
     </Drawer>
-  )
+  );
 }

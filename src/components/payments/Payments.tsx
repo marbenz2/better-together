@@ -12,7 +12,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  ArrowLeftRightIcon,
   CheckCircleIcon,
   CoinsIcon,
   CopyIcon,
@@ -68,10 +67,7 @@ export default function Payments() {
 
   return (
     <CardBackPlate className="flex flex-col max-w-7xl w-full">
-      <CardHeader>
-        <CardTitle>Zahlungen</CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-12">
+      <CardHeader className="flex flex-col gap-12">
         {sortedFilteredPayments &&
           sortedFilteredPayments.map((payment) => (
             <div key={payment.trip_id} className="flex flex-col gap-4">
@@ -113,13 +109,17 @@ export default function Payments() {
                       payment.down_payment_amount !== null && (
                         <div className="flex flex-col justify-center items-center gap-4">
                           <CoinsIcon className="w-12 h-12 text-yellow-400" />
-                          <CardDescription>
-                            Ausstehende Zahlung:{" "}
-                            {Intl.NumberFormat("de-DE", {
-                              style: "currency",
-                              currency: "EUR",
-                            }).format(payment.down_payment_amount)}
-                          </CardDescription>
+                          <div className="flex flex-col justify-center items-center">
+                            <CardDescription>
+                              Ausstehende Zahlung:
+                            </CardDescription>
+                            <CardTitle>
+                              {Intl.NumberFormat("de-DE", {
+                                style: "currency",
+                                currency: "EUR",
+                              }).format(payment.down_payment_amount)}
+                            </CardTitle>
+                          </div>
                           <PaymentMethods
                             amount={payment.down_payment_amount}
                             trip={
@@ -163,13 +163,17 @@ export default function Payments() {
                       payment.full_payment_amount !== null && (
                         <div className="flex flex-col justify-center items-center gap-4">
                           <CoinsIcon className="w-12 h-12 text-yellow-400" />
-                          <CardDescription>
-                            Ausstehende Zahlung:{" "}
-                            {Intl.NumberFormat("de-DE", {
-                              style: "currency",
-                              currency: "EUR",
-                            }).format(payment.full_payment_amount)}
-                          </CardDescription>
+                          <div className="flex flex-col justify-center items-center">
+                            <CardDescription>
+                              Ausstehende Zahlung:
+                            </CardDescription>
+                            <CardTitle>
+                              {Intl.NumberFormat("de-DE", {
+                                style: "currency",
+                                currency: "EUR",
+                              }).format(payment.full_payment_amount)}
+                            </CardTitle>
+                          </div>
                           <PaymentMethods
                             amount={payment.full_payment_amount}
                             trip={
@@ -213,13 +217,17 @@ export default function Payments() {
                       payment.final_payment_amount !== null && (
                         <div className="flex flex-col justify-center items-center gap-4">
                           <CoinsIcon className="w-12 h-12 text-yellow-400" />
-                          <CardDescription>
-                            Ausstehende Zahlung:{" "}
-                            {Intl.NumberFormat("de-DE", {
-                              style: "currency",
-                              currency: "EUR",
-                            }).format(payment.final_payment_amount)}
-                          </CardDescription>
+                          <div className="flex flex-col justify-center items-center">
+                            <CardDescription>
+                              Ausstehende Zahlung:
+                            </CardDescription>
+                            <CardTitle>
+                              {Intl.NumberFormat("de-DE", {
+                                style: "currency",
+                                currency: "EUR",
+                              }).format(payment.final_payment_amount)}
+                            </CardTitle>
+                          </div>
                           <PaymentMethods
                             amount={payment.final_payment_amount}
                             trip={
@@ -257,7 +265,7 @@ export default function Payments() {
               </div>
             </div>
           ))}
-      </CardContent>
+      </CardHeader>
     </CardBackPlate>
   );
 }
@@ -298,26 +306,37 @@ function PaymentMethods({
   return (
     <>
       <Separator className="w-full my-4" orientation="horizontal" />
-      <div className="flex flex-col lg:flex-row gap-4 mt-4 w-full justify-between">
+      <div className="flex flex-col md:flex-row gap-12 mt-4 w-full justify-between">
         {trip.iban && trip.recipient && (
-          <div className="flex flex-col gap-2 w-full lg:w-fit items-center lg:items-start">
-            <p>Bezahlen per Überweisung:</p>
-            <CardDescription>Empfänger: {trip.recipient}</CardDescription>
-            <CardDescription className="flex items-center gap-4">
-              IBAN: {formatIBAN(trip.iban)}{" "}
-              <CopyIcon
-                className="w-4 h-4 cursor-pointer"
-                onClick={() => handleCopyClick(trip.iban || "")}
-              />
-            </CardDescription>
-            <CardDescription>Zahlungszweck: {trip.name}</CardDescription>
-            <CardDescription>
-              Betrag:{" "}
-              {Intl.NumberFormat("de-DE", {
-                style: "currency",
-                currency: "EUR",
-              }).format(amount)}
-            </CardDescription>
+          <div className="flex flex-col gap-4 w-full items-start">
+            <CardTitle>Bezahlen per Überweisung:</CardTitle>
+            <div className="flex flex-col justify-center">
+              <CardDescription>Empfänger:</CardDescription>
+              <CardTitle>{trip.recipient}</CardTitle>
+            </div>
+            <div className="flex flex-col justify-center">
+              <CardDescription>IBAN:</CardDescription>
+              <CardTitle className="flex items-center gap-4">
+                {formatIBAN(trip.iban)}
+                <CopyIcon
+                  className="w-4 h-4 cursor-pointer"
+                  onClick={() => handleCopyClick(trip.iban || "")}
+                />
+              </CardTitle>
+            </div>
+            <div className="flex flex-col justify-center">
+              <CardDescription>Zahlungszweck:</CardDescription>
+              <CardTitle>{trip.name}</CardTitle>
+            </div>
+            <div className="flex flex-col justify-center">
+              <CardDescription>Betrag:</CardDescription>
+              <CardTitle>
+                {Intl.NumberFormat("de-DE", {
+                  style: "currency",
+                  currency: "EUR",
+                }).format(amount)}
+              </CardTitle>
+            </div>
             {/* <PaymentQr
               type="iban"
               iban={trip.iban}
@@ -327,23 +346,28 @@ function PaymentMethods({
             /> */}
           </div>
         )}
-        {trip?.iban && trip?.paypal && (
-          <div className="flex flex-col items-center justify-center py-8 lg:py-0">
-            <ArrowLeftRightIcon className="w-8 h-8 lg:w-16 lg:h-16 -rotate-90 lg:rotate-0" />
-          </div>
-        )}
+        <Separator className="flex md:hidden w-full" orientation="horizontal" />
+        <Separator className="hidden md:flex h-full" orientation="vertical" />
         {trip?.paypal && (
-          <div className="flex flex-col gap-2 w-full lg:w-fit items-center lg:items-start">
-            <p>Bezahlen per PayPal:</p>
-            <CardDescription>Empfänger: {trip.paypal}</CardDescription>
-            <CardDescription>Zahlungszweck: {trip.name}</CardDescription>
-            <CardDescription>
-              Betrag:{" "}
-              {Intl.NumberFormat("de-DE", {
-                style: "currency",
-                currency: "EUR",
-              }).format(amount)}
-            </CardDescription>
+          <div className="flex flex-col gap-4 w-full items-start">
+            <CardTitle>Bezahlen per PayPal:</CardTitle>
+            <div className="flex flex-col justify-center">
+              <CardDescription>Empfänger:</CardDescription>
+              <CardTitle>{trip.paypal}</CardTitle>
+            </div>
+            <div className="flex flex-col justify-center">
+              <CardDescription>Zahlungszweck:</CardDescription>
+              <CardTitle>{trip.name}</CardTitle>
+            </div>
+            <div className="flex flex-col justify-center">
+              <CardDescription>Betrag:</CardDescription>
+              <CardTitle>
+                {Intl.NumberFormat("de-DE", {
+                  style: "currency",
+                  currency: "EUR",
+                }).format(amount)}
+              </CardTitle>
+            </div>
             <div className="mt-4">
               <ResponsiveDialog
                 title="QR-Code"
